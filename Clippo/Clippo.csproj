@@ -8,4 +8,21 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Page Remove="src\App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="src\App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="src\ViewModels\" />
+    <Folder Include="src\Models\" />
+    <Folder Include="src\Services\" />
+    <Folder Include="src\Assets\" />
+    <Folder Include="src\Properties\" />
+    <Folder Include=".github\" />
+  </ItemGroup>
+
 </Project>
