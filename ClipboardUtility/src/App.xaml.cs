@@ -3,7 +3,7 @@ using System.Data;
 using System.Globalization;
 using System.Windows;
 
-namespace Clippo
+namespace ClipboardUtility
 {
     /// <summary>
     /// Interaction logic for App.xaml

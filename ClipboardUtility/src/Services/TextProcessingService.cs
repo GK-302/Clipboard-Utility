@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Clippo.src.Services;
+namespace ClipboardUtility.src.Services;
 
 internal class TextProcessingService
 {

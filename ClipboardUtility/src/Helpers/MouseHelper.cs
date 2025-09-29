@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Clippo.src.Helpers;
+namespace ClipboardUtility.src.Helpers;
 
 /// <summary>
 /// マウスカーソルの位置など、マウスに関連する操作を提供する静的ヘルパークラスです。

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36518.9 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clippo", "Clippo\Clippo.csproj", "{31AFF239-8BC0-44EF-85DF-76F6923B95B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClipboardUtility", "ClipboardUtility\ClipboardUtility.csproj", "{31AFF239-8BC0-44EF-85DF-76F6923B95B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

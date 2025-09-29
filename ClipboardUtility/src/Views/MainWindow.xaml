@@ -1,19 +1,16 @@
-﻿<Window x:Class="Clippo.src.Views.NotificationWindow"
+﻿<Window x:Class="ClipboardUtility.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Clippo.src.Views"
+        xmlns:local="clr-namespace:ClipboardUtility"
         mc:Ignorable="d"
-        WindowStyle="None"
-        Topmost="True"
-        AllowsTransparency="True"
+        WindowState="Minimized"
         ShowInTaskbar="False"
+        WindowStyle="None"
+        AllowsTransparency="True"
         Background="Transparent"
-        Title="NotificationWindow" Height="450" Width="800">
-    <Border CornerRadius="5" Padding="10,5">
-        <Label 
-            Foreground="White" 
-            Content="{Binding}"/>
-    </Border>
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+    </Grid>
 </Window>

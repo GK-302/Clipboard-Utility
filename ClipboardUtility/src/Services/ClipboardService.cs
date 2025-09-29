@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace Clippo.src.Services;
+namespace ClipboardUtility.src.Services;
 
 /// <summary>
 /// Win32 APIを使用してクリップボードの変更を監視するサービス。

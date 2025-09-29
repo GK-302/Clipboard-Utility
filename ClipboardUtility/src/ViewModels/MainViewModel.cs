@@ -1,5 +1,5 @@
-﻿using Clippo.Services;
-using Clippo.src.Services;
+﻿using ClipboardUtility.Services;
+using ClipboardUtility.src.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,11 +9,11 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
-using Clippo.src.Properties;
+using ClipboardUtility.src.Properties;
 using System.Windows.Media;
 using System.Diagnostics;
 
-namespace Clippo.src.ViewModels;
+namespace ClipboardUtility.src.ViewModels;
 
 /// <summary>
 /// メインウィンドウのViewModel。UIのロジックと状態を管理します。

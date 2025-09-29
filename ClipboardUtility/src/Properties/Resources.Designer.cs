@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Clippo.src.Properties {
+namespace ClipboardUtility.src.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Clippo.src.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Clippo.src.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ClipboardUtility.src.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -70,7 +70,7 @@ namespace Clippo.src.Properties {
         }
         
         /// <summary>
-        ///   Clippo - Clipboard Utility に類似しているローカライズされた文字列を検索します。
+        ///   ClipboardUtility - Clipboard Utility に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string WindowTitle {
             get {

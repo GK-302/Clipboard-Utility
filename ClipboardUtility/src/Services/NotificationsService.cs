@@ -1,9 +1,9 @@
-﻿using Clippo.src.Helpers;
-using Clippo.src.Views;
+﻿using ClipboardUtility.src.Helpers;
+using ClipboardUtility.src.Views;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Clippo.Services // namespaceをプロジェクトに合わせてください
+namespace ClipboardUtility.Services // namespaceをプロジェクトに合わせてください
 {
     public class NotificationsService
     {

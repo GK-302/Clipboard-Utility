@@ -1,6 +1,6 @@
-<h1>Clippo</h1>
+<h1>ClipboardUtility</h1>
 
-Clippoは文字数のカウントを行うクリップボードユーティリティです。開発途中で、機能を追加予定です。
+ClipboardUtilityは文字数のカウントを行うクリップボードユーティリティです。開発途中で、機能を追加予定です。
 
 <h2>主な機能</h2>
 - 文字数のカウントをマウスカーソルの周辺に表示します。
@@ -11,8 +11,8 @@ Clippoは文字数のカウントを行うクリップボードユーティリ�
 <h2>使い方</h2>
 アプリを起動し、テキストをコピーすると文字数がマウスカーソルの周辺に表示されます。
 
-<h1>Clippo</h1>
-Clippo is a clipboard utility that counts characters. It is currently under development, with more features planned for the future.
+<h1>ClipboardUtility</h1>
+ClipboardUtility is a clipboard utility that counts characters. It is currently under development, with more features planned for the future.
 
 <h2>Features</h2>
 Displays the character count near the mouse cursor.

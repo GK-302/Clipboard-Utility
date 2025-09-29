@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Clippo.src.Views
+namespace ClipboardUtility.src.Views
 {
     /// <summary>
     /// NotificationWindow.xaml の相互作用ロジック

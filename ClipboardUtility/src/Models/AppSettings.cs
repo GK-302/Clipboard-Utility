@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Clippo.src.ViewModels
+namespace ClipboardUtility.src.Models
 {
-    internal class SettingsViewModel
+    internal class AppSettings
     {
     }
 }
