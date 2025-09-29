@@ -43,27 +43,27 @@ jobs:
       - name: Zip the artifacts
         run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-v${{ github.ref_name }}.zip
 
-    #   # 5. GitHubリリースを作成する
-    #   - name: Create Release
-    #     id: create_release
-    #     uses: actions/create-release@v1
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # トークンは自動で設定されます
-    #     with:
-    #       tag_name: ${{ github.ref_name }}
-    #       release_name: Release ${{ github.ref_name }}
-    #       body: |
-    #         # ここにリリースの説明文を記述
-    #       draft: false
-    #       prerelease: false
+      # 5. GitHubリリースを作成する
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # トークンは自動で設定されます
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            # ここにリリースの説明文を記述
+          draft: false
+          prerelease: false
 
-    #   # 6. ZIPファイルをリリースにアップロードする
-    #   - name: Upload Release Asset
-    #     uses: actions/upload-release-asset@v1
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #     with:
-    #       upload_url: ${{ steps.create_release.outputs.upload_url }} # 5で作成したリリースのURL
-    #       asset_path: ./ClipboardUtility-v${{ github.ref_name }}.zip # 4で作成したZIPファイルのパス
-    #       asset_name: ClipboardUtility-v${{ github.ref_name }}.zip # リリースに表示されるファイル名
-    #       asset_content_type: application/zip
+      # 6. ZIPファイルをリリースにアップロードする
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # 5で作成したリリースのURL
+          asset_path: ./ClipboardUtility-v${{ github.ref_name }}.zip # 4で作成したZIPファイルのパス
+          asset_name: ClipboardUtility-v${{ github.ref_name }}.zip # リリースに表示されるファイル名
+          asset_content_type: application/zip
