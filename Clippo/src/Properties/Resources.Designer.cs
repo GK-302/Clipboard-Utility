@@ -70,7 +70,7 @@ namespace Clippo.src.Properties {
         }
         
         /// <summary>
-        ///   Clippo - Clipboard Monitor に類似しているローカライズされた文字列を検索します。
+        ///   Clippo - Clipboard Utility に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string WindowTitle {
             get {

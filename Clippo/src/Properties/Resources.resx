@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="WindowTitle" xml:space="preserve">
-    <value>Clippo - Clipboard Monitor</value>
+    <value>Clippo - Clipboard Utility</value>
     <comment>Application main window title</comment>
   </data>
   <data name="NotificationFormat_CopiedWords" xml:space="preserve">
