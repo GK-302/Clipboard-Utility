@@ -41,7 +41,7 @@ public class ClipboardService : IDisposable
     /// <param name="window">監視の親となるWPFウィンドウ</param>
     public void StartMonitoring(Window window)
     {
-        if (_hwndSource != null) return; // 既に開始されている
+        if (_hwndSource != null) return;
 
         IntPtr windowHandle = new WindowInteropHelper(window).Handle;
         _hwndSource = HwndSource.FromHwnd(windowHandle);
@@ -54,6 +54,22 @@ public class ClipboardService : IDisposable
         _hwndSource.AddHook(WndProc);
         // クリップボード監視を開始
         AddClipboardFormatListener(windowHandle);
+    }
+    /// <summary>
+    /// クリップボードにテキストを設定します。
+    /// set clipboard text
+    /// </summary>
+    /// <param name="text"></param>
+    public void SetText(string text)
+    {
+        try
+        {
+            Clipboard.SetText(text);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error setting clipboard text: {ex.Message}");
+        }
     }
 
     /// <summary>

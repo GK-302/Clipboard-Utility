@@ -1,4 +1,5 @@
-﻿using Clippo.src.Services;
+﻿using Clippo.Services;
+using Clippo.src.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,22 +17,15 @@ namespace Clippo.src.ViewModels;
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly ClipboardService _clipboardService;
-    private string _clipboardHistory = "クリップボードの監視を開始しました...何かコピーしてみてください。\n";
+    private string _ClipboardLabel = string.Empty;
+    private TextProcessingService _textProcessingService = new();
+    private NotificationsService _notificationsService = new();
 
     public event PropertyChangedEventHandler PropertyChanged;
 
     /// <summary>
     /// UIに表示するためのクリップボード履歴
     /// </summary>
-    public string ClipboardHistory
-    {
-        get => _clipboardHistory;
-        set
-        {
-            _clipboardHistory = value;
-            OnPropertyChanged(); // UIに変更を通知
-        }
-    }
 
     public MainViewModel()
     {
@@ -56,10 +50,7 @@ public class MainViewModel : INotifyPropertyChanged
         // ここで改行削除などのメインロジックを実装する
         // string processedText = newText.Replace("\r\n", " ").Replace("\n", " ");
         // Clipboard.SetText(processedText);
-
-        // UI表示用の履歴を更新
-        string log = $"[{DateTime.Now:HH:mm:ss}] コピーされました: \"{newText}\"\n";
-        ClipboardHistory += log;
+        _notificationsService.ShowNotification("クリップボードの内容を更新しました。");
     }
 
     /// <summary>
