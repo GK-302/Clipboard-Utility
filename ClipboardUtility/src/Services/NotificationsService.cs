@@ -26,7 +26,7 @@ namespace ClipboardUtility.Services // namespaceをプロジェクトに合わ�
             _notificationWindow.DataContext = message;
 
             // マウスの位置を取得してウィンドウを移動
-            Point mousePosition = MouseHelper.GetCursorPosition();
+            System.Drawing.Point mousePosition = MouseHelper.GetCursorPosition();
             _notificationWindow.Left = mousePosition.X + 10; // 少し右にずらす
             _notificationWindow.Top = mousePosition.Y + 10;  // 少し下にずらす
 

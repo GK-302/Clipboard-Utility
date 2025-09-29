@@ -64,7 +64,7 @@ public class ClipboardService : IDisposable
     {
         try
         {
-            Clipboard.SetText(text);
+            System.Windows.Clipboard.SetText(text);
         }
         catch (Exception ex)
         {
@@ -82,9 +82,9 @@ public class ClipboardService : IDisposable
             try
             {
                 // クリップボードにテキストデータが含まれているかチェック
-                if (Clipboard.ContainsText())
+                if (System.Windows.Clipboard.ContainsText())
                 {
-                    string text = Clipboard.GetText();
+                    string text = System.Windows.Clipboard.GetText();
                     // イベントを発行して、購読者に通知
                     ClipboardUpdated?.Invoke(this, text);
                 }

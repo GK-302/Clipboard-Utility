@@ -22,9 +22,9 @@ public static class MouseHelper
         public int X;
         public int Y;
 
-        public static implicit operator Point(POINT point)
+        public static implicit operator System.Drawing.Point(POINT point)
         {
-            return new Point(point.X, point.Y);
+            return new System.Drawing.Point(point.X, point.Y);
         }
     }
 
@@ -42,7 +42,7 @@ public static class MouseHelper
     /// 現在のマウスカーソルのスクリーン座標を取得します。
     /// </summary>
     /// <returns>現在のカーソル位置を表すSystem.Windows.Point</returns>
-    public static Point GetCursorPosition()
+    public static System.Drawing.Point GetCursorPosition()
     {
         if (GetCursorPos(out POINT lpPoint))
         {
@@ -51,6 +51,6 @@ public static class MouseHelper
         }
 
         // 何らかの理由で取得に失敗した場合は、デフォルト値として(0,0)を返す
-        return new Point(0, 0);
+        return new System.Drawing.Point(0, 0);
     }
 }
