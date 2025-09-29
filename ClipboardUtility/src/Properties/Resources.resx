@@ -123,6 +123,6 @@
   </data>
   <data name="NotificationFormat_CopiedWords" xml:space="preserve">
     <value>Copied {0} characters</value>
-    <comment>notification format like "copied 〇〇 words"</comment>
+    <comment>notification format like "copied 〇〇 characters"</comment>
   </data>
 </root>
