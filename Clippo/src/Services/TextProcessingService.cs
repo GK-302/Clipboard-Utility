@@ -8,9 +8,12 @@ namespace Clippo.src.Services;
 
 internal class TextProcessingService
 {
-    public string CountCharacters(string input)
+    public int CountCharacters(string input)
     {
-        if (input == null) return "0";
-        return input.Length.ToString();
+        if (string.IsNullOrEmpty(input))
+        {
+            return 0;
+        }
+        return input.Length;
     }
 }

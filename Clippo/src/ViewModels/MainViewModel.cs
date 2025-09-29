@@ -5,8 +5,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
+using System.Globalization;
+using Clippo.src.Properties;
+using System.Windows.Media;
+using System.Diagnostics;
 
 namespace Clippo.src.ViewModels;
 
@@ -50,8 +55,18 @@ public class MainViewModel : INotifyPropertyChanged
         // ここで改行削除などのメインロジックを実装する
         // string processedText = newText.Replace("\r\n", " ").Replace("\n", " ");
         // Clipboard.SetText(processedText);
-        var charCount = _textProcessingService.CountCharacters(newText);
-        _notificationsService.ShowNotification(charCount);
+        int charCount = _textProcessingService.CountCharacters(newText);
+        string formattedText;
+        try 
+        { 
+            formattedText = string.Format(Resources.NotificationFormat_CopiedWords, charCount);
+        } catch (FormatException ex) 
+        { 
+            // フォーマットエラーが発生した場合の処理（例: ログ出力など）
+            Debug.WriteLine($"Format error: {ex.Message}");
+            formattedText = $"Copied {charCount} words"; // フォールバックのメッセージ
+        }
+        _notificationsService.ShowNotification(formattedText);
     }
 
     /// <summary>
