@@ -5,8 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Clippo"
         mc:Ignorable="d"
+        Topmost="True"
+        AllowsTransparency="True"
+        WindowStyle="None"
+        Background="Transparent"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-
+        <Label Foreground="White" Content="{Binding ClipboardHistory, Mode=OneWay}"></Label>
     </Grid>
 </Window>
