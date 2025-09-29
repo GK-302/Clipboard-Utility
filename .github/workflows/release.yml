@@ -32,7 +32,7 @@ jobs:
 
       # 3. プロジェクトをビルドし、発行（publish）する
       - name: Publish Project
-        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility.csproj
+        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
         # --configuration Release: リリースモードでビルド
         # --runtime win-x64: 64bitのWindows向けにビルド
         # --self-contained true: .NETがインストールされていなくても動くように自己完結型でビルド
