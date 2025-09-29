@@ -50,7 +50,8 @@ public class MainViewModel : INotifyPropertyChanged
         // ここで改行削除などのメインロジックを実装する
         // string processedText = newText.Replace("\r\n", " ").Replace("\n", " ");
         // Clipboard.SetText(processedText);
-        _notificationsService.ShowNotification("クリップボードの内容を更新しました。");
+        var charCount = _textProcessingService.CountCharacters(newText);
+        _notificationsService.ShowNotification(charCount);
     }
 
     /// <summary>
