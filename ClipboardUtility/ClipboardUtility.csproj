@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="src\Assets\drawing_1.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Remove="src\App.xaml" />
   </ItemGroup>
 
@@ -19,6 +23,10 @@
 
   <ItemGroup>
     <Folder Include=".github\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="src\Assets\drawing_1.ico" />
   </ItemGroup>
 
   <ItemGroup>

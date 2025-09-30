@@ -8,7 +8,9 @@ using System.Windows.Input;
 using System;
 using System.Drawing;
 using System.Windows;
-using System.Windows.Forms; // 追加: NotifyIcon, MouseEventArgs, MouseButtons, ContextMenuStrip 用
+using System.Windows.Forms;
+using System.Diagnostics;
+using System.IO; // 追加: NotifyIcon, MouseEventArgs, MouseButtons, ContextMenuStrip 用
 
 
 namespace ClipboardUtility.src.Services;
@@ -20,20 +22,26 @@ public class TaskTrayService : ITaskTrayService, IDisposable
 
     public void Initialize()
     {
-        // 修正: System.Windows.Application を明示的に指定
-        var iconStream = System.Windows.Application.GetResourceStream(
-            new Uri(@"src/Assets/drawing_1.ico", UriKind.Relative)
-        ).Stream;
+        System.IO.Stream iconStream;
+        try
+        {
+            var iconURI = new Uri("pack://application:,,,/src/Assets/drawing_1.ico");
+            iconStream = System.Windows.Application.GetResourceStream(iconURI).Stream;
+        } catch (Exception ex)
+        {
+            Debug.WriteLine("failed to load icon file: " + ex.Message);
+            return;
+        }
 
         var menu = new ContextMenuStrip();
-        menu.Items.Add("表示", null, OnShowClicked);
-        menu.Items.Add("終了", null, OnExitClicked);
+        menu.Items.Add("Show", null, OnShowClicked);
+        menu.Items.Add("Exit", null, OnExitClicked);
 
         _notifyIcon = new NotifyIcon
         {
             Visible = true,
             Icon = new Icon(iconStream),
-            Text = "Your Application Name",
+            Text = "Clipboard Utility",
             ContextMenuStrip = menu
         };
 
