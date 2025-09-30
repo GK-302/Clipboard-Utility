@@ -1,4 +1,5 @@
-﻿using ClipboardUtility.src.ViewModels;
+﻿using ClipboardUtility.src.Services;
+using ClipboardUtility.src.ViewModels;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,31 +19,44 @@ namespace ClipboardUtility;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
+    private readonly TaskTrayService _taskTrayService;
 
+    // デフォルトコンストラクタ（デザイン時用）
     public MainWindow()
     {
         InitializeComponent();
+        // デザイン時のみ使用
+        if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
+        {
+            _viewModel = new MainViewModel();
+            this.DataContext = _viewModel;
+        }
+    }
 
-        // ViewModelのインスタンスを作成
-        _viewModel = new MainViewModel();
-        // このウィンドウのDataContextにViewModelを設定
-        // これにより、XAMLの {Binding} がViewModelのプロパティと繋がる
+    // 実行時用コンストラクタ
+    public MainWindow(MainViewModel viewModel, TaskTrayService taskTrayService)
+    {
+        InitializeComponent();
+
+        _viewModel = viewModel;
+        _taskTrayService = TaskTrayService.Instance; // Singletonインスタンスを使用
         this.DataContext = _viewModel;
 
-        // Windowがロードされた後にViewModelの初期化処理を呼ぶ
         this.Loaded += MainWindow_Loaded;
-        // Windowが閉じられるときにクリーンアップ処理を呼ぶ
         this.Closing += MainWindow_Closing;
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        // このウィンドウ自体を渡して、クリップボード監視を開始させる
-        _viewModel.Initialize(this);
+        _viewModel?.Initialize(this);
     }
 
     private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
-        _viewModel.Cleanup();
+        // App.xaml.csでクリーンアップするので、ここでは何もしない
+        // または最小化して隠すだけにする
+        e.Cancel = true;
+        this.WindowState = WindowState.Minimized;
+        this.ShowInTaskbar = false;
     }
 }

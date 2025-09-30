@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClipboardUtility.src.ViewModels
+namespace ClipboardUtility.src.ViewModels;
+
+internal class SettingsViewModel
 {
-    internal class SettingsViewModel
-    {
-    }
 }

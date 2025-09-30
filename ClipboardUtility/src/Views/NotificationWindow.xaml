@@ -12,8 +12,13 @@
         Background="Transparent"
         Title="NotificationWindow" Height="450" Width="800">
     <Border CornerRadius="5" Padding="10,5">
-        <Label 
-            Foreground="White" 
-            Content="{Binding}"/>
+        <StackPanel>
+            <Label 
+                Foreground="White" 
+                Content="{Binding NotificationMessage}"/>
+            <Label
+                Foreground="Red"
+                Content="{Binding NotificationsimultaneousMessage}"/>
+        </StackPanel>
     </Border>
 </Window>

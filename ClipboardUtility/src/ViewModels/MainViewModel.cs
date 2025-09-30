@@ -25,12 +25,9 @@ public class MainViewModel : INotifyPropertyChanged
     private string _ClipboardLabel = string.Empty;
     private TextProcessingService _textProcessingService = new();
     private NotificationsService _notificationsService = new();
+    private bool _isInternalClipboardOperation = false;
 
     public event PropertyChangedEventHandler PropertyChanged;
-
-    /// <summary>
-    /// UIに表示するためのクリップボード履歴
-    /// </summary>
 
     public MainViewModel()
     {
@@ -38,46 +35,97 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// ClipboardServiceの監視を開始するメソッド。
+    /// TaskTrayServiceのイベントを購読する
     /// </summary>
+    /// <param name="taskTrayService">TaskTrayServiceのインスタンス</param>
+    public void SubscribeToTaskTrayEvents(TaskTrayService taskTrayService)
+    {
+        taskTrayService.ClipboardOperationRequested += OnClipboardOperationRequested;
+        taskTrayService.ShowWindowRequested += OnShowWindowRequested;
+        taskTrayService.ExitApplicationRequested += OnExitApplicationRequested;
+    }
+
+    private void OnClipboardOperationRequested(object sender, EventArgs e)
+    {
+        DoClipboardOperation();
+    }
+
+    private void OnShowWindowRequested(object sender, EventArgs e)
+    {
+        // ウィンドウ表示ロジック
+        Debug.WriteLine("Show window requested");
+    }
+
+    private void OnExitApplicationRequested(object sender, EventArgs e)
+    {
+        // アプリケーション終了ロジック
+        System.Windows.Application.Current.Shutdown();
+    }
+
     public void Initialize(System.Windows.Window window)
     {
         _clipboardService.StartMonitoring(window);
-        // ClipboardUpdatedイベントを購読し、イベント発生時に実行するメソッドを登録
         _clipboardService.ClipboardUpdated += OnClipboardUpdated;
     }
 
-    /// <summary>
-    /// ClipboardServiceから通知を受け取ったときの処理
-    /// </summary>
     private void OnClipboardUpdated(object sender, string newText)
     {
-        // ここで改行削除などのメインロジックを実装する
-        // string processedText = newText.Replace("\r\n", " ").Replace("\n", " ");
-        // Clipboard.SetText(processedText);
+        if (_isInternalClipboardOperation)
+        {
+            return;
+        }
+
         int charCount = _textProcessingService.CountCharacters(newText);
         string formattedText;
-        try 
-        { 
+        try
+        {
             formattedText = string.Format(Resources.NotificationFormat_CopiedWords, charCount);
-        } catch (FormatException ex) 
-        { 
-            // フォーマットエラーが発生した場合の処理（例: ログ出力など）
-            Debug.WriteLine($"Format error: {ex.Message}");
-            formattedText = $"Copied {charCount} words"; // フォールバックのメッセージ
         }
-        _notificationsService.ShowNotification(formattedText);
+        catch (FormatException ex)
+        {
+            Debug.WriteLine($"Format error: {ex.Message}");
+            formattedText = $"Copied {charCount} words";
+        }
+
+        // 内部処理中でない場合のみ通知
+        _ = _notificationsService.ShowNotification(formattedText);
     }
 
-    /// <summary>
-    /// アプリケーション終了時にリソースを解放する
-    /// </summary>
+    public void DoClipboardOperation()
+    {
+        if (System.Windows.Clipboard.ContainsText())
+        {
+            _isInternalClipboardOperation = true;
+
+            try
+            {
+                string clipboardText = System.Windows.Clipboard.GetText();
+                string processedText = clipboardText.Replace("\r\n", " ").Replace("\n", " ");
+
+                // フラグをセットしたままクリップボードを更新
+                System.Windows.Clipboard.SetText(processedText);
+
+                // 操作完了の通知のみ表示
+                _ = _notificationsService.ShowNotification("removed");
+                Debug.WriteLine("Clipboard operation completed");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error during clipboard operation: {ex.Message}");
+            }
+            finally
+            {
+                // 少し遅延してからフラグをリセット（クリップボードイベントの伝播を待つ）
+                Task.Delay(100).ContinueWith(_ => _isInternalClipboardOperation = false);
+            }
+        }
+    }
+
     public void Cleanup()
     {
         _clipboardService?.Dispose();
     }
 
-    // INotifyPropertyChangedの実装
     protected void OnPropertyChanged([CallerMemberName] string name = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

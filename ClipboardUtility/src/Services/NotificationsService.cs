@@ -1,45 +1,129 @@
-﻿using ClipboardUtility.src.Helpers;
+﻿// NotificationsService.cs
+using ClipboardUtility.src.Helpers;
+using ClipboardUtility.src.ViewModels;
 using ClipboardUtility.src.Views;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace ClipboardUtility.Services // namespaceをプロジェクトに合わせてください
+namespace ClipboardUtility.Services
 {
     public class NotificationsService
     {
-        private NotificationWindow _notificationWindow;
-        private bool _isWindowInitialized = false;
+        private readonly Lazy<NotificationWindow> _lazyWindow;
+        private readonly NotificationViewModel _viewModel;
 
-        public async Task ShowNotification(string message)
+        // 連続した通知リクエストを制御するためのキャンセル機構
+        private CancellationTokenSource _cts;
+
+        public NotificationsService()
         {
-            // 初回呼び出し時にウィンドウを一度だけ生成する
-            if (!_isWindowInitialized)
+            _viewModel = new NotificationViewModel();
+            _lazyWindow = new Lazy<NotificationWindow>(InitializeWindow);
+        }
+
+        /// <summary>
+        /// ウィンドウの初期化処理
+        /// </summary>
+        /// <returns>初期化されたNotificationWindow</returns>
+        private NotificationWindow InitializeWindow()
+        {
+            // UIスレッドでウィンドウを生成・初期化する
+            return System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                _notificationWindow = new NotificationWindow();
-                // この時点では表示せず、裏で準備だけしておく
-                _notificationWindow.Show();
-                _notificationWindow.Hide();
-                _isWindowInitialized = true;
+                var window = new NotificationWindow
+                {
+                    DataContext = _viewModel
+                };
+                // 初回は表示せずにロードだけを行う
+                window.Show();
+                window.Hide();
+                return window;
+            });
+        }
+        public async Task ShowsimultaneousNotification(string operationMessage, NotificationType type = NotificationType.Information)
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            try
+            {
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    var window = _lazyWindow.Value;
+                    _viewModel.NotificationsimultaneousMessage = operationMessage;
+
+                    window.Left = 0;
+                    window.Top = 0;
+                    window.Visibility = Visibility.Visible;
+                });
+
+                await Task.Delay(1500, token);
+
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (!token.IsCancellationRequested)
+                    {
+                        _lazyWindow.Value.Visibility = Visibility.Hidden;
+                    }
+                });
             }
+            catch (OperationCanceledException)
+            {
+                // キャンセル時は何もしない
+            }
+        }
 
-            // DataContextに表示したいメッセージを設定
-            _notificationWindow.DataContext = message;
+        /// <summary>
+        /// 通知を表示します。連続して呼び出された場合、前の通知はキャンセルされ新しい通知が表示されます。
+        /// </summary>
+        public async Task ShowNotification(string message, NotificationType type = NotificationType.Information)
+        {
+            // 既存の待機処理（Task.Delay）があればキャンセルする
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
-            // マウスの位置を取得してウィンドウを移動
-            System.Drawing.Point mousePosition = MouseHelper.GetCursorPosition();
-            _notificationWindow.Left = mousePosition.X + 10; // 少し右にずらす
-            _notificationWindow.Top = mousePosition.Y + 10;  // 少し下にずらす
+            try
+            {
+                // UIスレッドでUI要素の更新と表示を行う
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    // Lazy<T>経由でウィンドウインスタンスを取得（初回ならここで初期化が走る）
+                    var window = _lazyWindow.Value;
 
-            // ウィンドウを表示する
-            _notificationWindow.Visibility = Visibility.Visible;
+                    // ViewModelのプロパティを更新
+                    _viewModel.NotificationMessage = message;
 
-            // 1秒待つ (表示時間)
-            // 0.5秒表示 + 0.5秒フェードアウトなら、合計1秒以上は必要
-            await Task.Delay(1000);
+                    // ウィンドウの位置を調整
+                    // System.Drawing.Point mousePosition = MouseHelper.GetCursorPosition();
+                    window.Left = 0; // 位置調整はお好みで
+                    window.Top = 0;
 
-            // ウィンドウを非表示にする（Closeではない！）
-            // ※フェードアウトアニメーションを追加する場合は、アニメーション完了後にHide()を呼ぶ
-            _notificationWindow.Visibility = Visibility.Hidden;
+                    // ウィンドウを表示
+                    window.Visibility = Visibility.Visible;
+                });
+
+                // 指定時間、表示を待機する
+                await Task.Delay(1500, token);
+
+                // UIスレッドでウィンドウを非表示にする
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    // 新しい通知によってキャンセルされていない場合（=tokenが生きてる場合）のみ非表示にする
+                    if (!token.IsCancellationRequested)
+                    {
+                        _lazyWindow.Value.Visibility = Visibility.Hidden;
+                    }
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                // 新しい通知リクエストによってキャンセルされた場合はここに来る。
+                // 正常な動作なので、特に何もしない。
+            }
         }
     }
 }
