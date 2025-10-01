@@ -1,5 +1,7 @@
-﻿using ClipboardUtility.src.Services;
+﻿using ClipboardUtility.src.Models;
+using ClipboardUtility.src.Services;
 using ClipboardUtility.src.ViewModels;
+using ClipboardUtility.src.Views;
 using System.Configuration;
 using System.Data;
 using System.Globalization;
@@ -19,16 +21,15 @@ namespace ClipboardUtility
         {
             base.OnStartup(e);
 
-            // Singletonインスタンスを取得
-            var taskTrayService = TaskTrayService.Instance;
+            var tray = TaskTrayService.Instance;
+            tray.Initialize();
 
             _mainViewModel = new MainViewModel();
-            _mainViewModel.SubscribeToTaskTrayEvents(taskTrayService);
+            _mainViewModel.SubscribeToTaskTrayEvents(TaskTrayService.Instance);
 
-            taskTrayService.Initialize();
-
-            var mainWindow = new MainWindow(_mainViewModel, taskTrayService);
-            mainWindow.Show();
+            var mainWindow = new MainWindow(_mainViewModel, TaskTrayService.Instance);
+            this.MainWindow = mainWindow;
+            mainWindow.Show(); // トレイアプリとしてメインウィンドウを隠したいなら Show を省いて Hide する等
         }
 
         protected override void OnExit(ExitEventArgs e)

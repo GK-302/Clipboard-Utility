@@ -13,7 +13,7 @@ namespace ClipboardUtility.src.Models
     /// </summary>
     internal sealed class AppSettings
     {
-        private static readonly string SettingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+        private static readonly string SettingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config/appsettings.json");
 
         // 既存の設定
         public ProcessingMode ClipboardProcessingMode { get; set; } = ProcessingMode.NormalizeWhitespace;

@@ -11,6 +11,8 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO; // 追加: NotifyIcon, MouseEventArgs, MouseButtons, ContextMenuStrip 用
+using ClipboardUtility.src.Models;
+using ClipboardUtility.src.Views;
 
 
 namespace ClipboardUtility.src.Services;
@@ -83,7 +85,7 @@ public class TaskTrayService : ITaskTrayService, IDisposable
         }
 
         var menu = new ContextMenuStrip();
-        menu.Items.Add("Show", null, OnShowClicked);
+        menu.Items.Add("Open Setting", null, OnShowClicked);
         menu.Items.Add("Exit", null, OnExitClicked);
 
         _notifyIcon = new NotifyIcon

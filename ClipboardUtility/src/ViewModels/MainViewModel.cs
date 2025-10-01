@@ -1,6 +1,7 @@
 ﻿using ClipboardUtility.Services;
 using ClipboardUtility.src.Services;
 using ClipboardUtility.src.Models;
+using ClipboardUtility.src.Views;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -57,8 +58,18 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void OnShowWindowRequested(object sender, EventArgs e)
     {
-        // ウィンドウ表示ロジック
-        Debug.WriteLine("Show window requested");
+        // NotifyIcon のイベントは UI スレッドではない可能性があるので Dispatcher 経由で開く
+        System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+        {
+            try
+            {
+                OpenSettings();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"OpenSettings failed: {ex.Message}");
+            }
+        }));
     }
 
     private void OnExitApplicationRequested(object sender, EventArgs e)
@@ -125,6 +136,26 @@ public class MainViewModel : INotifyPropertyChanged
                 // 少し遅延してからフラグをリセット（クリップボードイベントの伝播を待つ）
                 Task.Delay(100).ContinueWith(_ => _isInternalClipboardOperation = false);
             }
+        }
+    }
+
+    // Add method to open settings UI
+    public void OpenSettings()
+    {
+        var window = new SettingsWindow(_appSettings);
+        bool? result = null;
+        try
+        {
+            result = window.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"OpenSettings: failed to show settings window: {ex.Message}");
+        }
+
+        if (result == true)
+        {
+            Debug.WriteLine("Settings saved by user.");
         }
     }
 
