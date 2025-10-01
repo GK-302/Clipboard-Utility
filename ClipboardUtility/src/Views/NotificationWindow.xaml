@@ -1,24 +1,32 @@
 ﻿<Window x:Class="ClipboardUtility.src.Views.NotificationWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ClipboardUtility.src.Views"
-        mc:Ignorable="d"
         WindowStyle="None"
         Topmost="True"
         AllowsTransparency="True"
         ShowInTaskbar="False"
         Background="Transparent"
-        Title="NotificationWindow" Height="450" Width="800">
-    <Border CornerRadius="5" Padding="10,5">
+        Title="NotificationWindow"
+        SizeToContent="WidthAndHeight"
+        MinWidth="160"
+        MaxWidth="420"
+        MinHeight="48"
+        MaxHeight="400">
+    <Border CornerRadius="5" Padding="10,6">
         <StackPanel>
-            <Label 
-                Foreground="White" 
-                Content="{Binding NotificationMessage}"/>
-            <Label
+            <TextBlock
+                Foreground="White"
+                Text="{Binding NotificationMessage}"
+                TextWrapping="Wrap"
+                TextTrimming="CharacterEllipsis"
+                MaxWidth="400" />
+            <TextBlock
                 Foreground="Red"
-                Content="{Binding NotificationsimultaneousMessage}"/>
+                Text="{Binding NotificationsimultaneousMessage}"
+                TextWrapping="Wrap"
+                TextTrimming="CharacterEllipsis"
+                MaxWidth="400"
+                Margin="0,4,0,0" />
         </StackPanel>
     </Border>
 </Window>

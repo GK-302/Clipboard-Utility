@@ -36,9 +36,19 @@ namespace ClipboardUtility.Services
                 {
                     DataContext = _viewModel
                 };
-                // 初回は表示せずにロードだけを行う
+
+                // Ensure the window sizes to content and has sane max/min constraints
+                window.SizeToContent = SizeToContent.WidthAndHeight;
+                window.MinWidth = 160;
+                window.MaxWidth = 420;
+                window.MinHeight = 48;
+                window.MaxHeight = 400;
+
+                // Force an initial layout pass so ActualWidth/ActualHeight become available
                 window.Show();
                 window.Hide();
+                window.UpdateLayout();
+
                 return window;
             });
         }
@@ -100,7 +110,7 @@ namespace ClipboardUtility.Services
                     // ウィンドウの位置を調整: place near cursor bottom-right, respect multi-monitor and DPI
                     try
                     {
-                        var pos = MouseHelper.GetClampedPosition(window, 100, 100);
+                        var pos = MouseHelper.GetClampedPosition(window, 20, 20);
                         window.Left = pos.X;
                         window.Top = pos.Y;
                     }
