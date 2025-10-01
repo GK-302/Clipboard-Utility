@@ -61,6 +61,24 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Whitespace collapsed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_CollapseWhitespace {
+            get {
+                return ResourceManager.GetString("NotificationFormat_CollapseWhitespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Tabs converted to spaces に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_ConvertTabsToSpaces {
+            get {
+                return ResourceManager.GetString("NotificationFormat_ConvertTabsToSpaces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Copied {0} characters に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationFormat_CopiedWords {
@@ -70,11 +88,173 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   LineBreaks Removed に類似しているローカライズされた文字列を検索します。
+        ///   Lines joined with spaces に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_JoinLinesWithSpace {
+            get {
+                return ResourceManager.GetString("NotificationFormat_JoinLinesWithSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Line breaks removed に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationFormat_LineBreakRemoved {
             get {
                 return ResourceManager.GetString("NotificationFormat_LineBreakRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Text normalized に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_NormalizeUnicode {
+            get {
+                return ResourceManager.GetString("NotificationFormat_NormalizeUnicode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Control characters removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_RemoveControlChars {
+            get {
+                return ResourceManager.GetString("NotificationFormat_RemoveControlChars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Diacritics removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_RemoveDiacritics {
+            get {
+                return ResourceManager.GetString("NotificationFormat_RemoveDiacritics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Duplicate lines removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_RemoveDuplicateLines {
+            get {
+                return ResourceManager.GetString("NotificationFormat_RemoveDuplicateLines", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Emails removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_RemoveEmails {
+            get {
+                return ResourceManager.GetString("NotificationFormat_RemoveEmails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   HTML tags removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_RemoveHtmlTags {
+            get {
+                return ResourceManager.GetString("NotificationFormat_RemoveHtmlTags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Punctuation removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_RemovePunctuation {
+            get {
+                return ResourceManager.GetString("NotificationFormat_RemovePunctuation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   URLs removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_RemoveUrls {
+            get {
+                return ResourceManager.GetString("NotificationFormat_RemoveUrls", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Markdown links stripped に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_StripMarkdownLinks {
+            get {
+                return ResourceManager.GetString("NotificationFormat_StripMarkdownLinks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Converted to camelCase に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_ToCamelCase {
+            get {
+                return ResourceManager.GetString("NotificationFormat_ToCamelCase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Converted to lower case に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_ToLower {
+            get {
+                return ResourceManager.GetString("NotificationFormat_ToLower", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Converted to PascalCase に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_ToPascalCase {
+            get {
+                return ResourceManager.GetString("NotificationFormat_ToPascalCase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Converted to title case に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_ToTitleCase {
+            get {
+                return ResourceManager.GetString("NotificationFormat_ToTitleCase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Converted to upper case に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_ToUpper {
+            get {
+                return ResourceManager.GetString("NotificationFormat_ToUpper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Trimmed whitespace に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_Trim {
+            get {
+                return ResourceManager.GetString("NotificationFormat_Trim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Text truncated に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_Truncate {
+            get {
+                return ResourceManager.GetString("NotificationFormat_Truncate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Whitespace normalized に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_WhitespaceNormalized {
+            get {
+                return ResourceManager.GetString("NotificationFormat_WhitespaceNormalized", resourceCulture);
             }
         }
         

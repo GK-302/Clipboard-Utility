@@ -123,10 +123,90 @@
   </data>
   <data name="NotificationFormat_CopiedWords" xml:space="preserve">
     <value>Copied {0} characters</value>
-    <comment>notification format like "copied 〇〇 characters"</comment>
+    <comment>Notification format: "Copied {0} characters". {0} is replaced by the character count using string.Format with CurrentCulture.</comment>
   </data>
   <data name="NotificationFormat_LineBreakRemoved" xml:space="preserve">
-    <value>LineBreaks Removed</value>
-    <comment>show when linebraks removed</comment>
+    <value>Line breaks removed</value>
+    <comment>Displayed when line breaks are replaced with spaces (RemoveLineBreaks mode).</comment>
+  </data>
+  <data name="NotificationFormat_WhitespaceNormalized" xml:space="preserve">
+    <value>Whitespace normalized</value>
+    <comment>Shown when newlines/tabs are converted to spaces and consecutive whitespace is collapsed (NormalizeWhitespace mode).</comment>
+  </data>
+  <data name="NotificationFormat_NormalizeUnicode" xml:space="preserve">
+    <value>Text normalized</value>
+    <comment>Shown when Unicode normalization is applied (NormalizeUnicode mode). Normalization form (e.g. FormKC) may be configured.</comment>
+  </data>
+  <data name="NotificationFormat_RemoveDiacritics" xml:space="preserve">
+    <value>Diacritics removed</value>
+    <comment>Shown when diacritical marks (accents) are removed to produce a simplified ASCII-like string (RemoveDiacritics mode).</comment>
+  </data>
+  <data name="NotificationFormat_RemovePunctuation" xml:space="preserve">
+    <value>Punctuation removed</value>
+    <comment>Shown when punctuation characters are removed from the text (RemovePunctuation mode).</comment>
+  </data>
+  <data name="NotificationFormat_RemoveControlChars" xml:space="preserve">
+    <value>Control characters removed</value>
+    <comment>Shown when control characters (e.g. non-printable C0/C1) are removed (RemoveControlCharacters mode).</comment>
+  </data>
+  <data name="NotificationFormat_RemoveUrls" xml:space="preserve">
+    <value>URLs removed</value>
+    <comment>Shown when URLs are removed from the text using a simple URL regex (RemoveUrls mode).</comment>
+  </data>
+  <data name="NotificationFormat_RemoveEmails" xml:space="preserve">
+    <value>Emails removed</value>
+    <comment>Shown when email addresses are removed from the text using a simple regex (RemoveEmails mode).</comment>
+  </data>
+  <data name="NotificationFormat_RemoveHtmlTags" xml:space="preserve">
+    <value>HTML tags removed</value>
+    <comment>Shown when HTML tags are stripped by a basic tag regex (RemoveHtmlTags mode). Not suitable for full HTML parsing.</comment>
+  </data>
+  <data name="NotificationFormat_StripMarkdownLinks" xml:space="preserve">
+    <value>Markdown links stripped</value>
+    <comment>Shown when Markdown links like [text](url) are replaced by their link text (StripMarkdownLinks mode).</comment>
+  </data>
+  <data name="NotificationFormat_ConvertTabsToSpaces" xml:space="preserve">
+    <value>Tabs converted to spaces</value>
+    <comment>Shown when tabs are converted to spaces (ConvertTabsToSpaces mode). Tab width can be configured via options.</comment>
+  </data>
+  <data name="NotificationFormat_Trim" xml:space="preserve">
+    <value>Trimmed whitespace</value>
+    <comment>Shown when leading/trailing whitespace is removed (Trim mode).</comment>
+  </data>
+  <data name="NotificationFormat_ToUpper" xml:space="preserve">
+    <value>Converted to upper case</value>
+    <comment>Shown when text is converted to upper case using the configured culture (ToUpper mode).</comment>
+  </data>
+  <data name="NotificationFormat_ToLower" xml:space="preserve">
+    <value>Converted to lower case</value>
+    <comment>Shown when text is converted to lower case using the configured culture (ToLower mode).</comment>
+  </data>
+  <data name="NotificationFormat_ToTitleCase" xml:space="preserve">
+    <value>Converted to title case</value>
+    <comment>Shown when text is converted to title case using the configured culture (ToTitleCase mode).</comment>
+  </data>
+  <data name="NotificationFormat_ToPascalCase" xml:space="preserve">
+    <value>Converted to PascalCase</value>
+    <comment>Shown when text is converted to PascalCase (ToPascalCase mode).</comment>
+  </data>
+  <data name="NotificationFormat_ToCamelCase" xml:space="preserve">
+    <value>Converted to camelCase</value>
+    <comment>Shown when text is converted to camelCase (ToCamelCase mode).</comment>
+  </data>
+  <data name="NotificationFormat_Truncate" xml:space="preserve">
+    <value>Text truncated</value>
+    <comment>Shown when text is truncated to a maximum length (Truncate mode). Options: MaxLength, TruncateSuffix.</comment>
+  </data>
+  <data name="NotificationFormat_JoinLinesWithSpace" xml:space="preserve">
+    <value>Lines joined with spaces</value>
+    <comment>Shown when multiple lines are joined into a single line separated by spaces (JoinLinesWithSpace mode).</comment>
+  </data>
+  <data name="NotificationFormat_RemoveDuplicateLines" xml:space="preserve">
+    <value>Duplicate lines removed</value>
+    <comment>Shown when adjacent duplicate lines are removed (RemoveDuplicateLines mode).</comment>
+  </data>
+  <data name="NotificationFormat_CollapseWhitespace" xml:space="preserve">
+    <value>Whitespace collapsed</value>
+    <comment>Shown when consecutive whitespace is collapsed to a single space (CollapseWhitespace mode).</comment>
   </data>
 </root>
