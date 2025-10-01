@@ -1,10 +1,11 @@
-﻿using ClipboardUtility.src.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Services;
 using ClipboardUtility.src.Helpers;
 
@@ -13,15 +14,10 @@ namespace ClipboardUtility.src.ViewModels;
 internal class SettingsViewModel : INotifyPropertyChanged
 {
     private AppSettings _settings;
-
     public event PropertyChangedEventHandler PropertyChanged;
 
-    // 引数ありコンストラクタのみ提供（明示的な依存注入）
     public SettingsViewModel(AppSettings settings)
     {
-        if (settings == null) throw new ArgumentNullException(nameof(settings));
-
-        // Work on a copy so Cancel can discard changes
         _settings = new AppSettings
         {
             ClipboardProcessingMode = settings.ClipboardProcessingMode,
@@ -33,37 +29,24 @@ internal class SettingsViewModel : INotifyPropertyChanged
             NotificationMinHeight = settings.NotificationMinHeight,
             NotificationMaxHeight = settings.NotificationMaxHeight,
             ShowCopyNotification = settings.ShowCopyNotification,
-            ShowOperationNotification = settings.ShowOperationNotification
+            ShowOperationNotification = settings.ShowOperationNotification,
+            CultureName = settings.CultureName
         };
 
         ProcessingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
         SelectedProcessingMode = _settings.ClipboardProcessingMode;
 
-        SelectModeCommand = new RelayCommand(param =>
-        {
-            if (param is ProcessingMode pm)
-            {
-                SelectedProcessingMode = pm;
-            }
-            else if (param != null)
-            {
-                if (Enum.TryParse(typeof(ProcessingMode), param.ToString(), out var parsed) && parsed is ProcessingMode parsedMode)
-                {
-                    SelectedProcessingMode = parsedMode;
-                }
-            }
-        });
-
-        SettingsService.Instance.SettingsChanged += (s, newSettings) =>
-        {
-            System.Windows.Application.Current?.Dispatcher.Invoke(() => ReloadFrom(newSettings));
-        };
+        // 利用可能なカルチャ一覧（必要に応じて追加）
+        AvailableCultures = new List<CultureInfo> { new CultureInfo("en-US"), new CultureInfo("ja-JP") };
+        // 初期選択
+        SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name)) 
+                          ?? CultureInfo.CurrentUICulture;
     }
 
     public IList<ProcessingMode> ProcessingModes { get; }
+    public IList<CultureInfo> AvailableCultures { get; }
 
-    public ICommand SelectModeCommand { get; }
-
+    // 追加: SelectedProcessingMode プロパティ（XAMLバインドと参照用）
     public ProcessingMode SelectedProcessingMode
     {
         get => _settings.ClipboardProcessingMode;
@@ -77,98 +60,43 @@ internal class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public int NotificationOffsetX
+    // 選択中のカルチャ（UIのComboBoxにバインド）
+    private CultureInfo _selectedCulture;
+    public CultureInfo SelectedCulture
     {
-        get => _settings.NotificationOffsetX;
-        set { if (_settings.NotificationOffsetX != value) { _settings.NotificationOffsetX = value; OnPropertyChanged(); } }
+        get => _selectedCulture;
+        set
+        {
+            if (value == null) return;
+            if (_selectedCulture?.Name != value.Name)
+            {
+                _selectedCulture = value;
+                // 即時にカルチャを切り替える（UI更新用）
+                ApplyCulture(value);
+                // ViewModel 内の設定に反映
+                _settings.CultureName = value.Name;
+                OnPropertyChanged();
+            }
+        }
     }
 
-    public int NotificationOffsetY
+    private void ApplyCulture(CultureInfo ci)
     {
-        get => _settings.NotificationOffsetY;
-        set { if (_settings.NotificationOffsetY != value) { _settings.NotificationOffsetY = value; OnPropertyChanged(); } }
+        if (ci == null) return;
+        // プロセス/スレッド全体の既定カルチャを設定
+        CultureInfo.DefaultThreadCurrentCulture = ci;
+        CultureInfo.DefaultThreadCurrentUICulture = ci;
+        CultureInfo.CurrentCulture = ci;
+        CultureInfo.CurrentUICulture = ci;
+
+        // LocalizedStrings に通知してバインド済みのラベルを更新
+        LocalizedStrings.Instance.ChangeCulture(ci);
     }
 
-    public int NotificationMargin
-    {
-        get => _settings.NotificationMargin;
-        set { if (_settings.NotificationMargin != value) { _settings.NotificationMargin = value; OnPropertyChanged(); } }
-    }
-
-    public double NotificationMinWidth
-    {
-        get => _settings.NotificationMinWidth;
-        set { if (Math.Abs(_settings.NotificationMinWidth - value) > double.Epsilon) { _settings.NotificationMinWidth = value; OnPropertyChanged(); } }
-    }
-
-    public double NotificationMaxWidth
-    {
-        get => _settings.NotificationMaxWidth;
-        set { if (Math.Abs(_settings.NotificationMaxWidth - value) > double.Epsilon) { _settings.NotificationMaxWidth = value; OnPropertyChanged(); } }
-    }
-
-    public double NotificationMinHeight
-    {
-        get => _settings.NotificationMinHeight;
-        set { if (Math.Abs(_settings.NotificationMinHeight - value) > double.Epsilon) { _settings.NotificationMinHeight = value; OnPropertyChanged(); } }
-    }
-
-    public double NotificationMaxHeight
-    {
-        get => _settings.NotificationMaxHeight;
-        set { if (Math.Abs(_settings.NotificationMaxHeight - value) > double.Epsilon) { _settings.NotificationMaxHeight = value; OnPropertyChanged(); } }
-    }
-
-    public bool ShowCopyNotification
-    {
-        get => _settings.ShowCopyNotification;
-        set { if (_settings.ShowCopyNotification != value) { _settings.ShowCopyNotification = value; OnPropertyChanged(); } }
-    }
-    public bool ShowOperationNotification
-    {
-        get => _settings.ShowOperationNotification;
-        set { if (_settings.ShowOperationNotification != value) { _settings.ShowOperationNotification = value; OnPropertyChanged(); } }
-    }
-
-    // Called by the view to persist changes
+    // Save では既存の GetSettingsCopy を使って SettingsService に保存する（CultureName を含める）
     public void Save()
     {
         SettingsService.Instance.Save(GetSettingsCopy());
-    }
-
-    public void ReloadFromCurrent()
-    {
-        ReloadFrom(SettingsService.Instance.Current);
-    }
-
-    private void ReloadFrom(AppSettings source)
-    {
-        if (source == null) return;
-
-        _settings = new AppSettings
-        {
-            ClipboardProcessingMode = source.ClipboardProcessingMode,
-            NotificationOffsetX = source.NotificationOffsetX,
-            NotificationOffsetY = source.NotificationOffsetY,
-            NotificationMargin = source.NotificationMargin,
-            NotificationMinWidth = source.NotificationMinWidth,
-            NotificationMaxWidth = source.NotificationMaxWidth,
-            NotificationMinHeight = source.NotificationMinHeight,
-            NotificationMaxHeight = source.NotificationMaxHeight,
-            ShowCopyNotification = source.ShowCopyNotification,
-            ShowOperationNotification = source.ShowOperationNotification
-        };
-
-        OnPropertyChanged(nameof(SelectedProcessingMode));
-        OnPropertyChanged(nameof(NotificationOffsetX));
-        OnPropertyChanged(nameof(NotificationOffsetY));
-        OnPropertyChanged(nameof(NotificationMargin));
-        OnPropertyChanged(nameof(NotificationMinWidth));
-        OnPropertyChanged(nameof(NotificationMaxWidth));
-        OnPropertyChanged(nameof(NotificationMinHeight));
-        OnPropertyChanged(nameof(NotificationMaxHeight));
-        OnPropertyChanged(nameof(ShowCopyNotification));
-        OnPropertyChanged(nameof(ShowOperationNotification));
     }
 
     public AppSettings GetSettingsCopy() => new AppSettings
@@ -183,10 +111,8 @@ internal class SettingsViewModel : INotifyPropertyChanged
         NotificationMaxHeight = _settings.NotificationMaxHeight,
         ShowCopyNotification = _settings.ShowCopyNotification,
         ShowOperationNotification = _settings.ShowOperationNotification,
+        CultureName = _settings.CultureName
     };
 
-    protected void OnPropertyChanged([CallerMemberName] string name = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
+    protected void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

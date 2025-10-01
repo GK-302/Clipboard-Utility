@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
+        xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
         mc:Ignorable="d"
-        Title="Settings" Height="400" Width="480">
+        Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Setting}" Height="400" Width="480">
     <Window.Resources>
         <conv:ProcessingModeToDisplayConverter x:Key="ProcModeToDisplay" />
     </Window.Resources>
@@ -18,11 +19,11 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock FontWeight="Bold" Text="Notification Settings" />
+            <TextBlock FontWeight="Bold"
+                       Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Setting}" />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
-            <!-- Notification toggles -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                 <TextBlock Width="180" VerticalAlignment="Center">Show copy notification:</TextBlock>
                 <CheckBox IsChecked="{Binding ShowCopyNotification, Mode=TwoWay}" VerticalAlignment="Center" />
@@ -42,6 +43,14 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" >
+                <TextBlock Width="180" VerticalAlignment="Center">Language:</TextBlock>
+                <ComboBox Width="200"
+                          ItemsSource="{Binding AvailableCultures}"
+                          SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
+                          DisplayMemberPath="NativeName" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
@@ -88,8 +97,8 @@
         </StackPanel>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button x:Name="BtnSave" Width="84" Margin="6" Click="BtnSave_Click">Save</Button>
-            <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click">Cancel</Button>
+            <Button x:Name="BtnSave" Width="84" Margin="6" Click="BtnSave_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SaveText}" />
+            <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CancelText}" />
         </StackPanel>
     </Grid>
 </Window>

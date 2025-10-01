@@ -209,4 +209,13 @@
     <value>空白を圧縮しました</value>
     <comment>連続する空白を単一スペースに圧縮したときに表示するメッセージ（CollapseWhitespace モード）</comment>
   </data>
+  <data name="SettingTitle" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="SaveText" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
 </root>

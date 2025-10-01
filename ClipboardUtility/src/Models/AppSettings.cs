@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Windows;
+using System.Globalization;
 using ClipboardUtility.src.Services;
 
 namespace ClipboardUtility.src.Models
@@ -32,6 +34,9 @@ namespace ClipboardUtility.src.Models
         public double NotificationMaxHeight { get; set; } = 400.0;
         public bool ShowCopyNotification { get; set; } = true;
         public bool ShowOperationNotification { get; set; } = true;
+
+        // 追加: 保存するカルチャ名 (例: "ja-JP" / "en-US")
+        public string CultureName { get; set; } = CultureInfo.CurrentUICulture.Name;
 
         // 将来の拡張用
         public static AppSettings Load()

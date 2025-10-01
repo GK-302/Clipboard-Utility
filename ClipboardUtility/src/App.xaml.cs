@@ -6,6 +6,8 @@ using System.Configuration;
 using System.Data;
 using System.Globalization;
 using System.Windows;
+using ClipboardUtility.src.Helpers;
+using System.Diagnostics;
 
 namespace ClipboardUtility
 {
@@ -21,6 +23,24 @@ namespace ClipboardUtility
         {
             base.OnStartup(e);
 
+            // 設定に保存されているカルチャを適用してからウィンドウを生成する
+            try
+            {
+                var cultureName = SettingsService.Instance.Current?.CultureName;
+                if (!string.IsNullOrEmpty(cultureName))
+                {
+                    var ci = new CultureInfo(cultureName);
+                    CultureInfo.DefaultThreadCurrentCulture = ci;
+                    CultureInfo.DefaultThreadCurrentUICulture = ci;
+                    LocalizedStrings.Instance.ChangeCulture(ci);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to apply saved culture: {ex}");
+            }
+
+            // 既存の初期化処理を続ける...
             var tray = TaskTrayService.Instance;
             tray.Initialize();
 

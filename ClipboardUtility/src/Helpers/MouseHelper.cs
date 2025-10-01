@@ -76,11 +76,9 @@ public static class MouseHelper
             }
             else // フォールバック
             {
-                using (var g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
-            {
-                    scaleX = g.DpiX / 96.0;
-                    scaleY = g.DpiY / 96.0;
-            }
+                using var g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero);
+                scaleX = g.DpiX / 96.0;
+                scaleY = g.DpiY / 96.0;
             }
 
             // 2. カーソルがあるモニターの作業領域を「物理ピクセル」で取得

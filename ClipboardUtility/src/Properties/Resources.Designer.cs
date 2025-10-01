@@ -61,6 +61,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Cancel に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CancelText {
+            get {
+                return ResourceManager.GetString("CancelText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Whitespace collapsed に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationFormat_CollapseWhitespace {
@@ -255,6 +264,24 @@ namespace ClipboardUtility.src.Properties {
         public static string NotificationFormat_WhitespaceNormalized {
             get {
                 return ResourceManager.GetString("NotificationFormat_WhitespaceNormalized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Save に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SaveText {
+            get {
+                return ResourceManager.GetString("SaveText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Setting に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SettingTitle {
+            get {
+                return ResourceManager.GetString("SettingTitle", resourceCulture);
             }
         }
         

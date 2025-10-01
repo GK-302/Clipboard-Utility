@@ -209,4 +209,16 @@
     <value>Whitespace collapsed</value>
     <comment>Shown when consecutive whitespace is collapsed to a single space (CollapseWhitespace mode).</comment>
   </data>
+  <data name="SettingTitle" xml:space="preserve">
+    <value>Setting</value>
+    <comment>Setting Title</comment>
+  </data>
+  <data name="SaveText" xml:space="preserve">
+    <value>Save</value>
+    <comment>Save button text</comment>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
+  </data>
 </root>
