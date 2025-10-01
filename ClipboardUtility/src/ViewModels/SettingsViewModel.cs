@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using ClipboardUtility.src.Common;
 
 namespace ClipboardUtility.src.ViewModels;
 
@@ -32,9 +34,28 @@ internal class SettingsViewModel : INotifyPropertyChanged
 
         ProcessingModes = Enum.GetValues(typeof(ClipboardUtility.src.Services.ProcessingMode)).Cast<ClipboardUtility.src.Services.ProcessingMode>().ToList();
         SelectedProcessingMode = _settings.ClipboardProcessingMode;
+
+        // Command to allow the view to set the selected processing mode via a button
+        SelectModeCommand = new RelayCommand(param =>
+        {
+            if (param is ClipboardUtility.src.Services.ProcessingMode pm)
+            {
+                SelectedProcessingMode = pm;
+            }
+            else if (param != null) 
+            {
+                // try parse from string
+                if (Enum.TryParse(typeof(ClipboardUtility.src.Services.ProcessingMode), param.ToString(), out var parsed) && parsed is ClipboardUtility.src.Services.ProcessingMode parsedMode)
+                {
+                    SelectedProcessingMode = parsedMode;
+                }
+            }
+        });
     }
 
     public IList<ClipboardUtility.src.Services.ProcessingMode> ProcessingModes { get; }
+
+    public ICommand SelectModeCommand { get; }
 
     public ClipboardUtility.src.Services.ProcessingMode SelectedProcessingMode
     {

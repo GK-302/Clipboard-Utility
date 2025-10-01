@@ -3,8 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
         mc:Ignorable="d"
         Title="Settings" Height="400" Width="480">
+    <Window.Resources>
+        <conv:ProcessingModeToDisplayConverter x:Key="ProcModeToDisplay" />
+    </Window.Resources>
+
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -19,24 +24,13 @@
         <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal" >
                 <TextBlock Width="180" VerticalAlignment="Center">Processing Mode:</TextBlock>
-                <!--
-                <ComboBox Width="200" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode}" />
-                -->
-                <ItemsControl ItemsSource="{Binding ProcessingModes}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
+                <ComboBox Width="200" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <Button Margin="4"
-                                    Content="{Binding}" 
-                                    Command="{Binding DataContext.SelectModeCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    CommandParameter="{Binding}" />
+                            <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
                         </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
