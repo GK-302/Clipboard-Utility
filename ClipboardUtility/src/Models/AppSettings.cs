@@ -13,5 +13,5 @@ namespace ClipboardUtility.src.Services;
 internal class AppSettings
 {
     // とりあえずの想定設定値（将来 UI やファイルで変更可能にする）
-    public ProcessingMode ClipboardProcessingMode { get; set; } = ProcessingMode.RemoveLineBreaks;
+    public ProcessingMode ClipboardProcessingMode { get; set; } = ProcessingMode.ToUpper;
 }
