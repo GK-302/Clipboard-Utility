@@ -30,6 +30,8 @@ namespace ClipboardUtility.src.Models
         public double NotificationMaxWidth { get; set; } = 420.0;
         public double NotificationMinHeight { get; set; } = 48.0;
         public double NotificationMaxHeight { get; set; } = 400.0;
+        public bool ShowCopyNotification { get; set; } = true;
+        public bool ShowOperationNotification { get; set; } = true;
 
         // 将来の拡張用
         public static AppSettings Load()

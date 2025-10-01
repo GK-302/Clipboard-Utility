@@ -3,19 +3,25 @@ using ClipboardUtility.src.ViewModels;
 using System;
 using System.Diagnostics;
 using System.Windows;
+using ClipboardUtility.src.Services;
 
 namespace ClipboardUtility.src.Views
 {
     public partial class SettingsWindow : Window
     {
         private readonly SettingsViewModel _vm;
-        private readonly AppSettings _original;
 
-        internal SettingsWindow(AppSettings currentSettings)
+        // 明示的に AppSettings を要求するコンストラクタのみ提供する（互換性は不要）
+        internal SettingsWindow(AppSettings settings)
         {
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+
             InitializeComponent();
-            _original = currentSettings;
-            _vm = new SettingsViewModel(currentSettings);
+
+            // 必要なら最新のランタイム設定にフォールバックするが、
+            // 呼び出し側は適切な settings を渡すことを期待する
+            var settingsToUse = settings;
+            _vm = new SettingsViewModel(settingsToUse);
             DataContext = _vm;
         }
 

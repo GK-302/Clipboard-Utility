@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
@@ -55,27 +56,20 @@ internal sealed class SettingsService
             Debug.WriteLine($"SettingsService.Load: failed: {ex}");
         }
 
-        // 読み込み後に購読者へ通知（UIスレッドで）
         Debug.WriteLine("SettingsService.Load: calling NotifySettingsChanged()");
         NotifySettingsChanged();
     }
 
-    // Save / NotifySettingsChanged は既存コードのまま
     public void Save(AppSettings settings)
     {
         Debug.WriteLine("SettingsService.Save: called");
-        var newSettings = settings ?? new AppSettings();
-        Current = new AppSettings
-        {
-            ClipboardProcessingMode = newSettings.ClipboardProcessingMode,
-            NotificationOffsetX = newSettings.NotificationOffsetX,
-            NotificationOffsetY = newSettings.NotificationOffsetY,
-            NotificationMargin = newSettings.NotificationMargin,
-            NotificationMinWidth = newSettings.NotificationMinWidth,
-            NotificationMaxWidth = newSettings.NotificationMaxWidth,
-            NotificationMinHeight = newSettings.NotificationMinHeight,
-            NotificationMaxHeight = newSettings.NotificationMaxHeight
-        };
+
+        if (settings == null) settings = new AppSettings();
+
+        // Current を受け取ったコピーで置き換える（呼び出し側は GetSettingsCopy() が渡される想定）
+        Current = settings;
+
+        string json = string.Empty;
 
         try
         {
@@ -84,50 +78,37 @@ internal sealed class SettingsService
 
             var opts = new JsonSerializerOptions { WriteIndented = true };
             opts.Converters.Add(new JsonStringEnumConverter());
-            var json = JsonSerializer.Serialize(Current, opts);
+            json = JsonSerializer.Serialize(Current, opts);
             File.WriteAllText(_path, json);
             Debug.WriteLine($"SettingsService.Save: wrote settings to {_path}");
-
-            try
-            {
-                var maxPreview = 32 * 1024;
-                if (json.Length <= maxPreview)
-                {
-                    Debug.WriteLine($"SettingsService.Save: serialized JSON ({json.Length} bytes):\n{json}");
-                }
-                else
-                {
-                    Debug.WriteLine($"SettingsService.Save: serialized JSON ({json.Length} bytes). Dumping first {maxPreview} chars:\n{json.Substring(0, maxPreview)}\n... (truncated)");
-                }
-            }
-            catch (Exception dbgEx)
-            {
-                Debug.WriteLine($"SettingsService.Save: failed to write dcug JSON output: {dbgEx}");
-            }
-
-            try
-            {
-                if (Debugger.IsAttached)
-                {
-                    var projectCopy = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "config", "appsettings.json"));
-                    var projectDir = Path.GetDirectoryName(projectCopy);
-                    if (!string.IsNullOrEmpty(projectDir)) Directory.CreateDirectory(projectDir);
-                    File.WriteAllText(projectCopy, json);
-                    Debug.WriteLine($"SettingsService.Save: also wrote project copy to {projectCopy}");
-                }
-            }
-            catch (Exception copyEx)
-            {
-                Debug.WriteLine($"SettingsService.Save: failed to write project copy: {copyEx}");
-            }
+            Debug.WriteLine($"SettingsService.Save: serialized JSON ({json.Length} bytes):\n{json}");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"SettingsService.Save: failed to write settings: {ex}");
-            // 必要ならログを出す
+            Debug.WriteLine($"SettingsService.Save: failed to write runtime settings: {ex}");
         }
 
-        // 保存後は必ず購読者へ通知（UI スレッドで実行）
+        // デバッグモードで実行時のみ、プロジェクト直下の ../../config/appsettings.json を更新する
+        if (Debugger.IsAttached)
+        {
+            try
+            {
+                var projectCopy = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "config", "appsettings.json"));
+                var projectDir = Path.GetDirectoryName(projectCopy);
+                if (!string.IsNullOrEmpty(projectDir)) Directory.CreateDirectory(projectDir);
+                File.WriteAllText(projectCopy, json);
+                Debug.WriteLine($"SettingsService.Save: also wrote project copy to {projectCopy}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SettingsService.Save: failed to write project copy: {ex}");
+            }
+        }
+        else
+        {
+            Debug.WriteLine("SettingsService.Save: not in debug mode; skipping project copy.");
+        }
+
         Debug.WriteLine("SettingsService.Save: calling NotifySettingsChanged()");
         NotifySettingsChanged();
     }

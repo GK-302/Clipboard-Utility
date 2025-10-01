@@ -22,6 +22,17 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+            <!-- Notification toggles -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Width="180" VerticalAlignment="Center">Show copy notification:</TextBlock>
+                <CheckBox IsChecked="{Binding ShowCopyNotification, Mode=TwoWay}" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                <TextBlock Width="180" VerticalAlignment="Center">Show operation notification:</TextBlock>
+                <CheckBox IsChecked="{Binding ShowOperationNotification, Mode=TwoWay}" VerticalAlignment="Center" />
+            </StackPanel>
+
             <StackPanel Orientation="Horizontal" >
                 <TextBlock Width="180" VerticalAlignment="Center">Processing Mode:</TextBlock>
                 <ComboBox Width="200" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">

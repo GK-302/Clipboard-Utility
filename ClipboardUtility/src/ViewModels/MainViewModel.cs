@@ -142,7 +142,8 @@ public class MainViewModel : INotifyPropertyChanged
     // Add method to open settings UI
     public void OpenSettings()
     {
-        var window = new SettingsWindow(_appSettings);
+        // 明示的にランタイムの現在設定を渡す（依存を明示）
+        var window = new SettingsWindow(SettingsService.Instance.Current);
         bool? result = null;
         try
         {
