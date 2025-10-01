@@ -125,4 +125,7 @@
     <value>{0}文字コピーされました</value>
     <comment>クリップボードにコピーされた文字数を表示する通知のフォーマット</comment>
   </data>
+  <data name="NotificationFormat_LineBreakRemoved" xml:space="preserve">
+    <value>改行が削除されました</value>
+  </data>
 </root>

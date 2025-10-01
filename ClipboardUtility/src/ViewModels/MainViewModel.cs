@@ -27,6 +27,9 @@ public class MainViewModel : INotifyPropertyChanged
     private NotificationsService _notificationsService = new();
     private bool _isInternalClipboardOperation = false;
 
+    // 追加: 設定保持（現状ハードコード、将来は設定ファイルやUI連携で変更）
+    private readonly AppSettings _appSettings = new();
+
     public event PropertyChangedEventHandler PropertyChanged;
 
     public MainViewModel()
@@ -100,13 +103,15 @@ public class MainViewModel : INotifyPropertyChanged
             try
             {
                 string clipboardText = System.Windows.Clipboard.GetText();
-                string processedText = clipboardText.Replace("\r\n", " ").Replace("\n", " ");
+
+                // TODO: Hardcoded mode, later integrate with settings UI
+                string processedText = _textProcessingService.Process(clipboardText, _appSettings.ClipboardProcessingMode);
 
                 // フラグをセットしたままクリップボードを更新
                 System.Windows.Clipboard.SetText(processedText);
-
                 // 操作完了の通知のみ表示
-                _ = _notificationsService.ShowNotification("removed");
+                string notificationMessage = _appSettings.ClipboardProcessingMode.GetNotificationMessage();
+                _ = _notificationsService.ShowNotification(notificationMessage);
                 Debug.WriteLine("Clipboard operation completed");
             }
             catch (Exception ex)

@@ -70,6 +70,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   LineBreaks Removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_LineBreakRemoved {
+            get {
+                return ResourceManager.GetString("NotificationFormat_LineBreakRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ClipboardUtility - Clipboard Utility に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string WindowTitle {
