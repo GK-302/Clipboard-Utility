@@ -97,10 +97,19 @@ namespace ClipboardUtility.Services
                     // ViewModelのプロパティを更新
                     _viewModel.NotificationMessage = message;
 
-                    // ウィンドウの位置を調整
-                    // System.Drawing.Point mousePosition = MouseHelper.GetCursorPosition();
-                    window.Left = 0; // 位置調整はお好みで
-                    window.Top = 0;
+                    // ウィンドウの位置を調整: place near cursor bottom-right, respect multi-monitor and DPI
+                    try
+                    {
+                        var pos = MouseHelper.GetClampedPosition(window, 100, 100);
+                        window.Left = pos.X;
+                        window.Top = pos.Y;
+                    }
+                    catch
+                    {
+                        // Fallback to sensible default if positioning fails
+                        window.Left = SystemParameters.WorkArea.Width - window.Width - 16;
+                        window.Top = SystemParameters.WorkArea.Height - window.Height - 16;
+                    }
 
                     // ウィンドウを表示
                     window.Visibility = Visibility.Visible;
