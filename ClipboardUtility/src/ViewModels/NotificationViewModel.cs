@@ -7,14 +7,6 @@ namespace ClipboardUtility.src.ViewModels;
 /// 通知用のViewModel。通知メッセージを保持し、変更をUIに通知します。
 /// </summary>
 ///     
-// 通知の種類などを定義するenum（例）
-public enum NotificationType
-{
-    Information,
-    Success,
-    Warning,
-    Error
-}
 internal class NotificationViewModel : INotifyPropertyChanged
 {
     private string _notificationMessage;

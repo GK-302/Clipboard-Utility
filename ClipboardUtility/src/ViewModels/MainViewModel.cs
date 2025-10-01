@@ -104,7 +104,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
 
         // 内部処理中でない場合のみ通知
-        _ = _notificationsService.ShowNotification(formattedText);
+        _ = _notificationsService.ShowNotification(formattedText, NotificationType.Copy);
     }
 
     public void DoClipboardOperation()
@@ -124,7 +124,7 @@ public class MainViewModel : INotifyPropertyChanged
                 System.Windows.Clipboard.SetText(processedText);
                 // 操作完了の通知のみ表示
                 string notificationMessage = _appSettings.ClipboardProcessingMode.GetNotificationMessage();
-                _ = _notificationsService.ShowNotification(notificationMessage);
+                _ = _notificationsService.ShowNotification(notificationMessage, NotificationType.Operation);
                 Debug.WriteLine("Clipboard operation completed");
             }
             catch (Exception ex)

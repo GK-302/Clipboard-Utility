@@ -88,42 +88,56 @@ namespace ClipboardUtility.Services
             });
         }
 
-        public async Task ShowsimultaneousNotification(string operationMessage, NotificationType type = NotificationType.Information)
-        {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
-            var token = _cts.Token;
+        //public async Task ShowsimultaneousNotification(string operationMessage, NotificationType type = NotificationType.Information)
+        //{
+        //    _cts?.Cancel();
+        //    _cts = new CancellationTokenSource();
+        //    var token = _cts.Token;
 
-            try
-            {
-                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    var window = _lazyWindow.Value;
-                    _viewModel.NotificationsimultaneousMessage = operationMessage;
+        //    try
+        //    {
+        //        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        //        {
+        //            var window = _lazyWindow.Value;
+        //            _viewModel.NotificationsimultaneousMessage = operationMessage;
 
-                    window.Left = 0;
-                    window.Top = 0;
-                    window.Visibility = Visibility.Visible;
-                });
+        //            window.Left = 0;
+        //            window.Top = 0;
+        //            window.Visibility = Visibility.Visible;
+        //        });
 
-                await Task.Delay(1500, token);
+        //        await Task.Delay(1500, token);
 
-                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    if (!token.IsCancellationRequested)
-                    {
-                        _lazyWindow.Value.Visibility = Visibility.Hidden;
-                    }
-                });
-            }
-            catch (OperationCanceledException)
-            {
-                // キャンセル時は何もしない
-            }
-        }
+        //        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        //        {
+        //            if (!token.IsCancellationRequested)
+        //            {
+        //                _lazyWindow.Value.Visibility = Visibility.Hidden;
+        //            }
+        //        });
+        //    }
+        //    catch (OperationCanceledException)
+        //    {
+        //        // キャンセル時は何もしない
+        //    }
+        //}
 
         public async Task ShowNotification(string message, NotificationType type = NotificationType.Information)
         {
+            Debug.WriteLine($"NotificationsService.ShowNotification: called with message='{message}', type={type}, Time={DateTime.Now:O}");
+            // フラグに合わせて抑止する
+            if (type == NotificationType.Copy && !_appSettings.ShowCopyNotification)
+            {
+                Debug.WriteLine($"NotificationsService: suppressed COPY notification (message='{message}')");
+                return;
+            }
+
+            if (type == NotificationType.Operation && !_appSettings.ShowOperationNotification)
+            {
+                Debug.WriteLine($"NotificationsService: suppressed OPERATION notification (message='{message}')");
+                return;
+            }
+
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
