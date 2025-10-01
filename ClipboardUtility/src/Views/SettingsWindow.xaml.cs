@@ -1,6 +1,7 @@
 using ClipboardUtility.src.Models;
 using ClipboardUtility.src.ViewModels;
 using System;
+using System.Diagnostics;
 using System.Windows;
 
 namespace ClipboardUtility.src.Views
@@ -20,19 +21,16 @@ namespace ClipboardUtility.src.Views
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            var edited = _vm.GetSettingsCopy();
-            edited.Save();
+            if (DataContext is SettingsViewModel vm)
+            {
+                Debug.WriteLine("SettingsWindow.BtnSave_Click: invoking ViewModel.Save()");
+                vm.Save();
+            }
+            else
+            {
+                Debug.WriteLine("SettingsWindow.BtnSave_Click: DataContext is not SettingsViewModel");
+            }
 
-            _original.ClipboardProcessingMode = edited.ClipboardProcessingMode;
-            _original.NotificationOffsetX = edited.NotificationOffsetX;
-            _original.NotificationOffsetY = edited.NotificationOffsetY;
-            _original.NotificationMargin = edited.NotificationMargin;
-            _original.NotificationMinWidth = edited.NotificationMinWidth;
-            _original.NotificationMaxWidth = edited.NotificationMaxWidth;
-            _original.NotificationMinHeight = edited.NotificationMinHeight;
-            _original.NotificationMaxHeight = edited.NotificationMaxHeight;
-
-            DialogResult = true;
             Close();
         }
 
