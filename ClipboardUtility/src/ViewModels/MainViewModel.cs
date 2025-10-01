@@ -1,5 +1,6 @@
 ﻿using ClipboardUtility.Services;
 using ClipboardUtility.src.Services;
+using ClipboardUtility.src.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,14 +28,15 @@ public class MainViewModel : INotifyPropertyChanged
     private NotificationsService _notificationsService = new();
     private bool _isInternalClipboardOperation = false;
 
-    // 追加: 設定保持（現状ハードコード、将来は設定ファイルやUI連携で変更）
-    private readonly AppSettings _appSettings = new();
+    // App settings (loaded from appsettings.json or defaults)
+    private readonly AppSettings _appSettings;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
     public MainViewModel()
     {
         _clipboardService = new ClipboardService();
+        _appSettings = AppSettings.Load();
     }
 
     /// <summary>
@@ -104,7 +106,7 @@ public class MainViewModel : INotifyPropertyChanged
             {
                 string clipboardText = System.Windows.Clipboard.GetText();
 
-                // TODO: Hardcoded mode, later integrate with settings UI
+                // Use processing mode from settings
                 string processedText = _textProcessingService.Process(clipboardText, _appSettings.ClipboardProcessingMode);
 
                 // フラグをセットしたままクリップボードを更新

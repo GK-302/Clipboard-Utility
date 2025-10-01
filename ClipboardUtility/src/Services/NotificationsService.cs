@@ -2,6 +2,7 @@
 using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.ViewModels;
 using ClipboardUtility.src.Views;
+using ClipboardUtility.src.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace ClipboardUtility.Services
     {
         private readonly Lazy<NotificationWindow> _lazyWindow;
         private readonly NotificationViewModel _viewModel;
+        private readonly AppSettings _appSettings;
 
         // 連続した通知リクエストを制御するためのキャンセル機構
         private CancellationTokenSource _cts;
@@ -21,6 +23,9 @@ namespace ClipboardUtility.Services
         {
             _viewModel = new NotificationViewModel();
             _lazyWindow = new Lazy<NotificationWindow>(InitializeWindow);
+
+            // 設定をロード（appsettings.json があればそちらを優先）
+            _appSettings = AppSettings.Load();
         }
 
         /// <summary>
@@ -37,12 +42,14 @@ namespace ClipboardUtility.Services
                     DataContext = _viewModel
                 };
 
-                // Ensure the window sizes to content and has sane max/min constraints
+                // Apply sizing from settings
+                window.MinWidth = _appSettings.NotificationMinWidth;
+                window.MaxWidth = _appSettings.NotificationMaxWidth;
+                window.MinHeight = _appSettings.NotificationMinHeight;
+                window.MaxHeight = _appSettings.NotificationMaxHeight;
+
+                // Ensure the window sizes to content
                 window.SizeToContent = SizeToContent.WidthAndHeight;
-                window.MinWidth = 160;
-                window.MaxWidth = 420;
-                window.MinHeight = 48;
-                window.MaxHeight = 400;
 
                 // Force an initial layout pass so ActualWidth/ActualHeight become available
                 window.Show();
@@ -88,6 +95,7 @@ namespace ClipboardUtility.Services
 
         /// <summary>
         /// 通知を表示します。連続して呼び出された場合、前の通知はキャンセルされ新しい通知が表示されます。
+        /// オフセットは設定ファイル（appsettings.json）から読み込みます。
         /// </summary>
         public async Task ShowNotification(string message, NotificationType type = NotificationType.Information)
         {
@@ -107,10 +115,10 @@ namespace ClipboardUtility.Services
                     // ViewModelのプロパティを更新
                     _viewModel.NotificationMessage = message;
 
-                    // ウィンドウの位置を調整: place near cursor bottom-right, respect multi-monitor and DPI
+                    // ウィンドウの位置を調整: 設定から読み込んだオフセットを使用
                     try
                     {
-                        var pos = MouseHelper.GetClampedPosition(window, 20, 20);
+                        var pos = MouseHelper.GetClampedPosition(window, _appSettings.NotificationOffsetX, _appSettings.NotificationOffsetY);
                         window.Left = pos.X;
                         window.Top = pos.Y;
                     }
