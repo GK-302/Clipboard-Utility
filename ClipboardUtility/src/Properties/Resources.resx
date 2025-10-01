@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="WindowTitle" xml:space="preserve">
+   <data name="WindowTitle" xml:space="preserve">
     <value>ClipboardUtility - Clipboard Utility</value>
     <comment>Application main window title</comment>
   </data>
@@ -220,5 +220,53 @@
   <data name="CancelText" xml:space="preserve">
     <value>Cancel</value>
     <comment>Cancel button text</comment>
+  </data>
+  <data name="ShowCopyNotification" xml:space="preserve">
+    <value>Show copy notification:</value>
+    <comment>Text for the "Show copy notification" setting.</comment>
+  </data>
+  <data name="ShowOperationNotification" xml:space="preserve">
+    <value>Show operation notification:</value>
+    <comment>Text for the "Show operation notification" setting.</comment>
+  </data>
+  <data name="ProcessingMode" xml:space="preserve">
+    <value>Processing Mode:</value>
+    <comment>Text for the "Processing Mode" setting.</comment>
+  </data>
+  <data name="NotificationOffsetX" xml:space="preserve">
+    <value>Notification Offset X:</value>
+    <comment>Text for the "Notification Offset X" setting.</comment>
+  </data>
+  <data name="NotificationOffsetY" xml:space="preserve">
+    <value>Notification Offset Y:</value>
+    <comment>Text for the "Notification Offset Y" setting.</comment>
+  </data>
+  <data name="NotificationMargin" xml:space="preserve">
+    <value>Notification Margin:</value>
+    <comment>Text for the "Notification Margin" setting.</comment>
+  </data>
+  <data name="NotificationMinWidth" xml:space="preserve">
+    <value>Min Width:</value>
+    <comment>Text for the "Notification Min Width" setting.</comment>
+  </data>
+  <data name="NotificationMaxWidth" xml:space="preserve">
+    <value>Max Width:</value>
+    <comment>Text for the "Notification Max Width" setting.</comment>
+  </data>
+  <data name="NotificationMinHeight" xml:space="preserve">
+    <value>Min Height:</value>
+    <comment>Text for the "Notification Min Height" setting.</comment>
+  </data>
+  <data name="NotificationMaxHeight" xml:space="preserve">
+    <value>Max Height:</value>
+    <comment>Text for the "Notification Max Height" setting.</comment>
+  </data>
+  <data name="OpenSetting" xml:space="preserve">
+    <value>Open Settings</value>
+    <comment>Tray menu: Open Settings</comment>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Exit</value>
+    <comment>Tray menu: Exit application</comment>
   </data>
 </root>

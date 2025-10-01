@@ -6,7 +6,7 @@
         xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
         xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
         mc:Ignorable="d"
-        Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Setting}" Height="400" Width="480">
+        Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WindowTitle}" Height="400" Width="480">
     <Window.Resources>
         <conv:ProcessingModeToDisplayConverter x:Key="ProcModeToDisplay" />
     </Window.Resources>
@@ -20,22 +20,22 @@
 
         <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,8">
             <TextBlock FontWeight="Bold"
-                       Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Setting}" />
+                       Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SettingTitle}" />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Width="180" VerticalAlignment="Center">Show copy notification:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowCopyNotificationTitle}" />
                 <CheckBox IsChecked="{Binding ShowCopyNotification, Mode=TwoWay}" VerticalAlignment="Center" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                <TextBlock Width="180" VerticalAlignment="Center">Show operation notification:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowOperationNotificationTitle}" />
                 <CheckBox IsChecked="{Binding ShowOperationNotification, Mode=TwoWay}" VerticalAlignment="Center" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Processing Mode:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ProcessingModeTitle}" />
                 <ComboBox Width="200" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
@@ -54,43 +54,43 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Notification Offset X:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetXTitle}" />
                 <TextBox Width="80" Text="{Binding NotificationOffsetX, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Notification Offset Y:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetYTitle}" />
                 <TextBox Width="80" Text="{Binding NotificationOffsetY, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Notification Margin:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMarginTitle}" />
                 <TextBox Width="80" Text="{Binding NotificationMargin, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Min Width:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinWidthTitle}" />
                 <TextBox Width="80" Text="{Binding NotificationMinWidth, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Max Width:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxWidthTitle}" />
                 <TextBox Width="80" Text="{Binding NotificationMaxWidth, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Min Height:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinHeightTitle}" />
                 <TextBox Width="80" Text="{Binding NotificationMinHeight, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Max Height:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxHeightTitle}" />
                 <TextBox Width="80" Text="{Binding NotificationMaxHeight, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
             </StackPanel>

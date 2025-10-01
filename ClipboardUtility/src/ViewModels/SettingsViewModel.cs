@@ -39,7 +39,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
         // 利用可能なカルチャ一覧（必要に応じて追加）
         AvailableCultures = new List<CultureInfo> { new CultureInfo("en-US"), new CultureInfo("ja-JP") };
         // 初期選択
-        SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name)) 
+        SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name))
                           ?? CultureInfo.CurrentUICulture;
     }
 
@@ -93,7 +93,63 @@ internal class SettingsViewModel : INotifyPropertyChanged
         LocalizedStrings.Instance.ChangeCulture(ci);
     }
 
-    // Save では既存の GetSettingsCopy を使って SettingsService に保存する（CultureName を含める）
+    // Notification size/offset props
+    public int NotificationOffsetX
+    {
+        get => _settings.NotificationOffsetX;
+        set { if (_settings.NotificationOffsetX != value) { _settings.NotificationOffsetX = value; OnPropertyChanged(); } }
+    }
+
+    public int NotificationOffsetY
+    {
+        get => _settings.NotificationOffsetY;
+        set { if (_settings.NotificationOffsetY != value) { _settings.NotificationOffsetY = value; OnPropertyChanged(); } }
+    }
+
+    public int NotificationMargin
+    {
+        get => _settings.NotificationMargin;
+        set { if (_settings.NotificationMargin != value) { _settings.NotificationMargin = value; OnPropertyChanged(); } }
+    }
+
+    public double NotificationMinWidth
+    {
+        get => _settings.NotificationMinWidth;
+        set { if (Math.Abs(_settings.NotificationMinWidth - value) > double.Epsilon) { _settings.NotificationMinWidth = value; OnPropertyChanged(); } }
+    }
+
+    public double NotificationMaxWidth
+    {
+        get => _settings.NotificationMaxWidth;
+        set { if (Math.Abs(_settings.NotificationMaxWidth - value) > double.Epsilon) { _settings.NotificationMaxWidth = value; OnPropertyChanged(); } }
+    }
+
+    public double NotificationMinHeight
+    {
+        get => _settings.NotificationMinHeight;
+        set { if (Math.Abs(_settings.NotificationMinHeight - value) > double.Epsilon) { _settings.NotificationMinHeight = value; OnPropertyChanged(); } }
+    }
+
+    public double NotificationMaxHeight
+    {
+        get => _settings.NotificationMaxHeight;
+        set { if (Math.Abs(_settings.NotificationMaxHeight - value) > double.Epsilon) { _settings.NotificationMaxHeight = value; OnPropertyChanged(); } }
+    }
+
+    // Add missing boolean properties for bindings
+    public bool ShowCopyNotification
+    {
+        get => _settings.ShowCopyNotification;
+        set { if (_settings.ShowCopyNotification != value) { _settings.ShowCopyNotification = value; OnPropertyChanged(); } }
+    }
+
+    public bool ShowOperationNotification
+    {
+        get => _settings.ShowOperationNotification;
+        set { if (_settings.ShowOperationNotification != value) { _settings.ShowOperationNotification = value; OnPropertyChanged(); } }
+    }
+
+    // Called by the view to persist changes
     public void Save()
     {
         SettingsService.Instance.Save(GetSettingsCopy());

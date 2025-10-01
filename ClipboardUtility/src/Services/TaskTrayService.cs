@@ -13,6 +13,8 @@ using System.Diagnostics;
 using System.IO; // 追加: NotifyIcon, MouseEventArgs, MouseButtons, ContextMenuStrip 用
 using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Views;
+using ClipboardUtility.src.Helpers;
+using System.ComponentModel;
 
 
 namespace ClipboardUtility.src.Services;
@@ -58,6 +60,13 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     private NotifyIcon _notifyIcon;
     private bool _isInitialized = false;
 
+    // keep references to menu items so we can update text on culture change
+    private ToolStripItem _openSettingsMenuItem;
+    private ToolStripItem _exitMenuItem;
+
+    // handler reference so we can unsubscribe
+    private PropertyChangedEventHandler _localizationHandler;
+
     // イベントを定義
     public event EventHandler ClipboardOperationRequested;
     public event EventHandler ShowWindowRequested;
@@ -85,8 +94,32 @@ public class TaskTrayService : ITaskTrayService, IDisposable
         }
 
         var menu = new ContextMenuStrip();
-        menu.Items.Add("Open Setting", null, OnShowClicked);
-        menu.Items.Add("Exit", null, OnExitClicked);
+
+        // Use localized strings
+        _openSettingsMenuItem = menu.Items.Add(LocalizedStrings.Instance.OpenSettingText, null, OnShowClicked);
+        _exitMenuItem = menu.Items.Add(LocalizedStrings.Instance.ExitText, null, OnExitClicked);
+
+        // subscribe to localization changes to update menu text dynamically
+        _localizationHandler = (s, e) =>
+        {
+            try
+            {
+                if (e.PropertyName == nameof(LocalizedStrings.OpenSettingText) && _openSettingsMenuItem != null)
+                {
+                    _openSettingsMenuItem.Text = LocalizedStrings.Instance.OpenSettingText;
+                }
+                else if (e.PropertyName == nameof(LocalizedStrings.ExitText) && _exitMenuItem != null)
+                {
+                    _exitMenuItem.Text = LocalizedStrings.Instance.ExitText;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"TaskTrayService: localization update failed: {ex}");
+            }
+        };
+
+        LocalizedStrings.Instance.PropertyChanged += _localizationHandler;
 
         _notifyIcon = new NotifyIcon
         {
@@ -131,6 +164,17 @@ public class TaskTrayService : ITaskTrayService, IDisposable
             _notifyIcon = null;
         }
         _isInitialized = false;
+
+        // unsubscribe localization handler
+        try
+        {
+            if (_localizationHandler != null)
+            {
+                LocalizedStrings.Instance.PropertyChanged -= _localizationHandler;
+                _localizationHandler = null;
+            }
+        }
+        catch { }
 
         // Singletonインスタンスもリセット
         lock (_lock)

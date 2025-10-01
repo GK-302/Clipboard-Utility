@@ -15,7 +15,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
 
     private LocalizedStrings() { }
 
-    public string Setting => Resources.SettingTitle;
+    public string SettingTitle => Resources.SettingTitle;
     public string WindowTitle => Resources.WindowTitle;
     public string NotificationFormat_CopiedWords => Resources.NotificationFormat_CopiedWords;
     public string NotificationFormat_LineBreakRemoved => Resources.NotificationFormat_LineBreakRemoved;
@@ -41,13 +41,28 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string NotificationFormat_CollapseWhitespace => Resources.NotificationFormat_CollapseWhitespace;
     public string SaveText => Resources.SaveText;
     public string CancelText => Resources.CancelText;
+    public string ShowCopyNotificationTitle => Resources.ShowCopyNotification;
+    public string ShowOperationNotificationTitle => Resources.ShowOperationNotification;
+    public string ProcessingModeTitle => Resources.ProcessingMode;
+    public string NotificationOffsetXTitle => Resources.NotificationOffsetX;
+    public string NotificationOffsetYTitle => Resources.NotificationOffsetY;
+    public string NotificationMarginTitle => Resources.NotificationMargin;
+    public string NotificationMinWidthTitle => Resources.NotificationMinWidth;
+    public string NotificationMaxWidthTitle => Resources.NotificationMaxWidth;
+    public string NotificationMinHeightTitle => Resources.NotificationMinHeight;
+    public string NotificationMaxHeightTitle => Resources.NotificationMaxHeight;
+    public string ShowCopyNotification => Resources.ShowCopyNotification;
+    public string ShowOperationNotification => Resources.ShowOperationNotification;
+    public string ProcessingMode => Resources.ProcessingMode;
+    public string OpenSettingText => Resources.OpenSetting;
+    public string ExitText => Resources.Exit;
 
     public void ChangeCulture(CultureInfo culture)
     {
         if (culture == null) throw new ArgumentNullException(nameof(culture));
         CultureInfo.CurrentUICulture = culture;
         // 各プロパティ名で通知（簡易）
-        OnPropertyChanged(nameof(Setting));
+        OnPropertyChanged(nameof(SettingTitle));
         OnPropertyChanged(nameof(WindowTitle));
         OnPropertyChanged(nameof(NotificationFormat_CopiedWords));
         OnPropertyChanged(nameof(NotificationFormat_LineBreakRemoved));
@@ -73,6 +88,21 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(NotificationFormat_CollapseWhitespace));
         OnPropertyChanged(nameof(SaveText));
         OnPropertyChanged(nameof(CancelText));
+        OnPropertyChanged(nameof(ShowCopyNotificationTitle));
+        OnPropertyChanged(nameof(ShowOperationNotificationTitle));
+        OnPropertyChanged(nameof(ProcessingModeTitle));
+        OnPropertyChanged(nameof(NotificationOffsetXTitle));
+        OnPropertyChanged(nameof(NotificationOffsetYTitle));
+        OnPropertyChanged(nameof(NotificationMarginTitle));
+        OnPropertyChanged(nameof(NotificationMinWidthTitle));
+        OnPropertyChanged(nameof(NotificationMaxWidthTitle));
+        OnPropertyChanged(nameof(NotificationMinHeightTitle));
+        OnPropertyChanged(nameof(NotificationMaxHeightTitle));
+        OnPropertyChanged(nameof(ShowCopyNotification));
+        OnPropertyChanged(nameof(ShowOperationNotification));
+        OnPropertyChanged(nameof(ProcessingMode));
+        OnPropertyChanged(nameof(OpenSettingText));
+        OnPropertyChanged(nameof(ExitText));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

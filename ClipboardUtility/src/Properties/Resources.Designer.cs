@@ -70,6 +70,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Exit に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Exit {
+            get {
+                return ResourceManager.GetString("Exit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Whitespace collapsed に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationFormat_CollapseWhitespace {
@@ -268,6 +277,87 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Notification Margin: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationMargin {
+            get {
+                return ResourceManager.GetString("NotificationMargin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Max Height: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationMaxHeight {
+            get {
+                return ResourceManager.GetString("NotificationMaxHeight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Max Width: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationMaxWidth {
+            get {
+                return ResourceManager.GetString("NotificationMaxWidth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Min Height: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationMinHeight {
+            get {
+                return ResourceManager.GetString("NotificationMinHeight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Min Width: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationMinWidth {
+            get {
+                return ResourceManager.GetString("NotificationMinWidth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Notification Offset X: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationOffsetX {
+            get {
+                return ResourceManager.GetString("NotificationOffsetX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Notification Offset Y: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationOffsetY {
+            get {
+                return ResourceManager.GetString("NotificationOffsetY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Open Settings に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string OpenSetting {
+            get {
+                return ResourceManager.GetString("OpenSetting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Processing Mode: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingMode {
+            get {
+                return ResourceManager.GetString("ProcessingMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Save に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SaveText {
@@ -282,6 +372,24 @@ namespace ClipboardUtility.src.Properties {
         public static string SettingTitle {
             get {
                 return ResourceManager.GetString("SettingTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Show copy notification: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ShowCopyNotification {
+            get {
+                return ResourceManager.GetString("ShowCopyNotification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Show operation notification: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ShowOperationNotification {
+            get {
+                return ResourceManager.GetString("ShowOperationNotification", resourceCulture);
             }
         }
         
