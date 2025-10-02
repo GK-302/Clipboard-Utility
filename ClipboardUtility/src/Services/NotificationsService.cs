@@ -176,23 +176,43 @@ namespace ClipboardUtility.Services
                         {
                             var window = _lazyWindow.Value;
                             _viewModel.NotificationMessage = message;
+                            
                             // confirm offset are loaded 
                             Debug.WriteLine($"NotificationsService.ShowNotification: Offsets=({_appSettings.NotificationOffsetX},{_appSettings.NotificationOffsetY}) MinW={_appSettings.NotificationMinWidth} Time={DateTime.Now:O}");
 
+                            // ウィンドウの位置を計算
+                            System.Windows.Point position;
                             try
                             {
-                                var pos = MouseHelper.GetClampedPosition(window, _appSettings.NotificationOffsetX, _appSettings.NotificationOffsetY);
-                                window.Left = pos.X;
-                                window.Top = pos.Y;
+                                position = MouseHelper.GetClampedPosition(window, _appSettings.NotificationOffsetX, _appSettings.NotificationOffsetY);
                             }
                             catch (Exception posEx)
                             {
                                 Debug.WriteLine($"NotificationsService.ShowNotification: positioning failed: {posEx}");
-                                window.Left = SystemParameters.WorkArea.Width - window.Width - 16;
-                                window.Top = SystemParameters.WorkArea.Height - window.Height - 16;
+                                position = new System.Windows.Point(
+                                    SystemParameters.WorkArea.Width - window.Width - 16,
+                                    SystemParameters.WorkArea.Height - window.Height - 16
+                                );
+                            }
+
+                            window.Left = position.X;
+                            window.Top = position.Y;
+
+                            // 画面ピクセル色を検出してテキスト色を自動調整
+                            try
+                            {
+                                Debug.WriteLine($"NotificationsService: Auto-adjusting colors for screen pixels at position ({position.X}, {position.Y})");
+                                _viewModel.AutoAdjustColorsForScreenPosition(position.X, position.Y, window.ActualWidth, window.ActualHeight);
+                            }
+                            catch (Exception colorEx)
+                            {
+                                Debug.WriteLine($"NotificationsService: Color adjustment failed: {colorEx.Message}");
+                                // フォールバック: デフォルト色を使用
+                                _viewModel.SetColorsForScreenBackground(ColorHelper.GetDefaultBackgroundColor());
                             }
 
                             window.Visibility = Visibility.Visible;
+                            Debug.WriteLine($"NotificationsService: Notification window shown at ({position.X}, {position.Y})");
                         }
                         catch (Exception uiEx)
                         {
@@ -209,6 +229,7 @@ namespace ClipboardUtility.Services
                             if (!token.IsCancellationRequested)
                             {
                                 _lazyWindow.Value.Visibility = Visibility.Hidden;
+                                Debug.WriteLine($"NotificationsService: Notification window hidden");
                             }
                         }
                         catch (Exception hideEx)
@@ -219,6 +240,7 @@ namespace ClipboardUtility.Services
                 }
                 catch (OperationCanceledException)
                 {
+                    Debug.WriteLine("NotificationsService: Notification display was cancelled");
                     // キャンセル時は何もしない
                 }
             }
