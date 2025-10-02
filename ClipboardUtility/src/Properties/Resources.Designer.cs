@@ -358,6 +358,204 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Collapse Whitespace に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_CollapseWhitespace {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_CollapseWhitespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Convert Tabs to Spaces に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_ConvertTabsToSpaces {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_ConvertTabsToSpaces", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Join Lines with Space に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_JoinLinesWithSpace {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_JoinLinesWithSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   No Processing に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_None {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Normalize Unicode に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_NormalizeUnicode {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_NormalizeUnicode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Normalize Whitespace に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_NormalizeWhitespace {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_NormalizeWhitespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Control Characters に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_RemoveControlCharacters {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_RemoveControlCharacters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Diacritics に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_RemoveDiacritics {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_RemoveDiacritics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Duplicate Lines に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_RemoveDuplicateLines {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_RemoveDuplicateLines", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Emails に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_RemoveEmails {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_RemoveEmails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove HTML Tags に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_RemoveHtmlTags {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_RemoveHtmlTags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Line Breaks に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_RemoveLineBreaks {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_RemoveLineBreaks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Punctuation に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_RemovePunctuation {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_RemovePunctuation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove URLs に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_RemoveUrls {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_RemoveUrls", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Strip Markdown Links に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_StripMarkdownLinks {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_StripMarkdownLinks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Convert to camelCase に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_ToCamelCase {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_ToCamelCase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Convert to Lower Case に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_ToLower {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_ToLower", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Convert to PascalCase に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_ToPascalCase {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_ToPascalCase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Convert to Title Case に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_ToTitleCase {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_ToTitleCase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Convert to Upper Case に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_ToUpper {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_ToUpper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Trim Whitespace に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_Trim {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_Trim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Truncate Text に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_Truncate {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_Truncate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Save に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SaveText {

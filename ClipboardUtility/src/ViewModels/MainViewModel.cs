@@ -14,7 +14,7 @@ using System.Globalization;
 using ClipboardUtility.src.Properties;
 using System.Windows.Media;
 using System.Diagnostics;
-//using System.Threading;
+using System.Threading;
 
 namespace ClipboardUtility.src.ViewModels;
 
@@ -30,15 +30,44 @@ public class MainViewModel : INotifyPropertyChanged
     private NotificationsService _notificationsService = new();
     private bool _isInternalClipboardOperation = false;
 
-    // App settings (loaded from appsettings.json or defaults)
-    private readonly AppSettings _appSettings;
+    // App settings (SettingsServiceから動的に取得)
+    private AppSettings _appSettings;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
     public MainViewModel()
     {
         _clipboardService = new ClipboardService();
-        _appSettings = AppSettings.Load();
+        
+        // SettingsServiceから設定を取得
+        _appSettings = SettingsService.Instance.Current;
+        
+        // 設定変更通知を購読
+        SettingsService.Instance.SettingsChanged += OnSettingsChanged;
+        
+        Debug.WriteLine($"MainViewModel: Initial ClipboardProcessingMode = {_appSettings.ClipboardProcessingMode}");
+    }
+
+    /// <summary>
+    /// 設定変更時のイベントハンドラー
+    /// </summary>
+    private void OnSettingsChanged(object sender, AppSettings newSettings)
+    {
+        try
+        {
+            Debug.WriteLine($"MainViewModel: SettingsChanged event received. New ClipboardProcessingMode = {newSettings.ClipboardProcessingMode}");
+            
+            // UIスレッドで設定を更新
+            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            {
+                _appSettings = newSettings;
+                Debug.WriteLine($"MainViewModel: Settings updated. Current ClipboardProcessingMode = {_appSettings.ClipboardProcessingMode}");
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"MainViewModel: Error handling settings change: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -121,7 +150,8 @@ public class MainViewModel : INotifyPropertyChanged
 
         try
         {
-            // Use processing mode from settings
+            // 現在の設定を使用して処理
+            Debug.WriteLine($"MainViewModel: Processing clipboard with mode {_appSettings.ClipboardProcessingMode}");
             string processedText = _textProcessingService.Process(clipboardText, _appSettings.ClipboardProcessingMode);
 
             // 非同期でクリップボードを更新し、検証も行う
@@ -130,10 +160,10 @@ public class MainViewModel : INotifyPropertyChanged
 
             if (success)
             {
-                // 操作成功の通知を表示
+                // 操作成功の通知を表示（現在の設定から通知メッセージを取得）
                 string notificationMessage = _appSettings.ClipboardProcessingMode.GetNotificationMessage();
                 _ = _notificationsService.ShowNotification(notificationMessage, NotificationType.Operation);
-                Debug.WriteLine("Clipboard operation completed successfully");
+                Debug.WriteLine($"MainViewModel: Clipboard operation completed successfully with message: {notificationMessage}");
             }
             else
             {
@@ -207,6 +237,8 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void Cleanup()
     {
+        // イベント購読を解除
+        SettingsService.Instance.SettingsChanged -= OnSettingsChanged;
         _clipboardService?.Dispose();
     }
 

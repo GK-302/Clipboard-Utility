@@ -209,6 +209,95 @@
     <value>Whitespace collapsed</value>
     <comment>Shown when consecutive whitespace is collapsed to a single space (CollapseWhitespace mode).</comment>
   </data>
+  <!-- ProcessingMode Display Names for ComboBox -->
+  <data name="ProcessingModeDisplay_None" xml:space="preserve">
+    <value>No Processing</value>
+    <comment>Display name for ProcessingMode.None in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_RemoveLineBreaks" xml:space="preserve">
+    <value>Remove Line Breaks</value>
+    <comment>Display name for ProcessingMode.RemoveLineBreaks in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_NormalizeWhitespace" xml:space="preserve">
+    <value>Normalize Whitespace</value>
+    <comment>Display name for ProcessingMode.NormalizeWhitespace in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_NormalizeUnicode" xml:space="preserve">
+    <value>Normalize Unicode</value>
+    <comment>Display name for ProcessingMode.NormalizeUnicode in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_RemoveDiacritics" xml:space="preserve">
+    <value>Remove Diacritics</value>
+    <comment>Display name for ProcessingMode.RemoveDiacritics in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_RemovePunctuation" xml:space="preserve">
+    <value>Remove Punctuation</value>
+    <comment>Display name for ProcessingMode.RemovePunctuation in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_RemoveControlCharacters" xml:space="preserve">
+    <value>Remove Control Characters</value>
+    <comment>Display name for ProcessingMode.RemoveControlCharacters in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_RemoveUrls" xml:space="preserve">
+    <value>Remove URLs</value>
+    <comment>Display name for ProcessingMode.RemoveUrls in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_RemoveEmails" xml:space="preserve">
+    <value>Remove Emails</value>
+    <comment>Display name for ProcessingMode.RemoveEmails in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_RemoveHtmlTags" xml:space="preserve">
+    <value>Remove HTML Tags</value>
+    <comment>Display name for ProcessingMode.RemoveHtmlTags in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_StripMarkdownLinks" xml:space="preserve">
+    <value>Strip Markdown Links</value>
+    <comment>Display name for ProcessingMode.StripMarkdownLinks in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_ConvertTabsToSpaces" xml:space="preserve">
+    <value>Convert Tabs to Spaces</value>
+    <comment>Display name for ProcessingMode.ConvertTabsToSpaces in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_Trim" xml:space="preserve">
+    <value>Trim Whitespace</value>
+    <comment>Display name for ProcessingMode.Trim in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_ToUpper" xml:space="preserve">
+    <value>Convert to Upper Case</value>
+    <comment>Display name for ProcessingMode.ToUpper in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_ToLower" xml:space="preserve">
+    <value>Convert to Lower Case</value>
+    <comment>Display name for ProcessingMode.ToLower in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_ToTitleCase" xml:space="preserve">
+    <value>Convert to Title Case</value>
+    <comment>Display name for ProcessingMode.ToTitleCase in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_ToPascalCase" xml:space="preserve">
+    <value>Convert to PascalCase</value>
+    <comment>Display name for ProcessingMode.ToPascalCase in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_ToCamelCase" xml:space="preserve">
+    <value>Convert to camelCase</value>
+    <comment>Display name for ProcessingMode.ToCamelCase in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_Truncate" xml:space="preserve">
+    <value>Truncate Text</value>
+    <comment>Display name for ProcessingMode.Truncate in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_JoinLinesWithSpace" xml:space="preserve">
+    <value>Join Lines with Space</value>
+    <comment>Display name for ProcessingMode.JoinLinesWithSpace in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_RemoveDuplicateLines" xml:space="preserve">
+    <value>Remove Duplicate Lines</value>
+    <comment>Display name for ProcessingMode.RemoveDuplicateLines in settings ComboBox</comment>
+  </data>
+  <data name="ProcessingModeDisplay_CollapseWhitespace" xml:space="preserve">
+    <value>Collapse Whitespace</value>
+    <comment>Display name for ProcessingMode.CollapseWhitespace in settings ComboBox</comment>
+  </data>
   <data name="SettingTitle" xml:space="preserve">
     <value>Setting</value>
     <comment>Setting Title</comment>
