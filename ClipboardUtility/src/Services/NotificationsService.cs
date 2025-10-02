@@ -26,34 +26,63 @@ namespace ClipboardUtility.Services
             _viewModel = new NotificationViewModel();
             _lazyWindow = new Lazy<NotificationWindow>(InitializeWindow);
 
-            // 初期設定は中央サービスから取得する（ファイル直読みはやめる）
-            _appSettings = SettingsService.Instance.Current;
-            Debug.WriteLine($"NotificationsService: 初期設定読み込み Offsets=({_appSettings.NotificationOffsetX},{_appSettings.NotificationOffsetY}) MinW={_appSettings.NotificationMinWidth}");
+            try
+            {
+                // 初期設定は中央サービスから取得する（ファイル直読みはやめる）
+                _appSettings = SettingsService.Instance.Current;
+                Debug.WriteLine($"NotificationsService: 初期設定読み込み Offsets=({_appSettings.NotificationOffsetX},{_appSettings.NotificationOffsetY}) MinW={_appSettings.NotificationMinWidth}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"NotificationsService: failed to read initial settings: {ex}");
+                _appSettings = new AppSettings();
+            }
 
             // 設定変更通知を購読してランタイム設定を更新（デバッグログも出す）
-            SettingsService.Instance.SettingsChanged += OnSettingsChanged;
+            try
+            {
+                SettingsService.Instance.SettingsChanged += OnSettingsChanged;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"NotificationsService: failed to subscribe to SettingsChanged: {ex}");
+            }
         }
 
         private void OnSettingsChanged(object? sender, AppSettings newSettings)
         {
-            Debug.WriteLine($"NotificationsService: SettingsChanged イベント受信 Offsets=({newSettings.NotificationOffsetX},{newSettings.NotificationOffsetY}) MinW={newSettings.NotificationMinWidth} Time={DateTime.Now:O}");
-
-            // UI スレッドで状態を適用
-            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            try
             {
-                _appSettings = newSettings;
+                Debug.WriteLine($"NotificationsService: SettingsChanged イベント受信 Offsets=({newSettings.NotificationOffsetX},{newSettings.NotificationOffsetY}) MinW={newSettings.NotificationMinWidth} Time={DateTime.Now:O}");
 
-                if (_lazyWindow.IsValueCreated)
+                // UI スレッドで状態を適用
+                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
                 {
-                    var window = _lazyWindow.Value;
-                    window.MinWidth = _appSettings.NotificationMinWidth;
-                    window.MaxWidth = _appSettings.NotificationMaxWidth;
-                    window.MinHeight = _appSettings.NotificationMinHeight;
-                    window.MaxHeight = _appSettings.NotificationMaxHeight;
+                    try
+                    {
+                        _appSettings = newSettings ?? new AppSettings();
 
-                    Debug.WriteLine("NotificationsService: NotificationWindow のサイズ設定を更新しました。");
-                }
-            });
+                        if (_lazyWindow.IsValueCreated)
+                        {
+                            var window = _lazyWindow.Value;
+                            window.MinWidth = _appSettings.NotificationMinWidth;
+                            window.MaxWidth = _appSettings.NotificationMaxWidth;
+                            window.MinHeight = _appSettings.NotificationMinHeight;
+                            window.MaxHeight = _appSettings.NotificationMaxHeight;
+
+                            Debug.WriteLine("NotificationsService: NotificationWindow のサイズ設定を更新しました。");
+                        }
+                    }
+                    catch (Exception innerEx)
+                    {
+                        Debug.WriteLine($"NotificationsService.OnSettingsChanged: UI-apply failed: {innerEx}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"NotificationsService.OnSettingsChanged: failed: {ex}");
+            }
         }
 
         /// <summary>
@@ -62,122 +91,140 @@ namespace ClipboardUtility.Services
         /// <returns>初期化されたNotificationWindow</returns>
         private NotificationWindow InitializeWindow()
         {
-            // UIスレッドでウィンドウを生成・初期化する
-            return System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            try
             {
-                var window = new NotificationWindow
+                // UIスレッドでウィンドウを生成・初期化する
+                return System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    DataContext = _viewModel
-                };
+                    try
+                    {
+                        var window = new NotificationWindow
+                        {
+                            DataContext = _viewModel
+                        };
 
-                // Apply sizing from settings
-                window.MinWidth = _appSettings.NotificationMinWidth;
-                window.MaxWidth = _appSettings.NotificationMaxWidth;
-                window.MinHeight = _appSettings.NotificationMinHeight;
-                window.MaxHeight = _appSettings.NotificationMaxHeight;
+                        // Apply sizing from settings
+                        window.MinWidth = _appSettings.NotificationMinWidth;
+                        window.MaxWidth = _appSettings.NotificationMaxWidth;
+                        window.MinHeight = _appSettings.NotificationMinHeight;
+                        window.MaxHeight = _appSettings.NotificationMaxHeight;
 
-                // Ensure the window sizes to content
-                window.SizeToContent = SizeToContent.WidthAndHeight;
+                        // Ensure the window sizes to content
+                        window.SizeToContent = SizeToContent.WidthAndHeight;
 
-                // Force an initial layout pass so ActualWidth/ActualHeight become available
-                window.Show();
-                window.Hide();
-                window.UpdateLayout();
+                        // Force an initial layout pass so ActualWidth/ActualHeight become available
+                        try
+                        {
+                            window.Show();
+                            window.Hide();
+                            window.UpdateLayout();
+                        }
+                        catch (Exception layoutEx)
+                        {
+                            Debug.WriteLine($"NotificationsService.InitializeWindow: layout pass failed: {layoutEx}");
+                            // 続行可能なら無視して戻す
+                        }
 
-                return window;
-            });
+                        return window;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"NotificationsService.InitializeWindow: failed to create window: {ex}");
+                        // フォールバック：最小限の NotificationWindow を返す（例外で失敗する可能性は低い）
+                        var fallback = new NotificationWindow { DataContext = _viewModel };
+                        return fallback;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"NotificationsService.InitializeWindow: dispatcher invoke failed: {ex}");
+                // 最後の手段：UI スレッドでない場合は例外を再スローしないで新しいインスタンスを返す（呼び出し側で追加の保護がある想定）
+                var fallbackWindow = new NotificationWindow { DataContext = _viewModel };
+                return fallbackWindow;
+            }
         }
-
-        //public async Task ShowsimultaneousNotification(string operationMessage, NotificationType type = NotificationType.Information)
-        //{
-        //    _cts?.Cancel();
-        //    _cts = new CancellationTokenSource();
-        //    var token = _cts.Token;
-
-        //    try
-        //    {
-        //        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-        //        {
-        //            var window = _lazyWindow.Value;
-        //            _viewModel.NotificationsimultaneousMessage = operationMessage;
-
-        //            window.Left = 0;
-        //            window.Top = 0;
-        //            window.Visibility = Visibility.Visible;
-        //        });
-
-        //        await Task.Delay(1500, token);
-
-        //        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-        //        {
-        //            if (!token.IsCancellationRequested)
-        //            {
-        //                _lazyWindow.Value.Visibility = Visibility.Hidden;
-        //            }
-        //        });
-        //    }
-        //    catch (OperationCanceledException)
-        //    {
-        //        // キャンセル時は何もしない
-        //    }
-        //}
 
         public async Task ShowNotification(string message, NotificationType type = NotificationType.Information)
         {
             Debug.WriteLine($"NotificationsService.ShowNotification: called with message='{message}', type={type}, Time={DateTime.Now:O}");
-            // フラグに合わせて抑止する
-            if (type == NotificationType.Copy && !_appSettings.ShowCopyNotification)
-            {
-                Debug.WriteLine($"NotificationsService: suppressed COPY notification (message='{message}')");
-                return;
-            }
-
-            if (type == NotificationType.Operation && !_appSettings.ShowOperationNotification)
-            {
-                Debug.WriteLine($"NotificationsService: suppressed OPERATION notification (message='{message}')");
-                return;
-            }
-
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
-            var token = _cts.Token;
 
             try
             {
-                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                // フラグに合わせて抑止する
+                if (type == NotificationType.Copy && !_appSettings.ShowCopyNotification)
                 {
-                    var window = _lazyWindow.Value;
-                    _viewModel.NotificationMessage = message;
-                    // confirm offset are loaded 
-                    Debug.WriteLine($"NotificationsService.ShowNotification: Offsets=({_appSettings.NotificationOffsetX},{_appSettings.NotificationOffsetY}) MinW={_appSettings.NotificationMinWidth} Time={DateTime.Now:O}");
+                    Debug.WriteLine($"NotificationsService: suppressed COPY notification (message='{message}')");
+                    return;
+                }
 
-                    try
-                    {
-                        var pos = MouseHelper.GetClampedPosition(window, _appSettings.NotificationOffsetX, _appSettings.NotificationOffsetY);
-                        window.Left = pos.X;
-                        window.Top = pos.Y;
-                    }
-                    catch
-                    {
-                        window.Left = SystemParameters.WorkArea.Width - window.Width - 16;
-                        window.Top = SystemParameters.WorkArea.Height - window.Height - 16;
-                    }
-
-                    window.Visibility = Visibility.Visible;
-                });
-
-                await Task.Delay(1500, token);
-
-                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                if (type == NotificationType.Operation && !_appSettings.ShowOperationNotification)
                 {
-                    if (!token.IsCancellationRequested)
+                    Debug.WriteLine($"NotificationsService: suppressed OPERATION notification (message='{message}')");
+                    return;
+                }
+
+                _cts?.Cancel();
+                _cts = new CancellationTokenSource();
+                var token = _cts.Token;
+
+                try
+                {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        _lazyWindow.Value.Visibility = Visibility.Hidden;
-                    }
-                });
+                        try
+                        {
+                            var window = _lazyWindow.Value;
+                            _viewModel.NotificationMessage = message;
+                            // confirm offset are loaded 
+                            Debug.WriteLine($"NotificationsService.ShowNotification: Offsets=({_appSettings.NotificationOffsetX},{_appSettings.NotificationOffsetY}) MinW={_appSettings.NotificationMinWidth} Time={DateTime.Now:O}");
+
+                            try
+                            {
+                                var pos = MouseHelper.GetClampedPosition(window, _appSettings.NotificationOffsetX, _appSettings.NotificationOffsetY);
+                                window.Left = pos.X;
+                                window.Top = pos.Y;
+                            }
+                            catch (Exception posEx)
+                            {
+                                Debug.WriteLine($"NotificationsService.ShowNotification: positioning failed: {posEx}");
+                                window.Left = SystemParameters.WorkArea.Width - window.Width - 16;
+                                window.Top = SystemParameters.WorkArea.Height - window.Height - 16;
+                            }
+
+                            window.Visibility = Visibility.Visible;
+                        }
+                        catch (Exception uiEx)
+                        {
+                            Debug.WriteLine($"NotificationsService.ShowNotification: UI update failed: {uiEx}");
+                        }
+                    });
+
+                    await Task.Delay(1500, token);
+
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        try
+                        {
+                            if (!token.IsCancellationRequested)
+                            {
+                                _lazyWindow.Value.Visibility = Visibility.Hidden;
+                            }
+                        }
+                        catch (Exception hideEx)
+                        {
+                            Debug.WriteLine($"NotificationsService.ShowNotification: hide failed: {hideEx}");
+                        }
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    // キャンセル時は何もしない
+                }
             }
-            catch (OperationCanceledException)
+            catch (Exception ex)
             {
+                Debug.WriteLine($"NotificationsService.ShowNotification: unexpected exception: {ex}");
             }
         }
     }

@@ -14,6 +14,7 @@ using System.Globalization;
 using ClipboardUtility.src.Properties;
 using System.Windows.Media;
 using System.Diagnostics;
+//using System.Threading;
 
 namespace ClipboardUtility.src.ViewModels;
 
@@ -107,36 +108,80 @@ public class MainViewModel : INotifyPropertyChanged
         _ = _notificationsService.ShowNotification(formattedText, NotificationType.Copy);
     }
 
-    public void DoClipboardOperation()
+    public async Task DoClipboardOperationAsync()
     {
-        if (System.Windows.Clipboard.ContainsText())
+        string clipboardText = _clipboardService.GetTextSafely();
+        if (string.IsNullOrEmpty(clipboardText))
         {
-            _isInternalClipboardOperation = true;
+            Debug.WriteLine("No text content in clipboard");
+            return;
+        }
 
-            try
+        _isInternalClipboardOperation = true;
+
+        try
+        {
+            // Use processing mode from settings
+            string processedText = _textProcessingService.Process(clipboardText, _appSettings.ClipboardProcessingMode);
+
+            // 非同期でクリップボードを更新し、検証も行う
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)); // 5秒でタイムアウト
+            bool success = await _clipboardService.SetTextAsync(processedText, cts.Token);
+
+            if (success)
             {
-                string clipboardText = System.Windows.Clipboard.GetText();
-
-                // Use processing mode from settings
-                string processedText = _textProcessingService.Process(clipboardText, _appSettings.ClipboardProcessingMode);
-
-                // フラグをセットしたままクリップボードを更新
-                System.Windows.Clipboard.SetText(processedText);
-                // 操作完了の通知のみ表示
+                // 操作成功の通知を表示
                 string notificationMessage = _appSettings.ClipboardProcessingMode.GetNotificationMessage();
                 _ = _notificationsService.ShowNotification(notificationMessage, NotificationType.Operation);
-                Debug.WriteLine("Clipboard operation completed");
+                Debug.WriteLine("Clipboard operation completed successfully");
             }
-            catch (Exception ex)
+            else
             {
-                Debug.WriteLine($"Error during clipboard operation: {ex.Message}");
-            }
-            finally
-            {
-                // 少し遅延してからフラグをリセット（クリップボードイベントの伝播を待つ）
-                Task.Delay(100).ContinueWith(_ => _isInternalClipboardOperation = false);
+                Debug.WriteLine("Clipboard operation failed - content verification failed");
+                // フォールバック: 従来の方法で再試行
+                try
+                {
+                    _clipboardService.SetText(processedText);
+                    // 短い遅延後に検証
+                    await Task.Delay(100, cts.Token);
+                    bool verified = await _clipboardService.VerifyClipboardContentAsync(processedText, cts.Token);
+                    if (verified)
+                    {
+                        string notificationMessage = _appSettings.ClipboardProcessingMode.GetNotificationMessage();
+                        _ = _notificationsService.ShowNotification(notificationMessage, NotificationType.Operation);
+                        Debug.WriteLine("Clipboard operation completed with fallback method");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Clipboard operation failed even with fallback method");
+                    }
+                }
+                catch (Exception fallbackEx)
+                {
+                    Debug.WriteLine($"Fallback clipboard operation failed: {fallbackEx.Message}");
+                }
             }
         }
+        catch (TaskCanceledException)
+        {
+            Debug.WriteLine("Clipboard operation was cancelled due to timeout");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error during clipboard operation: {ex.Message}");
+        }
+        finally
+        {
+            // 少し遅延してからフラグをリセット（クリップボードイベントの伝播を待つ）
+            await Task.Delay(200);
+            _isInternalClipboardOperation = false;
+        }
+    }
+
+    public void DoClipboardOperation()
+    {
+        // 非同期版を呼び出す（fire-and-forget）
+        _ = DoClipboardOperationAsync();
     }
 
     // Add method to open settings UI
