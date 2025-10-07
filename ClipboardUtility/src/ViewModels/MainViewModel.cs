@@ -1,19 +1,12 @@
 ﻿using ClipboardUtility.Services;
-using ClipboardUtility.src.Services;
 using ClipboardUtility.src.Models;
-using ClipboardUtility.src.Views;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
-using System.Globalization;
 using ClipboardUtility.src.Properties;
-using System.Windows.Media;
+using ClipboardUtility.src.Services;
+using ClipboardUtility.src.Views;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace ClipboardUtility.src.ViewModels;
 
@@ -91,6 +84,14 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         }
 
+        // クリップボードへのアクセス確認
+        if (!TryAccessClipboard(out string clipboardText))
+        {
+            // アクセス拒否時の通知
+            _ = _notificationsService.ShowNotification("クリップボードへのアクセスが拒否されました", NotificationType.Copy);
+            return;
+        }
+
         int charCount = _textProcessingService.CountCharacters(newText);
         string formattedText;
         try
@@ -107,36 +108,124 @@ public class MainViewModel : INotifyPropertyChanged
         _ = _notificationsService.ShowNotification(formattedText, NotificationType.Copy);
     }
 
-    public void DoClipboardOperation()
+    /// <summary>
+    /// クリップボードアクセスを安全に試行する
+    /// </summary>
+    /// <param name="text">取得されたテキスト</param>
+    /// <returns>アクセス成功時true</returns>
+    private bool TryAccessClipboard(out string text)
     {
-        if (System.Windows.Clipboard.ContainsText())
-        {
-            _isInternalClipboardOperation = true;
+        text = string.Empty;
+        const int maxRetries = 3;
+        const int delayMs = 50;
 
+        for (int i = 0; i < maxRetries; i++)
+        {
             try
             {
-                string clipboardText = System.Windows.Clipboard.GetText();
+                if (System.Windows.Clipboard.ContainsText())
+                {
+                    text = System.Windows.Clipboard.GetText();
+                    return true;
+                }
+                return false;
+            }
+            catch (COMException ex) when (ex.HResult == -2147221040) // CLIPBRD_E_CANT_OPEN
+            {
+                Debug.WriteLine($"Clipboard access denied (attempt {i + 1}): {ex.Message}");
+                if (i < maxRetries - 1)
+                {
+                    Task.Delay(delayMs).Wait();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unexpected clipboard error: {ex.Message}");
+                return false;
+            }
+        }
+        return false;
+    }
 
-                // Use processing mode from settings
-                string processedText = _textProcessingService.Process(clipboardText, _appSettings.ClipboardProcessingMode);
+    public void DoClipboardOperation()
+    {
+        // クリップボードアクセスを安全に試行
+        if (!TryAccessClipboard(out string clipboardText))
+        {
+            // アクセス拒否時の通知
+            _ = _notificationsService.ShowNotification("クリップボードへのアクセスが拒否されました", NotificationType.Operation);
+            return;
+        }
 
-                // フラグをセットしたままクリップボードを更新
-                System.Windows.Clipboard.SetText(processedText);
-                // 操作完了の通知のみ表示
+        _isInternalClipboardOperation = true;
+
+        try
+        {
+            // Use processing mode from settings
+            string processedText = _textProcessingService.Process(clipboardText, _appSettings.ClipboardProcessingMode);
+
+            // リトライ機構付きでクリップボードを設定
+            if (TrySetClipboardText(processedText))
+            {
                 string notificationMessage = _appSettings.ClipboardProcessingMode.GetNotificationMessage();
                 _ = _notificationsService.ShowNotification(notificationMessage, NotificationType.Operation);
                 Debug.WriteLine("Clipboard operation completed");
             }
-            catch (Exception ex)
+            else
             {
-                Debug.WriteLine($"Error during clipboard operation: {ex.Message}");
-            }
-            finally
-            {
-                // 少し遅延してからフラグをリセット（クリップボードイベントの伝播を待つ）
-                Task.Delay(100).ContinueWith(_ => _isInternalClipboardOperation = false);
+                // 設定失敗時の通知
+                _ = _notificationsService.ShowNotification("クリップボードの更新に失敗しました", NotificationType.Operation);
+                Debug.WriteLine("Failed to set clipboard text after retries");
             }
         }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error during clipboard operation: {ex.Message}");
+            _ = _notificationsService.ShowNotification("クリップボード操作中にエラーが発生しました", NotificationType.Operation);
+            // 例: Resources.NotificationFormat_ClipboardAccessDenied
+            //_ = _notificationsService.ShowNotification(
+            //    Resources.NotificationFormat_ClipboardAccessDenied ?? "クリップボードへのアクセスが拒否されました",
+            //    NotificationType.Operation
+            //);
+
+        }
+        finally
+        {
+            // 少し遅延してからフラグをリセット（クリップボードイベントの伝播を待つ）
+            Task.Delay(100).ContinueWith(_ => _isInternalClipboardOperation = false);
+        }
+    }
+
+    /// <summary>
+    /// リトライ機構付きクリップボードテキスト設定
+    /// </summary>
+    private bool TrySetClipboardText(string text)
+    {
+        const int maxRetries = 3;
+        const int delayMs = 50;
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                System.Windows.Clipboard.SetText(text);
+                return true;
+            }
+            catch (COMException ex) when (ex.HResult == -2147221040) // CLIPBRD_E_CANT_OPEN
+            {
+                Debug.WriteLine($"Clipboard set failed (attempt {i + 1}): {ex.Message}");
+                if (i < maxRetries - 1)
+                {
+                    Task.Delay(delayMs).Wait();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unexpected error setting clipboard: {ex.Message}");
+                return false;
+            }
+        }
+        return false;
     }
 
     // Add method to open settings UI
