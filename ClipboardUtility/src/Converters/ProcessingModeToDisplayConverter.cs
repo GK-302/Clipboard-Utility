@@ -1,9 +1,8 @@
-using System;
+using ClipboardUtility.src.Properties;
+using ClipboardUtility.src.Services;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Data;
-using ClipboardUtility.src.Properties;
-using ClipboardUtility.src.Services;
 
 namespace ClipboardUtility.src.Converters
 {

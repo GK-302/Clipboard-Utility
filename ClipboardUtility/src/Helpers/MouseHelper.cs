@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Interop;
-using System.Diagnostics;
 // System.Drawing と System.Windows.Forms への参照が必要です
-using System.Drawing;
-using System.Windows.Forms;
 
 namespace ClipboardUtility.src.Helpers;
 
@@ -26,7 +17,7 @@ public static class MouseHelper
         public int X;
         public int Y;
         public static implicit operator System.Drawing.Point(POINT point) => new System.Drawing.Point(point.X, point.Y);
-        }
+    }
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetCursorPos(out POINT lpPoint);
@@ -58,7 +49,7 @@ public static class MouseHelper
     /// <param name="offsetX">カーソルからの水平オフセット（論理ピクセル）</param>
     /// <param name="offsetY">カーソルからの垂直オフセット（論理ピクセル）</param>
     /// <returns>画面内に収まるように補正された、ウィンドウの左上隅の座標（論理ピクセル）</returns>
-    public static System.Windows.Point GetClampedPosition(Window window,  int offsetX = 0, int offsetY = 0)
+    public static System.Windows.Point GetClampedPosition(Window window, int offsetX = 0, int offsetY = 0)
     {
         try
         {

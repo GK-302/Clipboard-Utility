@@ -1,11 +1,9 @@
-﻿using System;
+﻿using ClipboardUtility.src.Services;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Windows;
-using System.Globalization;
-using ClipboardUtility.src.Services;
 
 namespace ClipboardUtility.src.Models
 {

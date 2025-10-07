@@ -1,13 +1,9 @@
-﻿using ClipboardUtility.src.Models;
+﻿using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.Services;
 using ClipboardUtility.src.ViewModels;
-using ClipboardUtility.src.Views;
-using System.Configuration;
-using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
-using ClipboardUtility.src.Helpers;
-using System.Diagnostics;
 
 namespace ClipboardUtility
 {

@@ -1,9 +1,7 @@
-using System;
-using System.Reflection;
-using System.Globalization;
-using System.Diagnostics;
-using System.Collections.Generic;
 using ClipboardUtility.src.Properties;
+using System.Diagnostics;
+using System.Globalization;
+using System.Reflection;
 
 namespace ClipboardUtility.src.Services
 {

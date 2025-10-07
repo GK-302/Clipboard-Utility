@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
+﻿using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Services;
-using ClipboardUtility.src.Helpers;
+using System.ComponentModel;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace ClipboardUtility.src.ViewModels;
 

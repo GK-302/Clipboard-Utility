@@ -1,20 +1,6 @@
-﻿using ClipboardUtility.src.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using System;
-using System.Drawing;
-using System.Windows;
-using System.Windows.Forms;
-using System.Diagnostics;
-using System.IO; // 追加: NotifyIcon, MouseEventArgs, MouseButtons, ContextMenuStrip 用
-using ClipboardUtility.src.Models;
-using ClipboardUtility.src.Views;
-using ClipboardUtility.src.Helpers;
+﻿using ClipboardUtility.src.Helpers;
 using System.ComponentModel;
+using System.Diagnostics;
 
 
 namespace ClipboardUtility.src.Services;
