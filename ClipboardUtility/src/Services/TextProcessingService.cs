@@ -153,7 +153,7 @@ namespace ClipboardUtility.src.Services
                 var uc = CharUnicodeInfo.GetUnicodeCategory(ch);
                 if (uc != UnicodeCategory.NonSpacingMark)
                 {
-                    sb.Append(ch);
+                    _ = sb.Append(ch);
                 }
             }
             return sb.ToString().Normalize(NormalizationForm.FormC);
@@ -193,8 +193,8 @@ namespace ClipboardUtility.src.Services
             {
                 if (lines[i] != prev)
                 {
-                    if (sb.Length > 0) sb.AppendLine();
-                    sb.Append(lines[i]);
+                    if (sb.Length > 0) _ = sb.AppendLine();
+                    _ = sb.Append(lines[i]);
                 }
                 prev = lines[i];
             }
@@ -213,8 +213,8 @@ namespace ClipboardUtility.src.Services
             {
                 if (p.Length == 0) continue;
                 var s = p.ToLowerInvariant();
-                sb.Append(char.ToUpperInvariant(s[0]));
-                if (s.Length > 1) sb.Append(s.Substring(1));
+                _ = sb.Append(char.ToUpperInvariant(s[0]));
+                if (s.Length > 1) _ = sb.Append(s.Substring(1));
             }
             return sb.ToString();
         }

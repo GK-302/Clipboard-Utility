@@ -16,7 +16,7 @@ public static class MouseHelper
     {
         public int X;
         public int Y;
-        public static implicit operator System.Drawing.Point(POINT point) => new System.Drawing.Point(point.X, point.Y);
+        public static implicit operator System.Drawing.Point(POINT point) => new(point.X, point.Y);
     }
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

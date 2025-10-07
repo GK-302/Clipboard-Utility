@@ -173,7 +173,7 @@ namespace ClipboardUtility.Services
                         {
                             var window = _lazyWindow.Value;
                             _viewModel.NotificationMessage = message;
-                            
+
                             // confirm offset are loaded 
                             Debug.WriteLine($"NotificationsService.ShowNotification: Offsets=({_appSettings.NotificationOffsetX},{_appSettings.NotificationOffsetY}) MinW={_appSettings.NotificationMinWidth} Time={DateTime.Now:O}");
 

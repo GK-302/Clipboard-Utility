@@ -1,9 +1,9 @@
 ﻿// NotificationViewModel.cs
+using ClipboardUtility.src.Helpers;
 using System.ComponentModel;
 using System.Diagnostics;
-using ClipboardUtility.src.Helpers;
-using WpfColor = System.Windows.Media.Color;
 using WpfBrush = System.Windows.Media.Brush;
+using WpfColor = System.Windows.Media.Color;
 
 namespace ClipboardUtility.src.ViewModels;
 
@@ -112,7 +112,7 @@ internal class NotificationViewModel : INotifyPropertyChanged
         catch (System.Exception ex)
         {
             Debug.WriteLine($"NotificationViewModel: Error setting colors for screen background: {ex.Message}");
-            
+
             // エラー時のフォールバック
             BackgroundColor = System.Windows.Media.Colors.Gray;
             TextBrush = System.Windows.Media.Brushes.White;
@@ -135,21 +135,21 @@ internal class NotificationViewModel : INotifyPropertyChanged
 
             // ウィンドウ位置の実際の画面ピクセル色を取得
             WpfColor detectedScreenColor = ColorHelper.GetAverageBackgroundColor(windowLeft, windowTop, windowWidth, windowHeight);
-            
+
             // 検出した画面色に基づいて色を設定
             SetColorsForScreenBackground(detectedScreenColor);
         }
         catch (System.Exception ex)
         {
             Debug.WriteLine($"NotificationViewModel: Error auto-adjusting colors for screen position: {ex.Message}");
-            
+
             // エラー時はデフォルト色を使用
             SetColorsForScreenBackground(ColorHelper.GetDefaultBackgroundColor());
         }
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
-    
+
     protected void OnPropertyChanged(string name)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
@@ -49,7 +46,7 @@ namespace ClipboardUtility.src.Helpers
                 try
                 {
                     uint pixel = GetPixel(hdc, x, y);
-                    
+
                     // BGR形式からRGB形式に変換
                     byte r = (byte)(pixel & 0xFF);
                     byte g = (byte)((pixel >> 8) & 0xFF);
@@ -57,12 +54,12 @@ namespace ClipboardUtility.src.Helpers
 
                     WpfColor backgroundColor = WpfColor.FromRgb(r, g, b);
                     Debug.WriteLine($"ColorHelper: Background color at ({x}, {y}): R={r}, G={g}, B={b}");
-                    
+
                     return backgroundColor;
                 }
                 finally
                 {
-                    ReleaseDC(IntPtr.Zero, hdc);
+                    _ = ReleaseDC(IntPtr.Zero, hdc);
                 }
             }
             catch (Exception ex)
@@ -119,19 +116,19 @@ namespace ClipboardUtility.src.Helpers
                 foreach (var point in samplePoints)
                 {
                     // 画面境界内かチェック
-                    if (point.X >= 0 && point.Y >= 0 && 
-                        point.X < SystemParameters.VirtualScreenWidth && 
+                    if (point.X >= 0 && point.Y >= 0 &&
+                        point.X < SystemParameters.VirtualScreenWidth &&
                         point.Y < SystemParameters.VirtualScreenHeight)
                     {
                         WpfColor color = GetBackgroundColor((int)point.X, (int)point.Y);
-                        
+
                         // 有効な色の場合のみ計算に含める（完全な黒は除外しない - 実際の黒い背景の可能性）
                         colorSamples.Add(color);
                         totalR += color.R;
                         totalG += color.G;
                         totalB += color.B;
                         validSamples++;
-                        
+
                         Debug.WriteLine($"ColorHelper: Sample at ({point.X:F0}, {point.Y:F0}): R={color.R}, G={color.G}, B={color.B}");
                     }
                 }
@@ -147,16 +144,16 @@ namespace ClipboardUtility.src.Helpers
 
                     // 色のバリエーションをチェック（単色背景か複雑な背景かを判定）
                     double colorVariance = CalculateColorVariance(colorSamples);
-                    
+
                     Debug.WriteLine($"ColorHelper: Average screen color from {validSamples} samples: R={averageColor.R}, G={averageColor.G}, B={averageColor.B}, Variance={colorVariance:F2}");
-                    
+
                     // 色のバリエーションが大きい場合（複雑な背景）は、より中性的な色を返す
                     if (colorVariance > 50.0)
                     {
                         Debug.WriteLine("ColorHelper: High color variance detected, using median color for better text visibility");
                         return GetMedianColor(colorSamples);
                     }
-                    
+
                     return averageColor;
                 }
                 else
@@ -187,9 +184,9 @@ namespace ClipboardUtility.src.Helpers
             double avgB = colors.Average(c => c.B);
 
             // 分散を計算
-            double variance = colors.Average(c => 
-                Math.Pow(c.R - avgR, 2) + 
-                Math.Pow(c.G - avgG, 2) + 
+            double variance = colors.Average(c =>
+                Math.Pow(c.R - avgR, 2) +
+                Math.Pow(c.G - avgG, 2) +
                 Math.Pow(c.B - avgB, 2));
 
             return Math.Sqrt(variance);
@@ -209,16 +206,16 @@ namespace ClipboardUtility.src.Helpers
             var sortedB = colors.Select(c => c.B).OrderBy(x => x).ToList();
 
             int middle = colors.Count / 2;
-            
-            byte medianR = colors.Count % 2 == 0 
+
+            byte medianR = colors.Count % 2 == 0
                 ? (byte)((sortedR[middle - 1] + sortedR[middle]) / 2)
                 : sortedR[middle];
-                
-            byte medianG = colors.Count % 2 == 0 
+
+            byte medianG = colors.Count % 2 == 0
                 ? (byte)((sortedG[middle - 1] + sortedG[middle]) / 2)
                 : sortedG[middle];
-                
-            byte medianB = colors.Count % 2 == 0 
+
+            byte medianB = colors.Count % 2 == 0
                 ? (byte)((sortedB[middle - 1] + sortedB[middle]) / 2)
                 : sortedB[middle];
 
@@ -244,7 +241,7 @@ namespace ClipboardUtility.src.Helpers
 
             // 輝度計算
             double luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-            
+
             Debug.WriteLine($"ColorHelper: Color R={color.R}, G={color.G}, B={color.B} has luminance {luminance:F3}");
             return luminance;
         }
@@ -264,7 +261,7 @@ namespace ClipboardUtility.src.Helpers
             double darker = Math.Min(luminance1, luminance2);
 
             double contrastRatio = (lighter + 0.05) / (darker + 0.05);
-            
+
             Debug.WriteLine($"ColorHelper: Contrast ratio between colors: {contrastRatio:F2}");
             return contrastRatio;
         }
@@ -284,16 +281,16 @@ namespace ClipboardUtility.src.Helpers
                 // 基本的な白と黒の候補
                 WpfColor white = Colors.White;
                 WpfColor black = Colors.Black;
-                
+
                 // より多くの候補色を用意（グレー系も含める）
                 var candidates = new List<WpfColor> { white, black };
-                
+
                 // 希望する色が指定されている場合は追加
                 if (preferredTextColor.HasValue)
                 {
                     candidates.Add(preferredTextColor.Value);
                 }
-                
+
                 // 背景色が中間的な場合のために、より明るい白とより暗い黒も候補に
                 candidates.Add(WpfColor.FromRgb(255, 255, 255)); // 純白
                 candidates.Add(WpfColor.FromRgb(0, 0, 0));       // 純黒
@@ -306,7 +303,7 @@ namespace ClipboardUtility.src.Helpers
                 foreach (WpfColor candidate in candidates)
                 {
                     double contrast = CalculateContrastRatio(backgroundColor, candidate);
-                    
+
                     if (contrast > bestContrast)
                     {
                         bestContrast = contrast;
@@ -315,8 +312,8 @@ namespace ClipboardUtility.src.Helpers
                 }
 
                 // WCAG AAの推奨最小コントラスト比をチェック
-                string contrastLevel = bestContrast >= 7.0 ? "AAA" : 
-                                      bestContrast >= 4.5 ? "AA" : 
+                string contrastLevel = bestContrast >= 7.0 ? "AAA" :
+                                      bestContrast >= 4.5 ? "AA" :
                                       bestContrast >= 3.0 ? "AA Large" : "Poor";
 
                 Debug.WriteLine($"ColorHelper: Selected text color R={bestColor.R}, G={bestColor.G}, B={bestColor.B} with contrast ratio {bestContrast:F2} ({contrastLevel})");
@@ -342,7 +339,7 @@ namespace ClipboardUtility.src.Helpers
             {
                 // テキストが白系の場合は黒い縁取り、黒系の場合は白い縁取り
                 double textLuminance = CalculateLuminance(textColor);
-                
+
                 WpfColor outlineColor;
                 if (textLuminance > 0.5)
                 {
@@ -357,7 +354,7 @@ namespace ClipboardUtility.src.Helpers
 
                 // 縁取り色と背景色のコントラストもチェック
                 double outlineBackgroundContrast = CalculateContrastRatio(outlineColor, backgroundColor);
-                
+
                 Debug.WriteLine($"ColorHelper: Outline color R={outlineColor.R}, G={outlineColor.G}, B={outlineColor.B} with background contrast {outlineBackgroundContrast:F2}");
 
                 return outlineColor;

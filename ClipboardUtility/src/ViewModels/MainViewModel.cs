@@ -5,61 +5,57 @@ using ClipboardUtility.src.Services;
 using ClipboardUtility.src.Views;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace ClipboardUtility.src.ViewModels;
 
 /// <summary>
 /// メインウィンドウのViewModel。UIのロジックと状態を管理します。
 /// INotifyPropertyChangedを実装し、プロパティの変更をUIに通知します。
+/// 設定の管理はSettingsServiceに委譲し、必要時に参照する責任分離設計を採用。
 /// </summary>
 public class MainViewModel : INotifyPropertyChanged
 {
     private readonly ClipboardService _clipboardService;
-    private string _ClipboardLabel = string.Empty;
-    private TextProcessingService _textProcessingService = new();
-    private NotificationsService _notificationsService = new();
+    private readonly TextProcessingService _textProcessingService;
+    private readonly NotificationsService _notificationsService;
     private bool _isInternalClipboardOperation = false;
-
-    // App settings (SettingsServiceから動的に取得)
-    private AppSettings _appSettings;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
     public MainViewModel()
     {
         _clipboardService = new ClipboardService();
+        _textProcessingService = new TextProcessingService();
+        _notificationsService = new NotificationsService();
         
-        // SettingsServiceから設定を取得
-        _appSettings = SettingsService.Instance.Current;
-        
-        // 設定変更通知を購読
+        // 設定変更通知を購読（設定の直接保持はやめて参照のみ）
         SettingsService.Instance.SettingsChanged += OnSettingsChanged;
         
-        Debug.WriteLine($"MainViewModel: Initial ClipboardProcessingMode = {_appSettings.ClipboardProcessingMode}");
+        Debug.WriteLine($"MainViewModel: Initialized with ClipboardProcessingMode = {SettingsService.Instance.Current.ClipboardProcessingMode}");
     }
 
     /// <summary>
     /// 設定変更時のイベントハンドラー
+    /// 設定は直接保持せず、SettingsServiceから必要時に取得する方式に変更
     /// </summary>
     private void OnSettingsChanged(object sender, AppSettings newSettings)
     {
         try
         {
             Debug.WriteLine($"MainViewModel: SettingsChanged event received. New ClipboardProcessingMode = {newSettings.ClipboardProcessingMode}");
-            
-            // UIスレッドで設定を更新
-            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
-            {
-                _appSettings = newSettings;
-                Debug.WriteLine($"MainViewModel: Settings updated. Current ClipboardProcessingMode = {_appSettings.ClipboardProcessingMode}");
-            });
+            Debug.WriteLine($"MainViewModel: Settings will be retrieved from SettingsService when needed");
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"MainViewModel: Error handling settings change: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// 現在の設定を取得するヘルパーメソッド
+    /// </summary>
+    private AppSettings GetCurrentSettings() => SettingsService.Instance.Current;
 
     /// <summary>
     /// TaskTrayServiceのイベントを購読する
@@ -80,7 +76,7 @@ public class MainViewModel : INotifyPropertyChanged
     private void OnShowWindowRequested(object sender, EventArgs e)
     {
         // NotifyIcon のイベントは UI スレッドではない可能性があるので Dispatcher 経由で開く
-        System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+        _ = System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
         {
             try
             {
@@ -107,16 +103,9 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void OnClipboardUpdated(object sender, string newText)
     {
+        Trace.WriteLine("Clipboard updated");
         if (_isInternalClipboardOperation)
         {
-            return;
-        }
-
-        // クリップボードへのアクセス確認
-        if (!TryAccessClipboard(out string clipboardText))
-        {
-            // アクセス拒否時の通知
-            _ = _notificationsService.ShowNotification("クリップボードへのアクセスが拒否されました", NotificationType.Copy);
             return;
         }
 
@@ -136,12 +125,13 @@ public class MainViewModel : INotifyPropertyChanged
         _ = _notificationsService.ShowNotification(formattedText, NotificationType.Copy);
     }
 
+
     public async Task DoClipboardOperationAsync()
     {
         string clipboardText = _clipboardService.GetTextSafely();
         if (string.IsNullOrEmpty(clipboardText))
         {
-            Debug.WriteLine("No text content in clipboard");
+            Debug.WriteLine("MainViewModel: No text content in clipboard");
             return;
         }
 
@@ -149,61 +139,77 @@ public class MainViewModel : INotifyPropertyChanged
 
         try
         {
+            var currentSettings = GetCurrentSettings();
+            
             // 現在の設定を使用して処理
-            Debug.WriteLine($"MainViewModel: Processing clipboard with mode {_appSettings.ClipboardProcessingMode}");
-            string processedText = _textProcessingService.Process(clipboardText, _appSettings.ClipboardProcessingMode);
+            Debug.WriteLine($"MainViewModel: Processing clipboard with mode {currentSettings.ClipboardProcessingMode}");
+            string processedText = _textProcessingService.Process(clipboardText, currentSettings.ClipboardProcessingMode);
 
             // 非同期でクリップボードを更新し、検証も行う
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)); // 5秒でタイムアウト
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             bool success = await _clipboardService.SetTextAsync(processedText, cts.Token);
 
             if (success)
             {
-                // 操作成功の通知を表示（現在の設定から通知メッセージを取得）
-                string notificationMessage = _appSettings.ClipboardProcessingMode.GetNotificationMessage();
-                _ = _notificationsService.ShowNotification(notificationMessage, NotificationType.Operation);
-                Debug.WriteLine($"MainViewModel: Clipboard operation completed successfully with message: {notificationMessage}");
+                await ShowOperationSuccessNotification(currentSettings.ClipboardProcessingMode);
             }
             else
             {
-                Debug.WriteLine("Clipboard operation failed - content verification failed");
-                // フォールバック: 従来の方法で再試行
-                try
-                {
-                    _clipboardService.SetText(processedText);
-                    // 短い遅延後に検証
-                    await Task.Delay(100, cts.Token);
-                    bool verified = await _clipboardService.VerifyClipboardContentAsync(processedText, cts.Token);
-                    if (verified)
-                    {
-                        string notificationMessage = _appSettings.ClipboardProcessingMode.GetNotificationMessage();
-                        _ = _notificationsService.ShowNotification(notificationMessage, NotificationType.Operation);
-                        Debug.WriteLine("Clipboard operation completed with fallback method");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Clipboard operation failed even with fallback method");
-                    }
-                }
-                catch (Exception fallbackEx)
-                {
-                    Debug.WriteLine($"Fallback clipboard operation failed: {fallbackEx.Message}");
-                }
+                Debug.WriteLine("MainViewModel: Primary operation failed, attempting fallback");
+                await AttemptFallbackOperation(processedText, currentSettings.ClipboardProcessingMode, cts.Token);
             }
         }
         catch (TaskCanceledException)
         {
-            Debug.WriteLine("Clipboard operation was cancelled due to timeout");
+            Debug.WriteLine("MainViewModel: Clipboard operation was cancelled due to timeout");
+            await _notificationsService.ShowNotification("クリップボード操作がタイムアウトしました", NotificationType.Operation);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error during clipboard operation: {ex.Message}");
+            Debug.WriteLine($"MainViewModel: Error during clipboard operation: {ex.Message}");
         }
         finally
         {
-            // 少し遅延してからフラグをリセット（クリップボードイベントの伝播を待つ）
             await Task.Delay(200);
             _isInternalClipboardOperation = false;
+            Debug.WriteLine("MainViewModel: Operation completed, internal flag reset");
+        }
+    }
+
+    /// <summary>
+    /// 操作成功時の通知を表示
+    /// </summary>
+    private async Task ShowOperationSuccessNotification(ProcessingMode mode)
+    {
+        string notificationMessage = mode.GetNotificationMessage();
+        await _notificationsService.ShowNotification(notificationMessage, NotificationType.Operation);
+        Debug.WriteLine($"MainViewModel: Operation completed successfully with message: {notificationMessage}");
+    }
+
+    /// <summary>
+    /// フォールバック操作を試行
+    /// </summary>
+    private async Task AttemptFallbackOperation(string processedText, ProcessingMode mode, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _clipboardService.SetText(processedText);
+            await Task.Delay(100, cancellationToken);
+            
+            bool verified = await _clipboardService.VerifyClipboardContentAsync(processedText, cancellationToken);
+            if (verified)
+            {
+                await ShowOperationSuccessNotification(mode);
+                Debug.WriteLine("MainViewModel: Fallback operation succeeded");
+            }
+            else
+            {
+                Debug.WriteLine("MainViewModel: Fallback operation failed - verification failed");
+            }
+        }
+        catch (Exception fallbackEx)
+        {
+            Debug.WriteLine($"MainViewModel: Fallback operation failed: {fallbackEx.Message}");
         }
     }
 
@@ -213,32 +219,54 @@ public class MainViewModel : INotifyPropertyChanged
         _ = DoClipboardOperationAsync();
     }
 
-    // Add method to open settings UI
+    /// <summary>
+    /// 設定ウィンドウを開く
+    /// SettingsServiceから現在の設定を取得して渡す
+    /// </summary>
     public void OpenSettings()
     {
-        // 明示的にランタイムの現在設定を渡す（依存を明示）
-        var window = new SettingsWindow(SettingsService.Instance.Current);
-        bool? result = null;
         try
         {
-            result = window.ShowDialog();
+            var currentSettings = GetCurrentSettings();
+            var settingsWindow = new SettingsWindow(currentSettings);
+            
+            bool? result = settingsWindow.ShowDialog();
+            
+            if (result == true)
+            {
+                Debug.WriteLine("MainViewModel: Settings saved by user");
+            }
+            else
+            {
+                Debug.WriteLine("MainViewModel: Settings dialog cancelled by user");
+            }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"OpenSettings: failed to show settings window: {ex.Message}");
-        }
-
-        if (result == true)
-        {
-            Debug.WriteLine("Settings saved by user.");
+            Debug.WriteLine($"MainViewModel: Failed to open settings window: {ex.Message}");
         }
     }
 
+    /// <summary>
+    /// リソースのクリーンアップ
+    /// すべてのサービスの適切な解放を行う
+    /// </summary>
     public void Cleanup()
     {
-        // イベント購読を解除
-        SettingsService.Instance.SettingsChanged -= OnSettingsChanged;
-        _clipboardService?.Dispose();
+        try
+        {
+            // イベント購読を解除
+            SettingsService.Instance.SettingsChanged -= OnSettingsChanged;
+            Debug.WriteLine("MainViewModel: Settings event subscription removed");
+            
+            // クリップボードサービスの解放
+            _clipboardService?.Dispose();
+            Debug.WriteLine("MainViewModel: ClipboardService disposed");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"MainViewModel: Error during cleanup: {ex.Message}");
+        }
     }
 
     protected void OnPropertyChanged([CallerMemberName] string name = null)

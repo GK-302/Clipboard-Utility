@@ -13,7 +13,7 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     private static TaskTrayService _instance;
 
     // 2. スレッドセーフのためのロックオブジェクト
-    private static readonly object _lock = new object();
+    private static readonly object _lock = new();
 
     // 3. 外部からインスタンスにアクセスするためのプロパティ
     public static TaskTrayService Instance

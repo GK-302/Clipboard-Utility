@@ -1,11 +1,10 @@
-using System;
+using ClipboardUtility.src.Helpers;
+using ClipboardUtility.src.Properties;
+using ClipboardUtility.src.Services;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Data;
-using ClipboardUtility.src.Helpers;
-using ClipboardUtility.src.Properties;
-using ClipboardUtility.src.Services;
 
 namespace ClipboardUtility.src.Converters
 {
@@ -38,10 +37,10 @@ namespace ClipboardUtility.src.Converters
                 {
                     // ProcessingModeに対応する表示名リソースキーを取得
                     var displayKey = GetDisplayResourceKey(mode);
-                    
+
                     // 現在のUIカルチャーでリソースを取得
                     string display = Resources.ResourceManager.GetString(displayKey, CultureInfo.CurrentUICulture);
-                    
+
                     if (!string.IsNullOrEmpty(display))
                     {
                         return display;
@@ -73,7 +72,7 @@ namespace ClipboardUtility.src.Converters
             // ResourceKeyAttributeからキーを取得を試みる
             var fieldInfo = mode.GetType().GetField(mode.ToString());
             var attr = fieldInfo?.GetCustomAttribute<ResourceKeyAttribute>();
-            
+
             if (attr != null)
             {
                 return attr.Key;

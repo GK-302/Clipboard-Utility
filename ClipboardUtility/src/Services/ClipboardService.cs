@@ -1,8 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
-using System.Threading;
-using System.Diagnostics;
 
 namespace ClipboardUtility.src.Services;
 
@@ -31,7 +30,7 @@ public class ClipboardService : IDisposable
 
     private HwndSource? _hwndSource;
     private bool _isDisposed = false;
-    private readonly object _lockObject = new object();
+    private readonly object _lockObject = new();
 
     /// <summary>
     /// 指定されたウィンドウハンドルを使用してクリップボードの監視を開始します。
@@ -51,7 +50,7 @@ public class ClipboardService : IDisposable
         // ウィンドウメッセージをフックするメソッドを追加
         _hwndSource.AddHook(WndProc);
         // クリップボード監視を開始
-        AddClipboardFormatListener(windowHandle);
+        _ = AddClipboardFormatListener(windowHandle);
     }
 
     /// <summary>
@@ -77,7 +76,7 @@ public class ClipboardService : IDisposable
         for (int attempt = 0; attempt < maxRetries; attempt++)
         {
             Debug.WriteLine($"Clipboard operation attempt {attempt + 1} of {maxRetries}");
-            
+
             try
             {
                 // キャンセル要求をチェック
@@ -93,7 +92,7 @@ public class ClipboardService : IDisposable
                 // 設定後に短い遅延を入れてからクリップボードの内容を検証
                 await Task.Delay(delayMs, cancellationToken);
                 Debug.WriteLine($"Post-set delay completed on attempt {attempt + 1}");
-                
+
                 // 実際にクリップボードに正しく設定されたかを検証
                 Debug.WriteLine($"Starting clipboard content verification on attempt {attempt + 1}");
                 if (await VerifyClipboardContentAsync(text, cancellationToken))
@@ -193,7 +192,7 @@ public class ClipboardService : IDisposable
         for (int attempt = 0; attempt < maxRetries; attempt++)
         {
             Debug.WriteLine($"Clipboard verification attempt {attempt + 1} of {maxRetries}");
-            
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -286,7 +285,7 @@ public class ClipboardService : IDisposable
     public void SetText(string text)
     {
         Debug.WriteLine($"Starting synchronous clipboard text setting. Text length: {text?.Length ?? 0}");
-        
+
         try
         {
             lock (_lockObject)
@@ -319,7 +318,7 @@ public class ClipboardService : IDisposable
     public string GetTextSafely()
     {
         Debug.WriteLine($"Starting safe clipboard text retrieval");
-        
+
         try
         {
             lock (_lockObject)
@@ -361,7 +360,7 @@ public class ClipboardService : IDisposable
         if (msg == WM_CLIPBOARDUPDATE)
         {
             Debug.WriteLine($"📋 Clipboard update message received (WM_CLIPBOARDUPDATE)");
-            
+
             try
             {
                 string text = GetTextSafely();
@@ -395,7 +394,7 @@ public class ClipboardService : IDisposable
         {
             try
             {
-                RemoveClipboardFormatListener(_hwndSource.Handle);
+                _ = RemoveClipboardFormatListener(_hwndSource.Handle);
                 _hwndSource.RemoveHook(WndProc);
                 _hwndSource.Dispose();
             }

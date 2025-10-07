@@ -71,7 +71,7 @@ internal sealed class SettingsService
         try
         {
             var dir = Path.GetDirectoryName(_path);
-            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+            if (!string.IsNullOrEmpty(dir)) _ = Directory.CreateDirectory(dir);
 
             var opts = new JsonSerializerOptions { WriteIndented = true };
             opts.Converters.Add(new JsonStringEnumConverter());
@@ -92,7 +92,7 @@ internal sealed class SettingsService
             {
                 var projectCopy = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "config", "appsettings.json"));
                 var projectDir = Path.GetDirectoryName(projectCopy);
-                if (!string.IsNullOrEmpty(projectDir)) Directory.CreateDirectory(projectDir);
+                if (!string.IsNullOrEmpty(projectDir)) _ = Directory.CreateDirectory(projectDir);
                 File.WriteAllText(projectCopy, json);
                 Debug.WriteLine($"SettingsService.Save: also wrote project copy to {projectCopy}");
             }

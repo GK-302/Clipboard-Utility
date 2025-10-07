@@ -33,7 +33,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
         SelectedProcessingMode = _settings.ClipboardProcessingMode;
 
         // 利用可能なカルチャ一覧（必要に応じて追加）
-        AvailableCultures = new List<CultureInfo> { new CultureInfo("en-US"), new CultureInfo("ja-JP") };
+        AvailableCultures = new List<CultureInfo> { new("en-US"), new("ja-JP") };
         // 初期選択
         SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name))
                           ?? CultureInfo.CurrentUICulture;
@@ -151,7 +151,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
         SettingsService.Instance.Save(GetSettingsCopy());
     }
 
-    public AppSettings GetSettingsCopy() => new AppSettings
+    public AppSettings GetSettingsCopy() => new()
     {
         ClipboardProcessingMode = _settings.ClipboardProcessingMode,
         NotificationOffsetX = _settings.NotificationOffsetX,
