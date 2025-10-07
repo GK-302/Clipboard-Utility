@@ -1,18 +1,9 @@
 ﻿using ClipboardUtility.Services;
-using ClipboardUtility.src.Services;
 using ClipboardUtility.src.Models;
-using ClipboardUtility.src.Views;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
-using System.Globalization;
 using ClipboardUtility.src.Properties;
-using System.Windows.Media;
+using ClipboardUtility.src.Services;
+using ClipboardUtility.src.Views;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 
@@ -118,6 +109,14 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (_isInternalClipboardOperation)
         {
+            return;
+        }
+
+        // クリップボードへのアクセス確認
+        if (!TryAccessClipboard(out string clipboardText))
+        {
+            // アクセス拒否時の通知
+            _ = _notificationsService.ShowNotification("クリップボードへのアクセスが拒否されました", NotificationType.Copy);
             return;
         }
 

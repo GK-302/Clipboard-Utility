@@ -1,14 +1,11 @@
 ﻿// NotificationsService.cs
-using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 using ClipboardUtility.src.Helpers;
-using ClipboardUtility.src.ViewModels;
-using ClipboardUtility.src.Views;
 using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Services;
+using ClipboardUtility.src.ViewModels;
+using ClipboardUtility.src.Views;
+using System.Diagnostics;
+using System.Windows;
 
 namespace ClipboardUtility.Services
 {

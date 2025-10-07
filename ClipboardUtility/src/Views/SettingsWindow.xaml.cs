@@ -1,9 +1,7 @@
 using ClipboardUtility.src.Models;
 using ClipboardUtility.src.ViewModels;
-using System;
 using System.Diagnostics;
 using System.Windows;
-using ClipboardUtility.src.Services;
 
 namespace ClipboardUtility.src.Views
 {

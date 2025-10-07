@@ -1,8 +1,7 @@
-﻿using System;
+﻿using ClipboardUtility.src.Properties;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using ClipboardUtility.src.Properties;
 
 namespace ClipboardUtility.src.Helpers;
 
