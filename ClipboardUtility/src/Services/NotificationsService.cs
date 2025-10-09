@@ -6,7 +6,6 @@ using ClipboardUtility.src.ViewModels;
 using ClipboardUtility.src.Views;
 using System.Diagnostics;
 using System.Windows;
-using WpfColor = System.Windows.Media.Color;
 
 namespace ClipboardUtility.Services
 {
@@ -149,26 +148,28 @@ namespace ClipboardUtility.Services
 
             try
             {
+                // 表示抑止フラグ
                 if (type == NotificationType.Copy && !_appSettings.ShowCopyNotification)
                 {
                     Debug.WriteLine($"NotificationsService: suppressed COPY notification (message='{message}')");
                     return;
                 }
-
                 if (type == NotificationType.Operation && !_appSettings.ShowOperationNotification)
                 {
                     Debug.WriteLine($"NotificationsService: suppressed OPERATION notification (message='{message}')");
                     return;
                 }
 
+                // 既存の表示をキャンセル
                 _cts?.Cancel();
                 _cts = new CancellationTokenSource();
                 var token = _cts.Token;
 
                 try
                 {
-                    // 1) UIスレッドでウィンドウを初期化して即表示（色は仮のまま）
                     double posX = 0, posY = 0, winW = 0, winH = 0;
+
+                    // 1) UI スレッドでウィンドウを初期化して即時表示（色はデフォルト）
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         try
@@ -195,17 +196,18 @@ namespace ClipboardUtility.Services
                             window.Left = position.X;
                             window.Top = position.Y;
 
-                            // 初期表示（仮の色で表示）してレイアウトを確保
+                            // 一旦デフォルト背景色で表示（ブロッキングを避ける)
+                            _viewModel.SetColorsForScreenBackground(ColorHelper.GetDefaultBackgroundColor());
+
                             window.Visibility = Visibility.Visible;
                             window.UpdateLayout();
 
-                            // 実サイズ・位置をキャプチャしてバックグラウンド検出に渡す
                             posX = window.Left;
                             posY = window.Top;
                             winW = window.ActualWidth;
                             winH = window.ActualHeight;
 
-                            Debug.WriteLine($"NotificationsService: Notification window shown at ({posX}, {posY}) with size {winW}x{winH}");
+                            Debug.WriteLine($"NotificationsService: Notification window shown at ({posX}, {posY}) size {winW}x{winH}");
                         }
                         catch (Exception uiEx)
                         {
@@ -213,30 +215,30 @@ namespace ClipboardUtility.Services
                         }
                     });
 
-                    // 2) 色検出をバックグラウンドで実行（UIをブロックしない）
-                    WpfColor detectedColor = ColorHelper.GetDefaultBackgroundColor();
+                    // 2) 色検出をバックグラウンドで非同期実行（UIをブロックしない）
+                    System.Windows.Media.Color detectedColor = ColorHelper.GetDefaultBackgroundColor();
                     try
                     {
-                        Debug.WriteLine($"NotificationsService: Starting background color detection (off UI thread)");
+                        Debug.WriteLine("NotificationsService: Starting background color detection");
                         detectedColor = await Task.Run(() =>
                         {
                             token.ThrowIfCancellationRequested();
                             return ColorHelper.GetAverageBackgroundColor(posX, posY, winW, winH);
                         }, token);
-                        Debug.WriteLine($"NotificationsService: Background color detection completed");
+                        Debug.WriteLine("NotificationsService: Background color detection completed");
                     }
                     catch (OperationCanceledException)
                     {
                         Debug.WriteLine("NotificationsService: Color detection was cancelled");
-                        // キャンセルなら以降の色適用はスキップ
                     }
                     catch (Exception ex)
                     {
                         Debug.WriteLine($"NotificationsService: Color detection failed: {ex.Message}");
+                        FileLogger.LogException(ex, "NotificationsService: Color detection failed");
                         detectedColor = ColorHelper.GetDefaultBackgroundColor();
                     }
 
-                    // 3) 検出結果を UI スレッドで適用（ViewModel を更新して見た目を補正）
+                    // 3) 検出色を UI スレッドで適用
                     try
                     {
                         await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
@@ -252,6 +254,7 @@ namespace ClipboardUtility.Services
                             catch (Exception applyEx)
                             {
                                 Debug.WriteLine($"NotificationsService: Apply color failed: {applyEx.Message}");
+                                FileLogger.LogException(applyEx, "NotificationsService: Apply color failed");
                             }
                         });
                     }
@@ -260,7 +263,7 @@ namespace ClipboardUtility.Services
                         Debug.WriteLine("NotificationsService: Applying detected color cancelled");
                     }
 
-                    // 表示保持時間
+                    // 表示保持時間（キャンセル対応）
                     await Task.Delay(1500, token);
 
                     // 非表示
@@ -271,7 +274,7 @@ namespace ClipboardUtility.Services
                             if (!token.IsCancellationRequested)
                             {
                                 _lazyWindow.Value.Visibility = Visibility.Hidden;
-                                Debug.WriteLine($"NotificationsService: Notification window hidden");
+                                Debug.WriteLine("NotificationsService: Notification window hidden");
                             }
                         }
                         catch (Exception hideEx)
@@ -280,16 +283,15 @@ namespace ClipboardUtility.Services
                         }
                     });
                 }
-                catch (OperationCanceledException oce)
+                catch (OperationCanceledException)
                 {
-                    Debug.WriteLine($"NotificationsService: Notification display was cancelled: {oce.Message}");
-                    Trace.WriteLine(oce.ToString());
-                    // キャンセル時は何もしない
+                    Debug.WriteLine("NotificationsService: Notification display was cancelled");
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"NotificationsService.ShowNotification: unexpected exception: {ex}");
+                FileLogger.LogException(ex, "NotificationsService.ShowNotification: unexpected");
             }
         }
     }
