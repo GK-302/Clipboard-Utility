@@ -1,4 +1,5 @@
 ﻿using ClipboardUtility.Services;
+using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Properties;
 using ClipboardUtility.src.Services;
@@ -6,6 +7,7 @@ using ClipboardUtility.src.Views;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using static ClipboardUtility.src.Services.ClipboardService;
 
 namespace ClipboardUtility.src.ViewModels;
 
@@ -33,6 +35,10 @@ public class MainViewModel : INotifyPropertyChanged
         SettingsService.Instance.SettingsChanged += OnSettingsChanged;
         
         Debug.WriteLine($"MainViewModel: Initialized with ClipboardProcessingMode = {SettingsService.Instance.Current.ClipboardProcessingMode}");
+
+        // ClipboardService を生成・初期化した直後に購読する例
+        _clipboardService.ClipboardUpdated += OnClipboardUpdated;
+        _clipboardService.ClipboardError += OnClipboardError;
     }
 
     /// <summary>
@@ -98,7 +104,6 @@ public class MainViewModel : INotifyPropertyChanged
     public void Initialize(System.Windows.Window window)
     {
         _clipboardService.StartMonitoring(window);
-        _clipboardService.ClipboardUpdated += OnClipboardUpdated;
     }
 
     private void OnClipboardUpdated(object sender, string newText)
@@ -268,6 +273,33 @@ public class MainViewModel : INotifyPropertyChanged
         {
             Debug.WriteLine($"MainViewModel: Error during cleanup: {ex.Message}");
         }
+    }
+
+    // ハンドラをクラスに追加
+    private void OnClipboardError(object? sender, ClipboardErrorEventArgs e)
+    {
+        Debug.WriteLine($"MainViewModel: Clipboard error ({e.Context}): {e.Exception.Message}");
+        // UI 更新は Dispatcher 経由で実行
+        System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+        {
+            try
+            {
+                // 設定で通知が抑止されていないか確認
+                if (SettingsService.Instance.Current.ShowOperationNotification)
+                {
+                    _notificationsService.ShowNotification("クリップボードにアクセスできませんでした", NotificationType.Operation);
+                }
+                else
+                {
+                    Debug.WriteLine("MainViewModel: ShowOperationNotification is disabled; skipping user notification.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"MainViewModel: Failed to show clipboard error notification: {ex.Message}");
+                FileLogger.LogException(ex, "MainViewModel.OnClipboardError");
+            }
+        });
     }
 
     protected void OnPropertyChanged([CallerMemberName] string name = null)

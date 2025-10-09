@@ -32,12 +32,30 @@ public class ClipboardService : IDisposable
     /// </summary>
     public event EventHandler<string> ClipboardUpdated;
 
+    /// <summary>
+    /// クリップボード操作で発生したエラーを外部に通知するイベント
+    /// </summary>
+    public event EventHandler<ClipboardErrorEventArgs>? ClipboardError;
+
+    public sealed class ClipboardErrorEventArgs : EventArgs
+    {
+        public Exception Exception { get; }
+        public string Context { get; }
+
+        public ClipboardErrorEventArgs(Exception exception, string context)
+        {
+            Exception = exception;
+            Context = context;
+        }
+    }
+
     private HwndSource? _hwndSource;
     private bool _isDisposed = false;
     private readonly object _lockObject = new();
 
     public void StartMonitoring(Window window)
     {
+        FileLogger.Log("ClipboardService: StartMonitoring called");
         if (_hwndSource != null) return;
 
         IntPtr windowHandle = new WindowInteropHelper(window).Handle;
@@ -200,6 +218,19 @@ public class ClipboardService : IDisposable
         }
     }
 
+    private void OnClipboardError(Exception ex, string context)
+    {
+        try
+        {
+            ClipboardError?.Invoke(this, new ClipboardErrorEventArgs(ex, context));
+        }
+        catch (Exception evEx)
+        {
+            // イベント購読側で例外が出てもログに残すだけにする
+            FileLogger.LogException(evEx, "ClipboardService.OnClipboardError");
+        }
+    }
+
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         if (msg == WM_CLIPBOARDUPDATE)
@@ -218,7 +249,9 @@ public class ClipboardService : IDisposable
                 {
                     Trace.WriteLine($"ClipboardService.WndProc: COMException reading clipboard: {comEx.Message}");
                     FileLogger.LogException(comEx, "ClipboardService.WndProc: COMException");
-                    // 必要ならここでイベントや通知を上げる（最低限はログ）
+
+                    // 外部へ通知（UI スレッド上で呼ばれる点に注意）
+                    OnClipboardError(comEx, "WndProc:GetTextSafely");
                 }
                 catch (Exception ex)
                 {
