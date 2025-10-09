@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-   <data name="WindowTitle" xml:space="preserve">
+  <data name="WindowTitle" xml:space="preserve">
     <value>ClipboardUtility - Clipboard Utility</value>
     <comment>Application main window title</comment>
   </data>
@@ -209,7 +209,6 @@
     <value>Whitespace collapsed</value>
     <comment>Shown when consecutive whitespace is collapsed to a single space (CollapseWhitespace mode).</comment>
   </data>
-  <!-- ProcessingMode Display Names for ComboBox -->
   <data name="ProcessingModeDisplay_None" xml:space="preserve">
     <value>No Processing</value>
     <comment>Display name for ProcessingMode.None in settings ComboBox</comment>
@@ -357,5 +356,9 @@
   <data name="Exit" xml:space="preserve">
     <value>Exit</value>
     <comment>Tray menu: Exit application</comment>
+  </data>
+  <data name="NotificationDurationTitle" xml:space="preserve">
+    <value>NotificationDuration</value>
+    <comment>Deray to show notificaiotn</comment>
   </data>
 </root>

@@ -24,6 +24,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
             NotificationMaxWidth = settings.NotificationMaxWidth,
             NotificationMinHeight = settings.NotificationMinHeight,
             NotificationMaxHeight = settings.NotificationMaxHeight,
+            NotificationDelay = settings.NotificationDelay,
             ShowCopyNotification = settings.ShowCopyNotification,
             ShowOperationNotification = settings.ShowOperationNotification,
             CultureName = settings.CultureName
@@ -132,6 +133,12 @@ internal class SettingsViewModel : INotifyPropertyChanged
         set { if (Math.Abs(_settings.NotificationMaxHeight - value) > double.Epsilon) { _settings.NotificationMaxHeight = value; OnPropertyChanged(); } }
     }
 
+    public int NotificationDelay
+    {
+        get => _settings.NotificationDelay;
+        set { if (_settings.NotificationDelay != value) { _settings.NotificationDelay = value; OnPropertyChanged(); } }
+    }
+
     // Add missing boolean properties for bindings
     public bool ShowCopyNotification
     {
@@ -161,6 +168,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
         NotificationMaxWidth = _settings.NotificationMaxWidth,
         NotificationMinHeight = _settings.NotificationMinHeight,
         NotificationMaxHeight = _settings.NotificationMaxHeight,
+        NotificationDelay = _settings.NotificationDelay,
         ShowCopyNotification = _settings.ShowCopyNotification,
         ShowOperationNotification = _settings.ShowOperationNotification,
         CultureName = _settings.CultureName

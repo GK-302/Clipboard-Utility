@@ -103,7 +103,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void OnClipboardUpdated(object sender, string newText)
     {
-        Trace.WriteLine("Clipboard updated");
+        Debug.WriteLine("Clipboard updated");
         if (_isInternalClipboardOperation)
         {
             return;
@@ -159,14 +159,15 @@ public class MainViewModel : INotifyPropertyChanged
                 await AttemptFallbackOperation(processedText, currentSettings.ClipboardProcessingMode, cts.Token);
             }
         }
-        catch (TaskCanceledException)
+        catch (TaskCanceledException tce)
         {
-            Debug.WriteLine("MainViewModel: Clipboard operation was cancelled due to timeout");
-            await _notificationsService.ShowNotification("クリップボード操作がタイムアウトしました", NotificationType.Operation);
+            Debug.WriteLine($"MainViewModel: Clipboard operation cancelled: {tce.Message}");
+            Trace.WriteLine(tce.ToString());
+            _ = _notificationsService.ShowNotification("クリップボード操作がタイムアウトしました", NotificationType.Operation);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"MainViewModel: Error during clipboard operation: {ex.Message}");
+            Trace.WriteLine($"MainViewModel: Error during clipboard operation: {ex.Message}");
         }
         finally
         {

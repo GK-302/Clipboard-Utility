@@ -79,6 +79,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   NotificationDuration に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationDurationTitle {
+            get {
+                return ResourceManager.GetString("NotificationDurationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Whitespace collapsed に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationFormat_CollapseWhitespace {

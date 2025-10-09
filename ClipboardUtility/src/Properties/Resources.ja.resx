@@ -125,6 +125,90 @@
     <value>{0} 文字をコピーしました</value>
     <comment>通知フォーマット: "コピーしました: {0} 文字" — {0} に文字数が入る（string.Format を CurrentCulture で使用）</comment>
   </data>
+  <data name="NotificationFormat_LineBreakRemoved" xml:space="preserve">
+    <value>改行を削除しました</value>
+    <comment>改行をスペースに置換したときに表示するメッセージ（RemoveLineBreaks モード）</comment>
+  </data>
+  <data name="NotificationFormat_WhitespaceNormalized" xml:space="preserve">
+    <value>空白を正規化しました</value>
+    <comment>改行・タブをスペースに変換し、連続する空白を単一スペースに正規化したときに表示するメッセージ（NormalizeWhitespace モード）</comment>
+  </data>
+  <data name="NotificationFormat_NormalizeUnicode" xml:space="preserve">
+    <value>テキストを正規化しました</value>
+    <comment>Unicode 正規化（例: FormKC）を適用したときに表示するメッセージ（NormalizeUnicode モード）。正規化フォームは設定で変更可能。</comment>
+  </data>
+  <data name="NotificationFormat_RemoveDiacritics" xml:space="preserve">
+    <value>ダイアクリティカルマークを除去しました</value>
+    <comment>アクセントなどのダイアクリティカルマークを除去したときに表示するメッセージ（RemoveDiacritics モード）</comment>
+  </data>
+  <data name="NotificationFormat_RemovePunctuation" xml:space="preserve">
+    <value>句読点を削除しました</value>
+    <comment>句読点や記号を削除したときに表示するメッセージ（RemovePunctuation モード）</comment>
+  </data>
+  <data name="NotificationFormat_RemoveControlChars" xml:space="preserve">
+    <value>制御文字を削除しました</value>
+    <comment>非表示の制御文字（C0/C1 など）を削除したときに表示するメッセージ（RemoveControlCharacters モード）</comment>
+  </data>
+  <data name="NotificationFormat_RemoveUrls" xml:space="preserve">
+    <value>URL を削除しました</value>
+    <comment>簡易な正規表現でテキスト中の URL を削除したときに表示するメッセージ（RemoveUrls モード）</comment>
+  </data>
+  <data name="NotificationFormat_RemoveEmails" xml:space="preserve">
+    <value>メールアドレスを削除しました</value>
+    <comment>簡易な正規表現でメールアドレスを削除したときに表示するメッセージ（RemoveEmails モード）</comment>
+  </data>
+  <data name="NotificationFormat_RemoveHtmlTags" xml:space="preserve">
+    <value>HTML タグを除去しました</value>
+    <comment>基本的なタグ除去を行ったときに表示するメッセージ（RemoveHtmlTags モード）。完全な HTML パーシングには非対応。</comment>
+  </data>
+  <data name="NotificationFormat_StripMarkdownLinks" xml:space="preserve">
+    <value>Markdown のリンクを除去しました</value>
+    <comment>Markdown のリンク構文 [text](url) をリンクテキストに置換したときに表示するメッセージ（StripMarkdownLinks モード）</comment>
+  </data>
+  <data name="NotificationFormat_ConvertTabsToSpaces" xml:space="preserve">
+    <value>タブをスペースに変換しました</value>
+    <comment>タブを指定幅のスペースに変換したときに表示するメッセージ（ConvertTabsToSpaces モード）。TabSize を設定可能。</comment>
+  </data>
+  <data name="NotificationFormat_Trim" xml:space="preserve">
+    <value>前後の空白を削除しました</value>
+    <comment>文字列の先頭・末尾の空白を取り除いたときに表示するメッセージ（Trim モード）</comment>
+  </data>
+  <data name="NotificationFormat_ToUpper" xml:space="preserve">
+    <value>大文字に変換しました</value>
+    <comment>指定されたカルチャで大文字に変換したときに表示するメッセージ（ToUpper モード）</comment>
+  </data>
+  <data name="NotificationFormat_ToLower" xml:space="preserve">
+    <value>小文字に変換しました</value>
+    <comment>指定されたカルチャで小文字に変換したときに表示するメッセージ（ToLower モード）</comment>
+  </data>
+  <data name="NotificationFormat_ToTitleCase" xml:space="preserve">
+    <value>タイトルケースに変換しました</value>
+    <comment>指定されたカルチャでタイトルケースに変換したときに表示するメッセージ（ToTitleCase モード）</comment>
+  </data>
+  <data name="NotificationFormat_ToPascalCase" xml:space="preserve">
+    <value>PascalCase に変換しました</value>
+    <comment>テキストを PascalCase に変換したときに表示するメッセージ（ToPascalCase モード）</comment>
+  </data>
+  <data name="NotificationFormat_ToCamelCase" xml:space="preserve">
+    <value>camelCase に変換しました</value>
+    <comment>テキストを camelCase に変換したときに表示するメッセージ（ToCamelCase モード）</comment>
+  </data>
+  <data name="NotificationFormat_Truncate" xml:space="preserve">
+    <value>テキストを切り詰めました</value>
+    <comment>指定長にテキストを切り詰めたときに表示するメッセージ（Truncate モード）。MaxLength / TruncateSuffix を参照。</comment>
+  </data>
+  <data name="NotificationFormat_JoinLinesWithSpace" xml:space="preserve">
+    <value>行をスペースで結合しました</value>
+    <comment>複数行を単一の行に結合してスペースでつないだときに表示するメッセージ（JoinLinesWithSpace モード）</comment>
+  </data>
+  <data name="NotificationFormat_RemoveDuplicateLines" xml:space="preserve">
+    <value>重複行を削除しました</value>
+    <comment>隣接する重複行を削除したときに表示するメッセージ（RemoveDuplicateLines モード）</comment>
+  </data>
+  <data name="NotificationFormat_CollapseWhitespace" xml:space="preserve">
+    <value>空白を圧縮しました</value>
+    <comment>連続する空白を単一スペースに圧縮したときに表示するメッセージ（CollapseWhitespace モード）</comment>
+  </data>
   <data name="ProcessingModeDisplay_None" xml:space="preserve">
     <value>処理なし</value>
     <comment>設定コンボボックスでのProcessingMode.Noneの表示名</comment>
@@ -273,88 +357,8 @@
     <value>終了</value>
     <comment>Tray menu: Exit application</comment>
   </data>
-  <data name="NotificationFormat_LineBreakRemoved" xml:space="preserve">
-    <value>改行を削除しました</value>
-    <comment>改行をスペースに置換したときに表示するメッセージ（RemoveLineBreaks モード）</comment>
-  </data>
-  <data name="NotificationFormat_WhitespaceNormalized" xml:space="preserve">
-    <value>空白を正規化しました</value>
-    <comment>改行・タブをスペースに変換し、連続する空白を単一スペースに正規化したときに表示するメッセージ（NormalizeWhitespace モード）</comment>
-  </data>
-  <data name="NotificationFormat_NormalizeUnicode" xml:space="preserve">
-    <value>テキストを正規化しました</value>
-    <comment>Unicode 正規化（例: FormKC）を適用したときに表示するメッセージ（NormalizeUnicode モード）。正規化フォームは設定で変更可能。</comment>
-  </data>
-  <data name="NotificationFormat_RemoveDiacritics" xml:space="preserve">
-    <value>ダイアクリティカルマークを除去しました</value>
-    <comment>アクセントなどのダイアクリティカルマークを除去したときに表示するメッセージ（RemoveDiacritics モード）</comment>
-  </data>
-  <data name="NotificationFormat_RemovePunctuation" xml:space="preserve">
-    <value>句読点を削除しました</value>
-    <comment>句読点や記号を削除したときに表示するメッセージ（RemovePunctuation モード）</comment>
-  </data>
-  <data name="NotificationFormat_RemoveControlChars" xml:space="preserve">
-    <value>制御文字を削除しました</value>
-    <comment>非表示の制御文字（C0/C1 など）を削除したときに表示するメッセージ（RemoveControlCharacters モード）</comment>
-  </data>
-  <data name="NotificationFormat_RemoveUrls" xml:space="preserve">
-    <value>URL を削除しました</value>
-    <comment>簡易な正規表現でテキスト中の URL を削除したときに表示するメッセージ（RemoveUrls モード）</comment>
-  </data>
-  <data name="NotificationFormat_RemoveEmails" xml:space="preserve">
-    <value>メールアドレスを削除しました</value>
-    <comment>簡易な正規表現でメールアドレスを削除したときに表示するメッセージ（RemoveEmails モード）</comment>
-  </data>
-  <data name="NotificationFormat_RemoveHtmlTags" xml:space="preserve">
-    <value>HTML タグを除去しました</value>
-    <comment>基本的なタグ除去を行ったときに表示するメッセージ（RemoveHtmlTags モード）。完全な HTML パーシングには非対応。</comment>
-  </data>
-  <data name="NotificationFormat_StripMarkdownLinks" xml:space="preserve">
-    <value>Markdown のリンクを除去しました</value>
-    <comment>Markdown のリンク構文 [text](url) をリンクテキストに置換したときに表示するメッセージ（StripMarkdownLinks モード）</comment>
-  </data>
-  <data name="NotificationFormat_Trim" xml:space="preserve">
-    <value>前後の空白を削除しました</value>
-    <comment>文字列の先頭・末尾の空白を取り除いたときに表示するメッセージ（Trim モード）</comment>
-  </data>
-  <data name="NotificationFormat_ToUpper" xml:space="preserve">
-    <value>大文字に変換しました</value>
-    <comment>指定されたカルチャで大文字に変換したときに表示するメッセージ（ToUpper モード）</comment>
-  </data>
-  <data name="NotificationFormat_ToLower" xml:space="preserve">
-    <value>小文字に変換しました</value>
-    <comment>指定されたカルチャで小文字に変換したときに表示するメッセージ（ToLower モード）</comment>
-  </data>
-  <data name="NotificationFormat_ToTitleCase" xml:space="preserve">
-    <value>タイトルケースに変換しました</value>
-    <comment>指定されたカルチャでタイトルケースに変換したときに表示するメッセージ（ToTitleCase モード）</comment>
-  </data>
-  <data name="NotificationFormat_ToPascalCase" xml:space="preserve">
-    <value>PascalCase に変換しました</value>
-    <comment>テキストを PascalCase に変換したときに表示するメッセージ（ToPascalCase モード）</comment>
-  </data>
-  <data name="NotificationFormat_ToCamelCase" xml:space="preserve">
-    <value>camelCase に変換しました</value>
-    <comment>テキストを camelCase に変換したときに表示するメッセージ（ToCamelCase モード）</comment>
-  </data>
-  <data name="NotificationFormat_Truncate" xml:space="preserve">
-    <value>テキストを切り詰めました</value>
-    <comment>指定長にテキストを切り詰めたときに表示するメッセージ（Truncate モード）。MaxLength / TruncateSuffix を参照。</comment>
-  </data>
-  <data name="NotificationFormat_JoinLinesWithSpace" xml:space="preserve">
-    <value>行をスペースで結合しました</value>
-    <comment>複数行を単一の行に結合してスペースでつないだときに表示するメッセージ（JoinLinesWithSpace モード）</comment>
-  </data>
-  <data name="NotificationFormat_RemoveDuplicateLines" xml:space="preserve">
-    <value>重複行を削除しました</value>
-    <comment>隣接する重複行を削除したときに表示するメッセージ（RemoveDuplicateLines モード）</comment>
-  </data>
-  <data name="NotificationFormat_ConvertTabsToSpaces" xml:space="preserve">
-    <value>タブをスペースに変換しました</value>
-    <comment>タブを指定幅のスペースに変換したときに表示するメッセージ（ConvertTabsToSpaces モード）。TabSize を設定可能。</comment>
-  </data>
-  <data name="NotificationFormat_CollapseWhitespace" xml:space="preserve">
-    <value>空白を圧縮しました</value>
-    <comment>連続する空白を単一スペースに圧縮したときに表示するメッセージ（CollapseWhitespace モード）</comment>
+  <data name="NotificationDurationTitle" xml:space="preserve">
+    <value>クリップボードの通知を表示している時間</value>
+    <comment>comment&gt;通知の表示を遅延させる時間（ミリ秒）。クリップボードの内容が伝播するまえに表示されるのを防ぐ</comment>
   </data>
 </root>

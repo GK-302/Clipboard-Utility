@@ -6,6 +6,7 @@ using ClipboardUtility.src.ViewModels;
 using ClipboardUtility.src.Views;
 using System.Diagnostics;
 using System.Windows;
+using WpfColor = System.Windows.Media.Color;
 
 namespace ClipboardUtility.Services
 {
@@ -148,7 +149,6 @@ namespace ClipboardUtility.Services
 
             try
             {
-                // フラグに合わせて抑止する
                 if (type == NotificationType.Copy && !_appSettings.ShowCopyNotification)
                 {
                     Debug.WriteLine($"NotificationsService: suppressed COPY notification (message='{message}')");
@@ -167,6 +167,8 @@ namespace ClipboardUtility.Services
 
                 try
                 {
+                    // 1) UIスレッドでウィンドウを初期化して即表示（色は仮のまま）
+                    double posX = 0, posY = 0, winW = 0, winH = 0;
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         try
@@ -174,10 +176,8 @@ namespace ClipboardUtility.Services
                             var window = _lazyWindow.Value;
                             _viewModel.NotificationMessage = message;
 
-                            // confirm offset are loaded 
                             Debug.WriteLine($"NotificationsService.ShowNotification: Offsets=({_appSettings.NotificationOffsetX},{_appSettings.NotificationOffsetY}) MinW={_appSettings.NotificationMinWidth} Time={DateTime.Now:O}");
 
-                            // ウィンドウの位置を計算
                             System.Windows.Point position;
                             try
                             {
@@ -195,30 +195,75 @@ namespace ClipboardUtility.Services
                             window.Left = position.X;
                             window.Top = position.Y;
 
-                            // 画面ピクセル色を検出してテキスト色を自動調整
-                            try
-                            {
-                                Debug.WriteLine($"NotificationsService: Auto-adjusting colors for screen pixels at position ({position.X}, {position.Y})");
-                                _viewModel.AutoAdjustColorsForScreenPosition(position.X, position.Y, window.ActualWidth, window.ActualHeight);
-                            }
-                            catch (Exception colorEx)
-                            {
-                                Debug.WriteLine($"NotificationsService: Color adjustment failed: {colorEx.Message}");
-                                // フォールバック: デフォルト色を使用
-                                _viewModel.SetColorsForScreenBackground(ColorHelper.GetDefaultBackgroundColor());
-                            }
-
+                            // 初期表示（仮の色で表示）してレイアウトを確保
                             window.Visibility = Visibility.Visible;
-                            Debug.WriteLine($"NotificationsService: Notification window shown at ({position.X}, {position.Y})");
+                            window.UpdateLayout();
+
+                            // 実サイズ・位置をキャプチャしてバックグラウンド検出に渡す
+                            posX = window.Left;
+                            posY = window.Top;
+                            winW = window.ActualWidth;
+                            winH = window.ActualHeight;
+
+                            Debug.WriteLine($"NotificationsService: Notification window shown at ({posX}, {posY}) with size {winW}x{winH}");
                         }
                         catch (Exception uiEx)
                         {
-                            Debug.WriteLine($"NotificationsService.ShowNotification: UI update failed: {uiEx}");
+                            Debug.WriteLine($"NotificationsService.ShowNotification: UI init failed: {uiEx}");
                         }
                     });
 
+                    // 2) 色検出をバックグラウンドで実行（UIをブロックしない）
+                    WpfColor detectedColor = ColorHelper.GetDefaultBackgroundColor();
+                    try
+                    {
+                        Debug.WriteLine($"NotificationsService: Starting background color detection (off UI thread)");
+                        detectedColor = await Task.Run(() =>
+                        {
+                            token.ThrowIfCancellationRequested();
+                            return ColorHelper.GetAverageBackgroundColor(posX, posY, winW, winH);
+                        }, token);
+                        Debug.WriteLine($"NotificationsService: Background color detection completed");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Debug.WriteLine("NotificationsService: Color detection was cancelled");
+                        // キャンセルなら以降の色適用はスキップ
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"NotificationsService: Color detection failed: {ex.Message}");
+                        detectedColor = ColorHelper.GetDefaultBackgroundColor();
+                    }
+
+                    // 3) 検出結果を UI スレッドで適用（ViewModel を更新して見た目を補正）
+                    try
+                    {
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            try
+                            {
+                                if (!token.IsCancellationRequested)
+                                {
+                                    _viewModel.SetColorsForScreenBackground(detectedColor);
+                                    Debug.WriteLine("NotificationsService: Applied detected colors to ViewModel");
+                                }
+                            }
+                            catch (Exception applyEx)
+                            {
+                                Debug.WriteLine($"NotificationsService: Apply color failed: {applyEx.Message}");
+                            }
+                        });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Debug.WriteLine("NotificationsService: Applying detected color cancelled");
+                    }
+
+                    // 表示保持時間
                     await Task.Delay(1500, token);
 
+                    // 非表示
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         try
@@ -235,9 +280,10 @@ namespace ClipboardUtility.Services
                         }
                     });
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException oce)
                 {
-                    Debug.WriteLine("NotificationsService: Notification display was cancelled");
+                    Debug.WriteLine($"NotificationsService: Notification display was cancelled: {oce.Message}");
+                    Trace.WriteLine(oce.ToString());
                     // キャンセル時は何もしない
                 }
             }

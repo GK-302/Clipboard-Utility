@@ -94,7 +94,13 @@
                 <TextBox Width="80" Text="{Binding NotificationMaxHeight, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
             </StackPanel>
+            <StackPanel Orientation="Horizontal" >
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationDurationTitle}" />
+                <TextBox Width="80" Text="{Binding NotificationDelay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Width="40" VerticalAlignment="Center">ms</TextBlock>
+            </StackPanel>
         </StackPanel>
+
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="BtnSave" Width="84" Margin="6" Click="BtnSave_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SaveText}" />

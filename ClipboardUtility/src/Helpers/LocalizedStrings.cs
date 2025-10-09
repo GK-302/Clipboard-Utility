@@ -55,6 +55,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ProcessingMode => Resources.ProcessingMode;
     public string OpenSettingText => Resources.OpenSetting;
     public string ExitText => Resources.Exit;
+    public string NotificationDurationTitle => Resources.NotificationDurationTitle;
 
     public void ChangeCulture(CultureInfo culture)
     {
@@ -102,6 +103,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(ProcessingMode));
         OnPropertyChanged(nameof(OpenSettingText));
         OnPropertyChanged(nameof(ExitText));
+        OnPropertyChanged(nameof(NotificationDurationTitle));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)
