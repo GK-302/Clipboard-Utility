@@ -28,6 +28,12 @@ Clipboard Utilityは、クリップボードのユーティリティツールで
 3.  タスクトレイのアイコンをクリックすると、登録されたアクションを実行できます。
 4.  アイコンを右クリックすると、メニューが表示されます。
 
+
+## コントリビューションについて
+以下のドキュメントを参照してください。<br>
+CONTRIBUTING.md
+[English](/.github/CONTRIBUTING.md) | [日本語](/.github/japanese/CONTRIBUTING.ja.md)
+
 ## 対応OS
 Windows
 
