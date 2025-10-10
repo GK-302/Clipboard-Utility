@@ -1,11 +1,8 @@
-﻿using System;
+﻿using ClipboardUtility.src.Helpers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
-using ClipboardUtility.src.Helpers;
 
 namespace ClipboardUtility.src.Services;
 
@@ -77,7 +74,7 @@ public class ClipboardService : IDisposable
     {
         const int postSetDelayMs = 50;
 
-        Trace.WriteLine($"ClipboardService.SetTextAsync: setting text length={text?.Length ?? 0}");
+        Debug.WriteLine($"ClipboardService.SetTextAsync: setting text length={text?.Length ?? 0}");
 
         try
         {
@@ -87,31 +84,31 @@ public class ClipboardService : IDisposable
             {
                 System.Windows.Clipboard.SetText(text);
             }
-            Trace.WriteLine("ClipboardService.SetTextAsync: SetText succeeded");
+            Debug.WriteLine("ClipboardService.SetTextAsync: SetText succeeded");
 
             // 設定後に短い遅延を入れて検証
             await Task.Delay(postSetDelayMs, cancellationToken);
 
             // 単発検証
             bool verified = await VerifyClipboardContentAsync(text, cancellationToken);
-            Trace.WriteLine($"ClipboardService.SetTextAsync: verification result={verified}");
+            Debug.WriteLine($"ClipboardService.SetTextAsync: verification result={verified}");
             return verified;
         }
         catch (COMException ex)
         {
-            Trace.WriteLine("ClipboardService.SetTextAsync: COMException occurred while setting clipboard - rethrowing to caller");
+            Debug.WriteLine("ClipboardService.SetTextAsync: COMException occurred while setting clipboard - rethrowing to caller");
             FileLogger.LogException(ex, "ClipboardService.SetTextAsync: COMException");
             throw; // 呼び出し元に任せる
         }
         catch (TaskCanceledException ex)
         {
-            Trace.WriteLine("ClipboardService.SetTextAsync: Operation was canceled");
+            Debug.WriteLine("ClipboardService.SetTextAsync: Operation was canceled");
             FileLogger.LogException(ex, "ClipboardService.SetTextAsync: TaskCanceled");
             throw;
         }
         catch (Exception ex)
         {
-            Trace.WriteLine($"ClipboardService.SetTextAsync: Unexpected exception: {ex.Message}");
+            Debug.WriteLine($"ClipboardService.SetTextAsync: Unexpected exception: {ex.Message}");
             FileLogger.LogException(ex, "ClipboardService.SetTextAsync: Unexpected");
             throw;
         }
@@ -125,7 +122,7 @@ public class ClipboardService : IDisposable
     {
         const int verificationDelayMs = 25;
 
-        Trace.WriteLine("ClipboardService.VerifyClipboardContentAsync: starting single verification");
+        Debug.WriteLine("ClipboardService.VerifyClipboardContentAsync: starting single verification");
 
         try
         {
@@ -136,13 +133,13 @@ public class ClipboardService : IDisposable
             {
                 if (!System.Windows.Clipboard.ContainsText())
                 {
-                    Trace.WriteLine("ClipboardService.VerifyClipboardContentAsync: clipboard does not contain text");
+                    Debug.WriteLine("ClipboardService.VerifyClipboardContentAsync: clipboard does not contain text");
                     return false;
                 }
                 actualText = System.Windows.Clipboard.GetText();
             }
 
-            Trace.WriteLine($"ClipboardService.VerifyClipboardContentAsync: retrieved text length={actualText?.Length ?? 0}");
+            Debug.WriteLine($"ClipboardService.VerifyClipboardContentAsync: retrieved text length={actualText?.Length ?? 0}");
 
             bool equal = string.Equals(actualText, expectedText, StringComparison.Ordinal);
             // 一応少し待つ選択肢を残す（呼び出し側のキャンセル対応）
@@ -151,19 +148,19 @@ public class ClipboardService : IDisposable
         }
         catch (COMException ex)
         {
-            Trace.WriteLine("ClipboardService.VerifyClipboardContentAsync: COMException during verification - rethrowing");
+            Debug.WriteLine("ClipboardService.VerifyClipboardContentAsync: COMException during verification - rethrowing");
             FileLogger.LogException(ex, "ClipboardService.VerifyClipboardContentAsync: COMException");
             throw;
         }
         catch (TaskCanceledException ex)
         {
-            Trace.WriteLine("ClipboardService.VerifyClipboardContentAsync: verification cancelled");
+            Debug.WriteLine("ClipboardService.VerifyClipboardContentAsync: verification cancelled");
             FileLogger.LogException(ex, "ClipboardService.VerifyClipboardContentAsync: TaskCanceled");
             throw;
         }
         catch (Exception ex)
         {
-            Trace.WriteLine($"ClipboardService.VerifyClipboardContentAsync: Unexpected exception: {ex.Message}");
+            Debug.WriteLine($"ClipboardService.VerifyClipboardContentAsync: Unexpected exception: {ex.Message}");
             FileLogger.LogException(ex, "ClipboardService.VerifyClipboardContentAsync: Unexpected");
             throw;
         }
@@ -174,24 +171,24 @@ public class ClipboardService : IDisposable
     /// </summary>
     public void SetText(string text)
     {
-        Trace.WriteLine($"ClipboardService.SetText: setting text length={text?.Length ?? 0}");
+        Debug.WriteLine($"ClipboardService.SetText: setting text length={text?.Length ?? 0}");
         try
         {
             lock (_lockObject)
             {
                 System.Windows.Clipboard.SetText(text);
             }
-            Trace.WriteLine("ClipboardService.SetText: succeeded");
+            Debug.WriteLine("ClipboardService.SetText: succeeded");
         }
         catch (COMException ex)
         {
-            Trace.WriteLine("ClipboardService.SetText: COMException - rethrowing");
+            Debug.WriteLine("ClipboardService.SetText: COMException - rethrowing");
             FileLogger.LogException(ex, "ClipboardService.SetText: COMException");
             throw;
         }
         catch (Exception ex)
         {
-            Trace.WriteLine($"ClipboardService.SetText: Unexpected exception: {ex.Message}");
+            Debug.WriteLine($"ClipboardService.SetText: Unexpected exception: {ex.Message}");
             FileLogger.LogException(ex, "ClipboardService.SetText: Unexpected");
             throw;
         }
@@ -202,18 +199,18 @@ public class ClipboardService : IDisposable
     /// </summary>
     public string GetTextSafely()
     {
-        Trace.WriteLine("ClipboardService.GetTextSafely: attempting to read clipboard");
+        Debug.WriteLine("ClipboardService.GetTextSafely: attempting to read clipboard");
 
         // 最小限の処理：失敗は例外で伝搬
         lock (_lockObject)
         {
             if (!System.Windows.Clipboard.ContainsText())
             {
-                Trace.WriteLine("ClipboardService.GetTextSafely: clipboard does not contain text");
+                Debug.WriteLine("ClipboardService.GetTextSafely: clipboard does not contain text");
                 return null;
             }
             string text = System.Windows.Clipboard.GetText();
-            Trace.WriteLine($"ClipboardService.GetTextSafely: retrieved text length={text?.Length ?? 0}");
+            Debug.WriteLine($"ClipboardService.GetTextSafely: retrieved text length={text?.Length ?? 0}");
             return text;
         }
     }
@@ -235,7 +232,7 @@ public class ClipboardService : IDisposable
     {
         if (msg == WM_CLIPBOARDUPDATE)
         {
-            Trace.WriteLine("ClipboardService: WM_CLIPBOARDUPDATE received");
+            Debug.WriteLine("ClipboardService: WM_CLIPBOARDUPDATE received");
 
             try
             {
@@ -247,7 +244,7 @@ public class ClipboardService : IDisposable
                 }
                 catch (COMException comEx)
                 {
-                    Trace.WriteLine($"ClipboardService.WndProc: COMException reading clipboard: {comEx.Message}");
+                    Debug.WriteLine($"ClipboardService.WndProc: COMException reading clipboard: {comEx.Message}");
                     FileLogger.LogException(comEx, "ClipboardService.WndProc: COMException");
 
                     // 外部へ通知（UI スレッド上で呼ばれる点に注意）
@@ -255,23 +252,23 @@ public class ClipboardService : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine($"ClipboardService.WndProc: Unexpected error reading clipboard: {ex.Message}");
+                    Debug.WriteLine($"ClipboardService.WndProc: Unexpected error reading clipboard: {ex.Message}");
                     FileLogger.LogException(ex, "ClipboardService.WndProc: Unexpected");
                 }
 
                 if (text != null)
                 {
-                    Trace.WriteLine($"ClipboardService.WndProc: raising ClipboardUpdated with length={text.Length}");
+                    Debug.WriteLine($"ClipboardService.WndProc: raising ClipboardUpdated with length={text.Length}");
                     ClipboardUpdated?.Invoke(this, text);
                 }
                 else
                 {
-                    Trace.WriteLine("ClipboardService.WndProc: no text available after read attempt");
+                    Debug.WriteLine("ClipboardService.WndProc: no text available after read attempt");
                 }
             }
             catch (Exception ex)
             {
-                Trace.WriteLine($"ClipboardService.WndProc: handler error: {ex.Message}");
+                Debug.WriteLine($"ClipboardService.WndProc: handler error: {ex.Message}");
                 FileLogger.LogException(ex, "ClipboardService.WndProc: HandlerError");
             }
         }
@@ -293,7 +290,7 @@ public class ClipboardService : IDisposable
             }
             catch (Exception ex)
             {
-                Trace.WriteLine($"ClipboardService.Dispose: error disposing: {ex.Message}");
+                Debug.WriteLine($"ClipboardService.Dispose: error disposing: {ex.Message}");
                 FileLogger.LogException(ex, "ClipboardService.Dispose: Error");
             }
             finally

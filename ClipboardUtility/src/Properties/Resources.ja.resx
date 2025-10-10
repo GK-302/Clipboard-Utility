@@ -361,4 +361,7 @@
     <value>クリップボードの通知を表示している時間</value>
     <comment>comment&gt;通知の表示を遅延させる時間（ミリ秒）。クリップボードの内容が伝播するまえに表示されるのを防ぐ</comment>
   </data>
+  <data name="ClipboardAccessDeniedMessage" xml:space="preserve">
+    <value>クリップボードへのアクセスが拒否されました</value>
+  </data>
 </root>

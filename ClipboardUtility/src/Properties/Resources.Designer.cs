@@ -70,6 +70,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Clipboard Access was Denied に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ClipboardAccessDeniedMessage {
+            get {
+                return ResourceManager.GetString("ClipboardAccessDeniedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Exit に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Exit {

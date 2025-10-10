@@ -361,4 +361,8 @@
     <value>NotificationDuration</value>
     <comment>Deray to show notificaiotn</comment>
   </data>
+  <data name="ClipboardAccessDeniedMessage" xml:space="preserve">
+    <value>Clipboard Access was Denied</value>
+    <comment>Clipboard access was denied</comment>
+  </data>
 </root>

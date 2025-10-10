@@ -3,7 +3,6 @@ using ClipboardUtility.src.Properties;
 using ClipboardUtility.src.Services;
 using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
 using System.Windows.Data;
 
 namespace ClipboardUtility.src.Converters
@@ -35,18 +34,16 @@ namespace ClipboardUtility.src.Converters
             {
                 try
                 {
-                    // ProcessingModeに対応する表示名リソースキーを取得
-                    var displayKey = GetDisplayResourceKey(mode);
-
-                    // 現在のUIカルチャーでリソースを取得
-                    string display = Resources.ResourceManager.GetString(displayKey, CultureInfo.CurrentUICulture);
+                    // まずコンボ表示用のリソースキーを優先（ProcessingModeDisplay_{mode}）
+                    string displayKey = $"ProcessingModeDisplay_{mode}";
+                    string? display = Resources.ResourceManager.GetString(displayKey, culture ?? CultureInfo.CurrentUICulture);
 
                     if (!string.IsNullOrEmpty(display))
                     {
                         return display;
                     }
 
-                    // リソースが見つからない場合のフォールバック
+                    // 表示用リソースが見つからない場合は短いフォールバック名を返す
                     return GetFallbackDisplayName(mode);
                 }
                 catch (Exception ex)
@@ -65,25 +62,7 @@ namespace ClipboardUtility.src.Converters
         }
 
         /// <summary>
-        /// ProcessingModeに対応する表示名リソースキーを取得
-        /// </summary>
-        private string GetDisplayResourceKey(ProcessingMode mode)
-        {
-            // ResourceKeyAttributeからキーを取得を試みる
-            var fieldInfo = mode.GetType().GetField(mode.ToString());
-            var attr = fieldInfo?.GetCustomAttribute<ResourceKeyAttribute>();
-
-            if (attr != null)
-            {
-                return attr.Key;
-            }
-
-            // ResourceKeyAttributeがない場合は、表示名用のキーを生成
-            return $"ProcessingModeDisplay_{mode}";
-        }
-
-        /// <summary>
-        /// リソースが見つからない場合のフォールバック表示名
+        /// リソースが見つからない場合のフォールバック表示名（短いラベル）
         /// </summary>
         private string GetFallbackDisplayName(ProcessingMode mode)
         {

@@ -1,7 +1,5 @@
-using System;
 using System.IO;
 using System.Text;
-using System.Threading;
 
 namespace ClipboardUtility.src.Helpers
 {
@@ -11,7 +9,7 @@ namespace ClipboardUtility.src.Helpers
     /// </summary>
     internal static class FileLogger
     {
-        private static readonly object _fileLock = new object();
+        private static readonly object _fileLock = new();
         private static readonly string _logDirectory;
         private static readonly string _logFilePath;
 
@@ -21,7 +19,7 @@ namespace ClipboardUtility.src.Helpers
             {
                 var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 _logDirectory = Path.Combine(localAppData, "ClipboardUtility", "logs");
-                Directory.CreateDirectory(_logDirectory);
+                _ = Directory.CreateDirectory(_logDirectory);
                 _logFilePath = Path.Combine(_logDirectory, "app.log");
             }
             catch
@@ -56,15 +54,15 @@ namespace ClipboardUtility.src.Helpers
             try
             {
                 var sb = new StringBuilder();
-                sb.AppendLine(context ?? "Exception");
-                sb.AppendLine(ex.GetType().FullName + ": " + ex.Message);
-                sb.AppendLine(ex.StackTrace ?? string.Empty);
+                _ = sb.AppendLine(context ?? "Exception");
+                _ = sb.AppendLine(ex.GetType().FullName + ": " + ex.Message);
+                _ = sb.AppendLine(ex.StackTrace ?? string.Empty);
 
                 if (ex.InnerException != null)
                 {
-                    sb.AppendLine("--- Inner Exception ---");
-                    sb.AppendLine(ex.InnerException.GetType().FullName + ": " + ex.InnerException.Message);
-                    sb.AppendLine(ex.InnerException.StackTrace ?? string.Empty);
+                    _ = sb.AppendLine("--- Inner Exception ---");
+                    _ = sb.AppendLine(ex.InnerException.GetType().FullName + ": " + ex.InnerException.Message);
+                    _ = sb.AppendLine(ex.InnerException.StackTrace ?? string.Empty);
                 }
 
                 Log(sb.ToString());
