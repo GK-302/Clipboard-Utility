@@ -102,9 +102,18 @@
         </StackPanel>
 
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button x:Name="BtnSave" Width="84" Margin="6" Click="BtnSave_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SaveText}" />
-            <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CancelText}" />
-        </StackPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Width="84" Margin="6" Content="LICENSE" HorizontalAlignment="Left" Click="Button_Click"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="BtnSave" Width="84" Margin="6" Click="BtnSave_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SaveText}" />
+                <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CancelText}" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
