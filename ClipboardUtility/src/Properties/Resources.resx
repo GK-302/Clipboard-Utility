@@ -365,4 +365,25 @@
     <value>Clipboard Access was Denied</value>
     <comment>Clipboard access was denied</comment>
   </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Clipboard Utility</value>
+    <comment>App title</comment>
+  </data>
+  <data name="AppVersion" xml:space="preserve">
+    <value>v0.1</value>
+    <comment>App version</comment>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>This app is Clipboard Utility tool. It help you counting characters and processing text.</value>
+  </data>
+  <data name="NeverShowAgainText" xml:space="preserve">
+    <value>Don't show again</value>
+  </data>
+  <data name="WelcomeNotificationCloseText" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="OperationGuidanceText" xml:space="preserve">
+    <value>・Right-clicking the taskbar icon opens the menu.
+・Clicking the taskbar icon performs a string operation</value>
+  </data>
 </root>

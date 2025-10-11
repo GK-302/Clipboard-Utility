@@ -14,11 +14,11 @@ namespace ClipboardUtility
     {
         private TaskTrayService _taskTrayService;
         private MainViewModel _mainViewModel;
+        private WelcomeService _welcomeService;
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
             // 設定に保存されているカルチャを適用してからウィンドウを生成する
             try
             {
@@ -39,7 +39,20 @@ namespace ClipboardUtility
             // 既存の初期化処理を続ける...
             var tray = TaskTrayService.Instance;
             tray.Initialize();
-
+            // WelcomeService を生成・表示（UI スレッドで実行）
+            try
+            {
+                _welcomeService = new WelcomeService();
+                // 非同期に表示したければ BeginInvoke を使う
+                System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    _welcomeService.ShowWelcomeIfAppropriate();
+                }));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to initialize WelcomeService: {ex}");
+            }
             _mainViewModel = new MainViewModel();
             _mainViewModel.SubscribeToTaskTrayEvents(TaskTrayService.Instance);
 

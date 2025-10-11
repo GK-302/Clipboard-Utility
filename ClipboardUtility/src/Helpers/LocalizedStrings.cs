@@ -57,7 +57,12 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ExitText => Resources.Exit;
     public string NotificationDurationTitle => Resources.NotificationDurationTitle;
     public string ClipboardAccessDeniedMessage => Resources.ClipboardAccessDeniedMessage;
-
+    public string AppTitle => Resources.AppTitle;
+    public string AppVersion => Resources.AppVersion;
+    public string AppDescription => Resources.AppDescription;
+    public string WelcomeNotificationCloseText => Resources.WelcomeNotificationCloseText;
+    public string NeverShowAgainText => Resources.NeverShowAgainText;
+    public string OperationGuidanceText => Resources.OperationGuidanceText;
     public void ChangeCulture(CultureInfo culture)
     {
         if (culture == null) throw new ArgumentNullException(nameof(culture));
@@ -106,6 +111,10 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(ExitText));
         OnPropertyChanged(nameof(NotificationDurationTitle));
         OnPropertyChanged(nameof(ClipboardAccessDeniedMessage));
+        OnPropertyChanged(nameof(AppDescription));
+        OnPropertyChanged(nameof(WelcomeNotificationCloseText));
+        OnPropertyChanged(nameof(NeverShowAgainText));
+        OnPropertyChanged(nameof(OperationGuidanceText));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

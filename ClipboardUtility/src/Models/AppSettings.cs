@@ -33,6 +33,7 @@ namespace ClipboardUtility.src.Models
         public int NotificationDelay { get; set; } = 100; // ミリ秒
         public bool ShowCopyNotification { get; set; } = true;
         public bool ShowOperationNotification { get; set; } = true;
+        public bool ShowWelcomeNotification { get; set; } = true;
 
         // 追加: 保存するカルチャ名 (例: "ja-JP" / "en-US")
         public string CultureName { get; set; } = CultureInfo.CurrentUICulture.Name;
