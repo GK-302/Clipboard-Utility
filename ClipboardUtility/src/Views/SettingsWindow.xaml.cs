@@ -43,5 +43,14 @@ namespace ClipboardUtility.src.Views
             DialogResult = false;
             Close();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            LicenseWindow licenseWindow = new LicenseWindow();
+            licenseWindow.Owner = this; // モーダルウィンドウの所有者を設定
+            licenseWindow.ShowDialog(); // モーダルウィンドウとして表示
+
+
+        }
     }
 }
