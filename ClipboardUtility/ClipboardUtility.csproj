@@ -11,8 +11,13 @@
 
   <ItemGroup>
     <None Remove="src\Assets\drawing_1.ico" />
+    <None Remove="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
     <None Remove="src\Assets\Fonts\NotoSansJP\OFL.txt" />
+    <None Remove="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
+    <None Remove="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Regular.ttf" />
     <None Remove="src\Assets\Fonts\Roboto\OFL.txt" />
+    <None Remove="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
+    <None Remove="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,10 +34,15 @@
 
   <ItemGroup>
     <Resource Include="src\Assets\drawing_1.ico" />
+    <Resource Include="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
     <Resource Include="src\Assets\Fonts\NotoSansJP\OFL.txt" />
+    <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
+    <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Regular.ttf" />
     <Resource Include="src\Assets\Fonts\Roboto\OFL.txt">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
+    <Resource Include="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
   </ItemGroup>
 
   <ItemGroup>

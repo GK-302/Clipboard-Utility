@@ -19,7 +19,7 @@ namespace ClipboardUtility
         {
             base.OnStartup(e);
 
-            // 設定に保存されているカルチャを適用してからウィンドウを生成する
+            // カルチャ設定
             try
             {
                 var cultureName = SettingsService.Instance.Current?.CultureName;
@@ -45,7 +45,9 @@ namespace ClipboardUtility
 
             var mainWindow = new MainWindow(_mainViewModel, TaskTrayService.Instance);
             this.MainWindow = mainWindow;
-            mainWindow.Show(); // トレイアプリとしてメインウィンドウを隠したいなら Show を省いて Hide する等
+
+            // テスト用に一時的に表示（完成したら Show() を削除して隠す）
+            mainWindow.Show();
         }
 
         protected override void OnExit(ExitEventArgs e)
