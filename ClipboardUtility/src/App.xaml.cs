@@ -58,7 +58,9 @@ namespace ClipboardUtility
 
             var mainWindow = new MainWindow(_mainViewModel, TaskTrayService.Instance);
             this.MainWindow = mainWindow;
-            mainWindow.Show(); // トレイアプリとしてメインウィンドウを隠したいなら Show を省いて Hide する等
+
+            // テスト用に一時的に表示（完成したら Show() を削除して隠す）
+            mainWindow.Show();
         }
 
         protected override void OnExit(ExitEventArgs e)
