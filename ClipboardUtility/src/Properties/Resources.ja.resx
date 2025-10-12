@@ -364,4 +364,32 @@
   <data name="ClipboardAccessDeniedMessage" xml:space="preserve">
     <value>クリップボードへのアクセスが拒否されました</value>
   </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Clipboard Utility</value>
+  </data>
+  <data name="AppVersion" xml:space="preserve">
+    <value>v0.1</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>このアプリはクリップボードツールです。文字数をカウントしたり、文字列処理を行ったりします。</value>
+  </data>
+  <data name="NeverShowAgainText" xml:space="preserve">
+    <value>次回から表示しない</value>
+  </data>
+  <data name="WelcomeNotificationCloseText" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="OperationGuidanceText" xml:space="preserve">
+    <value>・タスクトレイアイコンを右クリックすることでメニューが開けます。
+・タスクトレイアイコンをクリックすることで、文字列操作が行えます。</value>
+  </data>
+  <data name="LanguageSettingTitle" xml:space="preserve">
+    <value>言語:</value>
+  </data>
+  <data name="SettingInfomationText" xml:space="preserve">
+    <value>一部の項目は設定を開き直すことで反映されます。</value>
+  </data>
+  <data name="LicenseDescription" xml:space="preserve">
+    <value>本ソフトウェアは、以下のサードパーティ製ソフトウェアおよびフォントを使用しています。それらの必須ライセンスおよび著作権表示は以下の通りです。</value>
+  </data>
 </root>

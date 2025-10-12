@@ -18,9 +18,11 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,8">
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,8">
             <TextBlock FontWeight="Bold"
                        Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SettingTitle}" />
+            <TextBlock FontWeight="Regular"
+                       Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SettingInfomationText}" Margin="10 0 0 0" />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
@@ -46,7 +48,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Language:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
                 <ComboBox Width="200"
                           ItemsSource="{Binding AvailableCultures}"
                           SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
@@ -102,9 +104,18 @@
         </StackPanel>
 
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button x:Name="BtnSave" Width="84" Margin="6" Click="BtnSave_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SaveText}" />
-            <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CancelText}" />
-        </StackPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Width="84" Margin="6" Content="LICENSE" HorizontalAlignment="Left" Click="Button_Click"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="BtnSave" Width="84" Margin="6" Click="BtnSave_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SaveText}" />
+                <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CancelText}" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

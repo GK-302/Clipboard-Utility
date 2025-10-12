@@ -34,16 +34,29 @@ namespace ClipboardUtility.src.Converters
             {
                 try
                 {
+                    // デバッグ出力: 現在のカルチャを確認
+                    // culture パラメータは null の可能性があるので、CurrentUICulture を優先使用
+                    var currentCulture = CultureInfo.CurrentUICulture;
+                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Converting mode={mode}");
+                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: culture parameter={culture?.Name ?? "(null)"}");
+                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: CurrentUICulture={currentCulture.Name}");
+
                     // まずコンボ表示用のリソースキーを優先（ProcessingModeDisplay_{mode}）
                     string displayKey = $"ProcessingModeDisplay_{mode}";
-                    string? display = Resources.ResourceManager.GetString(displayKey, culture ?? CultureInfo.CurrentUICulture);
+                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Looking for resource key: {displayKey}");
+                    
+                    // CurrentUICulture を使用してリソースを取得
+                    string? display = Resources.ResourceManager.GetString(displayKey, currentCulture);
+                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Resource value: {display ?? "(null)"}");
 
                     if (!string.IsNullOrEmpty(display))
                     {
+                        System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Returning resource value: {display}");
                         return display;
                     }
 
                     // 表示用リソースが見つからない場合は短いフォールバック名を返す
+                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Resource not found, using fallback");
                     return GetFallbackDisplayName(mode);
                 }
                 catch (Exception ex)

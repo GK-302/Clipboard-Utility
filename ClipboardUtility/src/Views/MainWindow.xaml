@@ -11,6 +11,17 @@
         AllowsTransparency="True"
         Background="Transparent"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+    <Grid><!--
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="これはテストテキストです" FontSize="24"/>
+            <TextBlock Text="This is test text" FontSize="24"/>
+            <Button Content="テストボタン" Margin="10" Padding="10"/>
+            <TextBox Text="テキストボックス" Margin="10" Padding="5"/>
+            <Label Content="ラベル" FontSize="18"/>
+        </StackPanel>
+        -->
+        <!-- UI要素は不要なのでコメントアウト -->
     </Grid>
+        
+  
 </Window>

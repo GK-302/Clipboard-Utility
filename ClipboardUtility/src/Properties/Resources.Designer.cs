@@ -61,6 +61,33 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   This app is Clipboard Utility tool. It help you counting characters and processing text. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AppDescription {
+            get {
+                return ResourceManager.GetString("AppDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Clipboard Utility に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AppTitle {
+            get {
+                return ResourceManager.GetString("AppTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   v0.1 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AppVersion {
+            get {
+                return ResourceManager.GetString("AppVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Cancel に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string CancelText {
@@ -84,6 +111,33 @@ namespace ClipboardUtility.src.Properties {
         public static string Exit {
             get {
                 return ResourceManager.GetString("Exit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Language: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LanguageSettingTitle {
+            get {
+                return ResourceManager.GetString("LanguageSettingTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   This software uses the following third-party software and fonts. Below are their required licenses and copyright notices. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LicenseDescription {
+            get {
+                return ResourceManager.GetString("LicenseDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Don&apos;t show again に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NeverShowAgainText {
+            get {
+                return ResourceManager.GetString("NeverShowAgainText", resourceCulture);
             }
         }
         
@@ -367,6 +421,16 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   ・Right-clicking the taskbar icon opens the menu.
+        ///・Clicking the taskbar icon performs a string operation に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string OperationGuidanceText {
+            get {
+                return ResourceManager.GetString("OperationGuidanceText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Processing Mode: に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ProcessingMode {
@@ -583,6 +647,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Some setting items will be reflected to reopen setting. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SettingInfomationText {
+            get {
+                return ResourceManager.GetString("SettingInfomationText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Setting に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SettingTitle {
@@ -606,6 +679,15 @@ namespace ClipboardUtility.src.Properties {
         public static string ShowOperationNotification {
             get {
                 return ResourceManager.GetString("ShowOperationNotification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Close に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string WelcomeNotificationCloseText {
+            get {
+                return ResourceManager.GetString("WelcomeNotificationCloseText", resourceCulture);
             }
         }
         
