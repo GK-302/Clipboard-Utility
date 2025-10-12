@@ -4,9 +4,9 @@ name: .NET WPF Release
 # ワークフローが実行されるタイミングを定義
 on:
   push:
-    # 例: v1.0.0, v1.2.3
     tags:
       - 'v*.*.*'
+      - 'v*.*'
 
   workflow_dispatch:
 
@@ -17,6 +17,10 @@ jobs:
     name: Build and Release
     # 実行環境を指定。WPFはWindowsが必須
     runs-on: windows-latest
+
+    # GitHubリリースを作成・編集するために、リポジトリのコンテンツへの書き込み権限を付与します。
+    permissions:
+      contents: write
 
     steps:
       # 1. リポジトリのソースコードをチェックアウトする
@@ -41,7 +45,7 @@ jobs:
 
       # 4. 発行された成果物をZIPファイルに圧縮する
       - name: Zip the artifacts
-        run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-v${{ github.ref_name }}.zip
+        run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-${{ github.ref_name }}.zip
 
       # 5. GitHubリリースを作成する
       - name: Create Release
@@ -52,8 +56,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
-          body: |
-            # ここにリリースの説明文を記述
           draft: false
           prerelease: false
 
