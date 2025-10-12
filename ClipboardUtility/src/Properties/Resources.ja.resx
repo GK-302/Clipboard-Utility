@@ -383,4 +383,13 @@
     <value>・タスクトレイアイコンを右クリックすることでメニューが開けます。
 ・タスクトレイアイコンをクリックすることで、文字列操作が行えます。</value>
   </data>
+  <data name="LanguageSettingTitle" xml:space="preserve">
+    <value>言語:</value>
+  </data>
+  <data name="SettingInfomationText" xml:space="preserve">
+    <value>一部の項目は設定を開き直すことで反映されます。</value>
+  </data>
+  <data name="LicenseDescription" xml:space="preserve">
+    <value>本ソフトウェアは、以下のサードパーティ製ソフトウェアおよびフォントを使用しています。それらの必須ライセンスおよび著作権表示は以下の通りです。</value>
+  </data>
 </root>

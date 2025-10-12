@@ -30,7 +30,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
             CultureName = settings.CultureName
         };
 
-        ProcessingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
+        _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
         SelectedProcessingMode = _settings.ClipboardProcessingMode;
 
         // 利用可能なカルチャ一覧（必要に応じて追加）
@@ -40,7 +40,9 @@ internal class SettingsViewModel : INotifyPropertyChanged
                           ?? CultureInfo.CurrentUICulture;
     }
 
-    public IList<ProcessingMode> ProcessingModes { get; }
+    private IList<ProcessingMode> _processingModes;
+    public IList<ProcessingMode> ProcessingModes => _processingModes;
+    
     public IList<CultureInfo> AvailableCultures { get; }
 
     // 追加: SelectedProcessingMode プロパティ（XAMLバインドと参照用）
@@ -80,6 +82,10 @@ internal class SettingsViewModel : INotifyPropertyChanged
     private void ApplyCulture(CultureInfo ci)
     {
         if (ci == null) return;
+        
+        // 現在選択されているモードを保存
+        var currentMode = SelectedProcessingMode;
+        
         // プロセス/スレッド全体の既定カルチャを設定
         CultureInfo.DefaultThreadCurrentCulture = ci;
         CultureInfo.DefaultThreadCurrentUICulture = ci;
@@ -88,6 +94,13 @@ internal class SettingsViewModel : INotifyPropertyChanged
 
         // LocalizedStrings に通知してバインド済みのラベルを更新
         LocalizedStrings.Instance.ChangeCulture(ci);
+
+        // ProcessingModesリストを再作成して、ComboBoxを強制的に更新
+        _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
+        OnPropertyChanged(nameof(ProcessingModes));
+        
+        // 選択を復元
+        SelectedProcessingMode = currentMode;
     }
 
     // Notification size/offset props

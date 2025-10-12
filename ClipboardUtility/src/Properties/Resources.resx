@@ -386,4 +386,13 @@
     <value>・Right-clicking the taskbar icon opens the menu.
 ・Clicking the taskbar icon performs a string operation</value>
   </data>
+  <data name="LanguageSettingTitle" xml:space="preserve">
+    <value>Language:</value>
+  </data>
+  <data name="SettingInfomationText" xml:space="preserve">
+    <value>Some setting items will be reflected to reopen setting.</value>
+  </data>
+  <data name="LicenseDescription" xml:space="preserve">
+    <value>This software uses the following third-party software and fonts. Below are their required licenses and copyright notices.</value>
+  </data>
 </root>

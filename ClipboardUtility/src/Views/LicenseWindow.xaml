@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClipboardUtility.src.Views"
+        xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
         mc:Ignorable="d"
-        Title="LicenseWindow" Height="450" Width="800">
+        Title="License" Height="450" Width="800">
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -15,7 +16,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
-                   Text="This software uses the following third-party software and fonts. Below are their required licenses and copyright notices."
+                   Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LicenseDescription}"
                    TextWrapping="Wrap"
                    FontWeight="Bold"
                    FontSize="13"
