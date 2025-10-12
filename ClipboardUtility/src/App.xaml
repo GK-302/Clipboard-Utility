@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:ClipboardUtility">
     <!-- StartupUri を削除（コードで作成するため） -->
     <Application.Resources>
-        <FontFamily x:Key="GlobalFont">./Assets/Fonts/Roboto/static/Roboto_Condensed-Black.ttf#Roboto Condensed</FontFamily>
+        <FontFamily x:Key="GlobalFont">./Assets/Fonts/NotoSansJP/NotoSansJP-VariableFont_wght.ttf#Noto Sans JP</FontFamily>
         <Style TargetType="Window">
             <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
         </Style>

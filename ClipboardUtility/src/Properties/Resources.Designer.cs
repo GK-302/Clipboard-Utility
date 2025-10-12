@@ -115,6 +115,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Language: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LanguageSettingTitle {
+            get {
+                return ResourceManager.GetString("LanguageSettingTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Don&apos;t show again に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NeverShowAgainText {

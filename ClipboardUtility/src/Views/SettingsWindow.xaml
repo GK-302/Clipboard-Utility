@@ -46,7 +46,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center">Language:</TextBlock>
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
                 <ComboBox Width="200"
                           ItemsSource="{Binding AvailableCultures}"
                           SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"

@@ -383,4 +383,7 @@
     <value>・タスクトレイアイコンを右クリックすることでメニューが開けます。
 ・タスクトレイアイコンをクリックすることで、文字列操作が行えます。</value>
   </data>
+  <data name="LanguageSettingTitle" xml:space="preserve">
+    <value>言語:</value>
+  </data>
 </root>

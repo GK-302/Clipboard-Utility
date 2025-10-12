@@ -386,4 +386,7 @@
     <value>・Right-clicking the taskbar icon opens the menu.
 ・Clicking the taskbar icon performs a string operation</value>
   </data>
+  <data name="LanguageSettingTitle" xml:space="preserve">
+    <value>Language:</value>
+  </data>
 </root>
