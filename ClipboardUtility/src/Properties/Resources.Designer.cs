@@ -124,6 +124,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   This software uses the following third-party software and fonts. Below are their required licenses and copyright notices. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LicenseDescription {
+            get {
+                return ResourceManager.GetString("LicenseDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Don&apos;t show again に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NeverShowAgainText {
@@ -634,6 +643,15 @@ namespace ClipboardUtility.src.Properties {
         public static string SaveText {
             get {
                 return ResourceManager.GetString("SaveText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Some setting items will be reflected to reopen setting. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SettingInfomationText {
+            get {
+                return ResourceManager.GetString("SettingInfomationText", resourceCulture);
             }
         }
         
