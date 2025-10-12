@@ -18,6 +18,10 @@ jobs:
     # 実行環境を指定。WPFはWindowsが必須
     runs-on: windows-latest
 
+    # GitHubリリースを作成・編集するために、リポジトリのコンテンツへの書き込み権限を付与します。
+    permissions:
+      contents: write
+
     steps:
       # 1. リポジトリのソースコードをチェックアウトする
       - name: Checkout code
