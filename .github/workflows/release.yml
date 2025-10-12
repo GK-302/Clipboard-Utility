@@ -4,9 +4,9 @@ name: .NET WPF Release
 # ワークフローが実行されるタイミングを定義
 on:
   push:
-    # 例: v1.0.0, v1.2.3
     tags:
       - 'v*.*.*'
+      - 'v*.*'
 
   workflow_dispatch:
 
@@ -52,8 +52,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
-          body: |
-            # ここにリリースの説明文を記述
           draft: false
           prerelease: false
 
