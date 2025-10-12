@@ -45,7 +45,7 @@ jobs:
 
       # 4. 発行された成果物をZIPファイルに圧縮する
       - name: Zip the artifacts
-        run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-v${{ github.ref_name }}.zip
+        run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-${{ github.ref_name }}.zip
 
       # 5. GitHubリリースを作成する
       - name: Create Release
