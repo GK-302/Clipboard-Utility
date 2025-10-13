@@ -61,6 +61,28 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   1. Place this folder wherever you like.
+        ///2. Create a shortcut for `Clipboard Utility.exe`.
+        ///3. Place the created shortcut into the Startup folder.
+        ///
+        ///*How to open the Startup folder:* Press the Windows key and the R key simultaneously. Type `shell:startup` and press Enter. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AddStartUpGuidanceManuallyText {
+            get {
+                return ResourceManager.GetString("AddStartUpGuidanceManuallyText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   How to execute this software when computer starts. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AddStartUpGuidanceManuallyTitle {
+            get {
+                return ResourceManager.GetString("AddStartUpGuidanceManuallyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   This app is Clipboard Utility tool. It help you counting characters and processing text. に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string AppDescription {

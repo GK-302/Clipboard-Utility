@@ -66,6 +66,9 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string LanugageSettingTitle => Resources.LanguageSettingTitle;
     public string SettingInfomationText => Resources.SettingInfomationText;
     public string LicenseDescription => Resources.LicenseDescription;
+    public string AddStartUpGuidanceManuallyText => Resources.AddStartUpGuidanceManuallyText;
+    public string AddStartUpGuidanceManuallyTitle => Resources.AddStartUpGuidanceManuallyTitle;
+
     public void ChangeCulture(CultureInfo culture)
     {
         if (culture == null) throw new ArgumentNullException(nameof(culture));
@@ -121,6 +124,8 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(LanugageSettingTitle));
         OnPropertyChanged(nameof(SettingInfomationText));
         OnPropertyChanged(nameof(LicenseDescription));
+        OnPropertyChanged(nameof(AddStartUpGuidanceManuallyText));
+        OnPropertyChanged(nameof(AddStartUpGuidanceManuallyTitle));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

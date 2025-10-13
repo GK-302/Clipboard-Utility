@@ -42,12 +42,16 @@ jobs:
         # --self-contained true: .NETがインストールされていなくても動くように自己完結型でビルド
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
+        
+      # 4. README.mdをpublishディレクトリにコピーする
+      - name: Copy README to publish folder
+        run: Copy-Item -Path ./README* -Destination ./publish/
 
-      # 4. 発行された成果物をZIPファイルに圧縮する
+      # 5. 発行された成果物をZIPファイルに圧縮する
       - name: Zip the artifacts
         run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-${{ github.ref_name }}.zip
 
-      # 5. GitHubリリースを作成する
+      # 6. GitHubリリースを作成する
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -59,7 +63,7 @@ jobs:
           draft: false
           prerelease: false
 
-      # 6. ZIPファイルをリリースにアップロードする
+      # 7. ZIPファイルをリリースにアップロードする
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
