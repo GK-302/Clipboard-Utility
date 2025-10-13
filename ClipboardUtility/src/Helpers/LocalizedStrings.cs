@@ -68,6 +68,10 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string LicenseDescription => Resources.LicenseDescription;
     public string AddStartUpGuidanceManuallyText => Resources.AddStartUpGuidanceManuallyText;
     public string AddStartUpGuidanceManuallyTitle => Resources.AddStartUpGuidanceManuallyTitle;
+    public string NoClipboardDataText => Resources.NoClipboardDataText;
+    public string CharacterCountText => Resources.CharacterCountText;
+    public string WordCountText => Resources.WordCountText;
+    public string LineCountText => Resources.LineCountText;
 
     public void ChangeCulture(CultureInfo culture)
     {
@@ -126,6 +130,10 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(LicenseDescription));
         OnPropertyChanged(nameof(AddStartUpGuidanceManuallyText));
         OnPropertyChanged(nameof(AddStartUpGuidanceManuallyTitle));
+        OnPropertyChanged(nameof(NoClipboardDataText));
+        OnPropertyChanged(nameof(CharacterCountText));
+        OnPropertyChanged(nameof(WordCountText));
+        OnPropertyChanged(nameof(LineCountText));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

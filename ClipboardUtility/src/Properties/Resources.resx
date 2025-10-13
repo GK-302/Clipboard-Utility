@@ -405,4 +405,20 @@
   <data name="AddStartUpGuidanceManuallyTitle" xml:space="preserve">
     <value>How to execute this software when computer starts.</value>
   </data>
+  <data name="NoClipboardDataText" xml:space="preserve">
+    <value>No clipboard data</value>
+    <comment>Text shown when clipboard is empty</comment>
+  </data>
+  <data name="CharacterCountText" xml:space="preserve">
+    <value>Characters</value>
+    <comment>Label for character count in tooltip</comment>
+  </data>
+  <data name="WordCountText" xml:space="preserve">
+    <value>Words</value>
+    <comment>Label for word count in tooltip</comment>
+  </data>
+  <data name="LineCountText" xml:space="preserve">
+    <value>Lines</value>
+    <comment>Label for line count in tooltip</comment>
+  </data>
 </root>

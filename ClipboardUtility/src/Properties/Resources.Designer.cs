@@ -83,6 +83,42 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   No clipboard data に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NoClipboardDataText {
+            get {
+                return ResourceManager.GetString("NoClipboardDataText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Characters に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CharacterCountText {
+            get {
+                return ResourceManager.GetString("CharacterCountText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Words に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string WordCountText {
+            get {
+                return ResourceManager.GetString("WordCountText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Lines に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LineCountText {
+            get {
+                return ResourceManager.GetString("LineCountText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   This app is Clipboard Utility tool. It help you counting characters and processing text. に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string AppDescription {

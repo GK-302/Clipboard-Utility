@@ -53,6 +53,9 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     // handler reference so we can unsubscribe
     private PropertyChangedEventHandler _localizationHandler;
 
+    // クリップボードの統計情報を保持
+    private string _currentClipboardText = string.Empty;
+
     // イベントを定義
     public event EventHandler ClipboardOperationRequested;
     public event EventHandler ShowWindowRequested;
@@ -98,6 +101,14 @@ public class TaskTrayService : ITaskTrayService, IDisposable
                 {
                     _exitMenuItem.Text = LocalizedStrings.Instance.ExitText;
                 }
+                // ツールチップに関連するプロパティが変更されたときにツールチップを更新
+                else if (e.PropertyName == nameof(LocalizedStrings.NoClipboardDataText) ||
+                         e.PropertyName == nameof(LocalizedStrings.CharacterCountText) ||
+                         e.PropertyName == nameof(LocalizedStrings.WordCountText) ||
+                         e.PropertyName == nameof(LocalizedStrings.LineCountText))
+                {
+                    UpdateTooltip(_currentClipboardText);
+                }
             }
             catch (Exception ex)
             {
@@ -118,7 +129,97 @@ public class TaskTrayService : ITaskTrayService, IDisposable
         _notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(OnNotifyIconClicked);
         _isInitialized = true;
 
+        // 初期ツールチップを設定
+        UpdateTooltip(string.Empty);
+
         Debug.WriteLine("TaskTrayService initialized successfully.");
+    }
+
+    /// <summary>
+    /// クリップボードのテキストが更新されたときに呼び出されます
+    /// </summary>
+    public void UpdateClipboardInfo(string clipboardText)
+    {
+        _currentClipboardText = clipboardText ?? string.Empty;
+        UpdateTooltip(_currentClipboardText);
+    }
+
+    /// <summary>
+    /// ツールチップを更新します
+    /// </summary>
+    private void UpdateTooltip(string text)
+    {
+        if (_notifyIcon == null || !_isInitialized)
+        {
+            return;
+        }
+
+        try
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                _notifyIcon.Text = "Clipboard Utility\n" + LocalizedStrings.Instance.NoClipboardDataText;
+            }
+            else
+            {
+                int charCount = text.Length;
+                int wordCount = CountWords(text);
+                int lineCount = CountLines(text);
+
+                string tooltip = $"Clipboard Utility\n" +
+                                $"{LocalizedStrings.Instance.CharacterCountText}: {charCount}\n" +
+                                $"{LocalizedStrings.Instance.WordCountText}: {wordCount}\n" +
+                                $"{LocalizedStrings.Instance.LineCountText}: {lineCount}";
+
+                // NotifyIconのTextプロパティは最大63文字の制限があります
+                if (tooltip.Length > 63)
+                {
+                    tooltip = tooltip.Substring(0, 60) + "...";
+                }
+
+                _notifyIcon.Text = tooltip;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"TaskTrayService: UpdateTooltip failed: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// テキスト内の単語数をカウントします
+    /// </summary>
+    private int CountWords(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return 0;
+        }
+
+        // 空白文字で分割して単語数をカウント
+        var words = text.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        return words.Length;
+    }
+
+    /// <summary>
+    /// テキスト内の行数をカウントします
+    /// </summary>
+    private int CountLines(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return 0;
+        }
+
+        // 改行で分割して行数をカウント
+        var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.None);
+        // 空行も含めるが、末尾の余分な改行は除外
+        int count = lines.Length;
+        if (count > 0 && string.IsNullOrEmpty(lines[count - 1]))
+        {
+            count--;
+        }
+        return Math.Max(1, count);
     }
 
     private void OnNotifyIconClicked(object? sender, System.Windows.Forms.MouseEventArgs e)

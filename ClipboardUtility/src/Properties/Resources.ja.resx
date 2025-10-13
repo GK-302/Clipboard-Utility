@@ -401,4 +401,20 @@
   <data name="AddStartUpGuidanceManuallyTitle" xml:space="preserve">
     <value>コンピューターが起動したときに自動的に起動する方法</value>
   </data>
+  <data name="NoClipboardDataText" xml:space="preserve">
+    <value>クリップボードにデータがありません</value>
+    <comment>クリップボードが空のときに表示するテキスト</comment>
+  </data>
+  <data name="CharacterCountText" xml:space="preserve">
+    <value>文字数</value>
+    <comment>ツールチップの文字数ラベル</comment>
+  </data>
+  <data name="WordCountText" xml:space="preserve">
+    <value>単語数</value>
+    <comment>ツールチップの単語数ラベル</comment>
+  </data>
+  <data name="LineCountText" xml:space="preserve">
+    <value>行数</value>
+    <comment>ツールチップの行数ラベル</comment>
+  </data>
 </root>
