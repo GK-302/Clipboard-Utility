@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:ClipboardUtility.src.Views"
         xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
         mc:Ignorable="d"
+        ResizeMode="NoResize"
         Title="WelcomeWindow" Height="450" Width="800">
 
     <Grid>
@@ -19,23 +20,37 @@
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AppDescription}" FontSize="14" Margin="10"/>
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AppVersion}" FontSize="14" Margin="10"/>
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=OperationGuidanceText}" FontSize="14" Margin="10"/>
+            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AddStartUpGuidanceManuallyTitle}" FontSize="18" Margin="10"/>
+            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AddStartUpGuidanceManuallyText}" FontSize="14" Margin="10"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" 
-                    HorizontalAlignment="Right" 
-                    Margin="10">
+        <Grid Grid.Row="1" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NeverShowAgainText}" 
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Margin="0" 
-                       Foreground="Gray"/>
-            <CheckBox Name="IsShowAgain" Margin="10,0,10,0" VerticalAlignment="Center"/>
-            <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WelcomeNotificationCloseText}" 
-                    HorizontalAlignment="Center" 
-                    Click="Button_Click"
-                    Padding="10,5"/>
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
+                <ComboBox Width="200"
+                  ItemsSource="{Binding AvailableCultures}"
+                  SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
+                  DisplayMemberPath="NativeName" />
+            </StackPanel>
 
-        </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NeverShowAgainText}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0"
+                   Foreground="Gray"/>
+                <CheckBox Name="IsShowAgain" Margin="10,0,10,0" VerticalAlignment="Center"/>
+                <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WelcomeNotificationCloseText}"
+                HorizontalAlignment="Center"
+                Click="Button_Click"
+                Padding="10,5"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

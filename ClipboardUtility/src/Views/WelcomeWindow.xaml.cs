@@ -1,22 +1,25 @@
-﻿using System;
-using System.ComponentModel;
+﻿using ClipboardUtility.src.ViewModels;  // この行を追加
+using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
 namespace ClipboardUtility.src.Views
 {
-    /// <summary>
-    /// WelcomeWindow.xaml の相互作用ロジック
-    /// タイトルバーのボタンを非表示にする処理を追加
-    /// </summary>
     public partial class WelcomeWindow : Window
     {
+        private readonly WelcomeWindowViewModel _vm;  // この行を追加
+
         public WelcomeWindow()
         {
             InitializeComponent();
-            // Window ハンドルが利用可能になったタイミングで非表示処理を行う
+            
+            // ViewModelを設定（これらの行を追加）
+            _vm = new WelcomeWindowViewModel();
+            DataContext = _vm;
+
             SourceInitialized += WelcomeWindow_SourceInitialized;
+            this.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
         private void WelcomeWindow_SourceInitialized(object? sender, EventArgs e)

@@ -395,4 +395,14 @@
   <data name="LicenseDescription" xml:space="preserve">
     <value>This software uses the following third-party software and fonts. Below are their required licenses and copyright notices.</value>
   </data>
+  <data name="AddStartUpGuidanceManuallyText" xml:space="preserve">
+    <value>1. Place this folder wherever you like.
+2. Create a shortcut for `Clipboard Utility.exe`.
+3. Place the created shortcut into the Startup folder.
+
+*How to open the Startup folder:* Press the Windows key and the R key simultaneously. Type `shell:startup` and press Enter.</value>
+  </data>
+  <data name="AddStartUpGuidanceManuallyTitle" xml:space="preserve">
+    <value>How to execute this software when computer starts.</value>
+  </data>
 </root>
