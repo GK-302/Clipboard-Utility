@@ -392,4 +392,13 @@
   <data name="LicenseDescription" xml:space="preserve">
     <value>本ソフトウェアは、以下のサードパーティ製ソフトウェアおよびフォントを使用しています。それらの必須ライセンスおよび著作権表示は以下の通りです。</value>
   </data>
+  <data name="AddStartUpGuidanceManuallyText" xml:space="preserve">
+    <value>1. このフォルダを好きなところに置きます。
+2. Clipboard Utility.exeのショートカットを作成します。
+3. 作成したショートカットをスタートアップフォルダに置きます。
+※スタートアップフォルダの開き方: Windowsキーを押しながらRキーを押します。shell:startupと入力しEnterを押します。</value>
+  </data>
+  <data name="AddStartUpGuidanceManuallyTitle" xml:space="preserve">
+    <value>コンピューターが起動したときに自動的に起動する方法</value>
+  </data>
 </root>

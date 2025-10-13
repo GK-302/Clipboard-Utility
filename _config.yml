@@ -6,3 +6,7 @@ description: 私が開発しているクリップボードのユーティリテ�
 
 # ここが重要！使うテーマを指定します
 theme: jekyll-theme-minimal
+
+# プラグインのリスト
+plugins:
+  - jekyll-sitemap
