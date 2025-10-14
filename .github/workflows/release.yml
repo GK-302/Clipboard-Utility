@@ -69,7 +69,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # 5で作成したリリースのURL
-          asset_path: ./ClipboardUtility-${{ github.ref_name }}.zip # 4で作成したZIPファイルのパス
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # 6で作成したリリースのURL
+          asset_path: ./ClipboardUtility-${{ github.ref_name }}.zip # 5で作成したZIPファイルのパス
           asset_name: ClipboardUtility-${{ github.ref_name }}.zip # リリースに表示されるファイル名
           asset_content_type: application/zip
+
