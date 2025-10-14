@@ -34,7 +34,7 @@ namespace ClipboardUtility.src.Views
         {
             try
             {
-                // 1) Try to find OFL.txt files in the application's output directory (supports adding licenses later)
+                // OFL.txt files are now set as "Content" build action, so they are copied to output directory
                 var baseDir = AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
                 var foundFiles = new List<string>();
 
@@ -44,6 +44,7 @@ namespace ClipboardUtility.src.Views
                     {
                         // Search for files named OFL.txt under the output directory
                         foundFiles = Directory.EnumerateFiles(baseDir, "OFL.txt", SearchOption.AllDirectories).ToList();
+                        Debug.WriteLine($"Searching for OFL.txt in: {baseDir}");
                     }
                 }
                 catch (Exception ex)
@@ -53,42 +54,39 @@ namespace ClipboardUtility.src.Views
 
                 if (foundFiles.Count > 0)
                 {
-                    Debug.WriteLine($"Found {foundFiles.Count} license files on disk.");
+                    Debug.WriteLine($"Found {foundFiles.Count} license file(s) on disk.");
                     foreach (var file in foundFiles)
                     {
+                        Debug.WriteLine($"Loading license from: {file}");
+                        
+                        // Extract the font directory name (e.g., "Roboto" or "NotoSansJP")
                         string title = Path.GetFileName(Path.GetDirectoryName(file)) ?? Path.GetFileName(file);
+                        
                         string content = File.ReadAllText(file, Encoding.UTF8);
                         AddLicenseBlock(title, content);
                     }
-                    return;
                 }
-
-                // 2) Fallback: try known pack URIs (for resources marked as Resource)
-                var knownDirs = new[] { "Roboto", "NotoSansJP" };
-                foreach (var dir in knownDirs)
+                else
                 {
-                    var uri = new Uri($"pack://application:,,,/ClipboardUtility;component/src/Assets/Fonts/{dir}/OFL.txt", UriKind.Absolute);
-                    var streamInfo = System.Windows.Application.GetResourceStream(uri);
-                    if (streamInfo == null)
-                    {
-                        Debug.WriteLine($"Resource not found: {uri}");
-                        continue;
-                    }
-
-                    using var reader = new StreamReader(streamInfo.Stream, Encoding.UTF8);
-                    var content = reader.ReadToEnd();
-                    AddLicenseBlock(dir, content);
-                }
-
-                if (LicenseStackPanel.Children.Count == 0)
-                {
-                    LicenseStackPanel.Children.Add(new TextBlock { Text = "ライセンス情報が見つかりませんでした。", Margin = new Thickness(8) });
+                    Debug.WriteLine("No OFL.txt files found in the output directory.");
+                    LicenseStackPanel.Children.Add(new TextBlock 
+                    { 
+                        Text = "ライセンス情報が見つかりませんでした。\n\n" +
+                               $"検索パス: {baseDir}", 
+                        Margin = new Thickness(8),
+                        TextWrapping = TextWrapping.Wrap
+                    });
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Failed to load license text: {ex}");
-                LicenseStackPanel.Children.Add(new TextBlock { Text = "ライセンス情報の読み込みに失敗しました。\n\n" + ex.Message, Margin = new Thickness(8) });
+                LicenseStackPanel.Children.Add(new TextBlock 
+                { 
+                    Text = "ライセンス情報の読み込みに失敗しました。\n\n" + ex.Message, 
+                    Margin = new Thickness(8),
+                    TextWrapping = TextWrapping.Wrap
+                });
             }
         }
 

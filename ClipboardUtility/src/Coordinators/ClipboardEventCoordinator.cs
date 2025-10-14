@@ -15,15 +15,18 @@ internal class ClipboardEventCoordinator
     private readonly TextProcessingService _textProcessingService;
     private readonly NotificationsService _notificationsService;
     private readonly Func<bool> _isInternalOperationGetter;
+    private readonly TaskTrayService? _taskTrayService;
 
     public ClipboardEventCoordinator(
         TextProcessingService textProcessingService,
         NotificationsService notificationsService,
-        Func<bool> isInternalOperationGetter)
+        Func<bool> isInternalOperationGetter,
+        TaskTrayService? taskTrayService = null)
     {
         _textProcessingService = textProcessingService ?? throw new ArgumentNullException(nameof(textProcessingService));
         _notificationsService = notificationsService ?? throw new ArgumentNullException(nameof(notificationsService));
         _isInternalOperationGetter = isInternalOperationGetter ?? throw new ArgumentNullException(nameof(isInternalOperationGetter));
+        _taskTrayService = taskTrayService;
     }
 
     /// <summary>
@@ -37,6 +40,17 @@ internal class ClipboardEventCoordinator
         {
             Debug.WriteLine("ClipboardEventCoordinator: Skipping update (internal operation)");
             return;
+        }
+
+        // TaskTrayServiceにクリップボード情報を更新
+        try
+        {
+            _taskTrayService?.UpdateClipboardInfo(newText);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"ClipboardEventCoordinator: Failed to update TaskTrayService: {ex.Message}");
+            FileLogger.LogException(ex, "ClipboardEventCoordinator.OnClipboardUpdated: TaskTrayService update failed");
         }
 
         int charCount = _textProcessingService.CountCharacters(newText);

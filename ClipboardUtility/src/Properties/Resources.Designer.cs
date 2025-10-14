@@ -61,6 +61,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Actions に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ActionsText {
+            get {
+                return ResourceManager.GetString("ActionsText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   1. Place this folder wherever you like.
         ///2. Create a shortcut for `Clipboard Utility.exe`.
         ///3. Place the created shortcut into the Startup folder.
@@ -92,6 +101,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Apply に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ApplyText {
+            get {
+                return ResourceManager.GetString("ApplyText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Clipboard Utility に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string AppTitle {
@@ -119,11 +137,65 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Characters に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CharacterCountText {
+            get {
+                return ResourceManager.GetString("CharacterCountText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Clear に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ClearText {
+            get {
+                return ResourceManager.GetString("ClearText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Clipboard Access was Denied に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ClipboardAccessDeniedMessage {
             get {
                 return ResourceManager.GetString("ClipboardAccessDeniedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Clipboard Manager に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ClipboardManagerTitle {
+            get {
+                return ResourceManager.GetString("ClipboardManagerTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Clipboard Preview に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ClipboardPreviewText {
+            get {
+                return ResourceManager.GetString("ClipboardPreviewText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Close に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CloseText {
+            get {
+                return ResourceManager.GetString("CloseText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Copy to Clipboard に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CopyToClipboardText {
+            get {
+                return ResourceManager.GetString("CopyToClipboardText", resourceCulture);
             }
         }
         
@@ -155,11 +227,29 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Lines に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LineCountText {
+            get {
+                return ResourceManager.GetString("LineCountText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Don&apos;t show again に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NeverShowAgainText {
             get {
                 return ResourceManager.GetString("NeverShowAgainText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   No clipboard data に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NoClipboardDataText {
+            get {
+                return ResourceManager.GetString("NoClipboardDataText", resourceCulture);
             }
         }
         
@@ -434,7 +524,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Open Settings に類似しているローカライズされた文字列を検索します。
+        ///   Setting に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string OpenSetting {
             get {
@@ -449,6 +539,15 @@ namespace ClipboardUtility.src.Properties {
         public static string OperationGuidanceText {
             get {
                 return ResourceManager.GetString("OperationGuidanceText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Select a processing mode and click Apply to transform the text. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingInfoText {
+            get {
+                return ResourceManager.GetString("ProcessingInfoText", resourceCulture);
             }
         }
         
@@ -660,11 +759,29 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Refresh に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RefreshText {
+            get {
+                return ResourceManager.GetString("RefreshText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Save に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SaveText {
             get {
                 return ResourceManager.GetString("SaveText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Select Mode: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SelectProcessingModeText {
+            get {
+                return ResourceManager.GetString("SelectProcessingModeText", resourceCulture);
             }
         }
         
@@ -705,6 +822,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Text Processing に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string TextProcessingText {
+            get {
+                return ResourceManager.GetString("TextProcessingText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Close に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string WelcomeNotificationCloseText {
@@ -719,6 +845,15 @@ namespace ClipboardUtility.src.Properties {
         public static string WindowTitle {
             get {
                 return ResourceManager.GetString("WindowTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Words に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string WordCountText {
+            get {
+                return ResourceManager.GetString("WordCountText", resourceCulture);
             }
         }
     }
