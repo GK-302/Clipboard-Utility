@@ -417,4 +417,48 @@
     <value>行数</value>
     <comment>ツールチップの行数ラベル</comment>
   </data>
+  <data name="ClipboardManagerTitle" xml:space="preserve">
+    <value>クリップボードマネージャー</value>
+    <comment>クリップボードマネージャーウィンドウのタイトル</comment>
+  </data>
+  <data name="ClipboardPreviewText" xml:space="preserve">
+    <value>クリップボードのプレビュー</value>
+    <comment>クリップボードプレビューセクションのラベル</comment>
+  </data>
+  <data name="TextProcessingText" xml:space="preserve">
+    <value>テキスト処理</value>
+    <comment>テキスト処理セクションのラベル</comment>
+  </data>
+  <data name="SelectProcessingModeText" xml:space="preserve">
+    <value>モードを選択:</value>
+    <comment>処理モード選択のラベル</comment>
+  </data>
+  <data name="ApplyText" xml:space="preserve">
+    <value>適用</value>
+    <comment>処理を適用するボタンのテキスト</comment>
+  </data>
+  <data name="ProcessingInfoText" xml:space="preserve">
+    <value>処理モードを選択して「適用」をクリックするとテキストが変換されます。</value>
+    <comment>処理セクションの情報テキスト</comment>
+  </data>
+  <data name="ActionsText" xml:space="preserve">
+    <value>アクション</value>
+    <comment>アクションセクションのラベル</comment>
+  </data>
+  <data name="CopyToClipboardText" xml:space="preserve">
+    <value>クリップボードにコピー</value>
+    <comment>クリップボードにコピーするボタンのテキスト</comment>
+  </data>
+  <data name="RefreshText" xml:space="preserve">
+    <value>更新</value>
+    <comment>クリップボード内容を更新するボタンのテキスト</comment>
+  </data>
+  <data name="ClearText" xml:space="preserve">
+    <value>クリア</value>
+    <comment>テキストをクリアするボタンのテキスト</comment>
+  </data>
+  <data name="CloseText" xml:space="preserve">
+    <value>閉じる</value>
+    <comment>ウィンドウを閉じるボタンのテキスト</comment>
+  </data>
 </root>

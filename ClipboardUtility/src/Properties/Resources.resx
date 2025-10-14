@@ -350,7 +350,7 @@
     <comment>Text for the "Notification Max Height" setting.</comment>
   </data>
   <data name="OpenSetting" xml:space="preserve">
-    <value>Open Settings</value>
+    <value>Setting</value>
     <comment>Tray menu: Open Settings</comment>
   </data>
   <data name="Exit" xml:space="preserve">
@@ -420,5 +420,49 @@
   <data name="LineCountText" xml:space="preserve">
     <value>Lines</value>
     <comment>Label for line count in tooltip</comment>
+  </data>
+  <data name="ClipboardManagerTitle" xml:space="preserve">
+    <value>Clipboard Manager</value>
+    <comment>Title for Clipboard Manager window</comment>
+  </data>
+  <data name="ClipboardPreviewText" xml:space="preserve">
+    <value>Clipboard Preview</value>
+    <comment>Label for clipboard preview section</comment>
+  </data>
+  <data name="TextProcessingText" xml:space="preserve">
+    <value>Text Processing</value>
+    <comment>Label for text processing section</comment>
+  </data>
+  <data name="SelectProcessingModeText" xml:space="preserve">
+    <value>Select Mode:</value>
+    <comment>Label for processing mode selection</comment>
+  </data>
+  <data name="ApplyText" xml:space="preserve">
+    <value>Apply</value>
+    <comment>Button text to apply processing</comment>
+  </data>
+  <data name="ProcessingInfoText" xml:space="preserve">
+    <value>Select a processing mode and click Apply to transform the text.</value>
+    <comment>Information text for processing section</comment>
+  </data>
+  <data name="ActionsText" xml:space="preserve">
+    <value>Actions</value>
+    <comment>Label for actions section</comment>
+  </data>
+  <data name="CopyToClipboardText" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+    <comment>Button text to copy to clipboard</comment>
+  </data>
+  <data name="RefreshText" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Button text to refresh clipboard content</comment>
+  </data>
+  <data name="ClearText" xml:space="preserve">
+    <value>Clear</value>
+    <comment>Button text to clear text</comment>
+  </data>
+  <data name="CloseText" xml:space="preserve">
+    <value>Close</value>
+    <comment>Button text to close window</comment>
   </data>
 </root>

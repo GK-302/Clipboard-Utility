@@ -35,12 +35,16 @@
   <ItemGroup>
     <Resource Include="src\Assets\drawing_1.ico" />
     <Resource Include="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
-    <Resource Include="src\Assets\Fonts\NotoSansJP\OFL.txt" />
+    <Content Include="src\Assets\Fonts\NotoSansJP\OFL.txt">
+      <Link>licences\NotoSansJP\OFL.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
     <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Regular.ttf" />
-    <Resource Include="src\Assets\Fonts\Roboto\OFL.txt">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
+    <Content Include="src\Assets\Fonts\Roboto\OFL.txt">
+      <Link>licences\Roboto\OFL.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
     <Resource Include="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
   </ItemGroup>

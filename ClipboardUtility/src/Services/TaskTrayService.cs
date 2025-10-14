@@ -1,7 +1,7 @@
 ﻿using ClipboardUtility.src.Helpers;
 using System.ComponentModel;
 using System.Diagnostics;
-
+using System.Windows;
 
 namespace ClipboardUtility.src.Services;
 
@@ -45,13 +45,7 @@ public class TaskTrayService : ITaskTrayService, IDisposable
 
     private NotifyIcon _notifyIcon;
     private bool _isInitialized = false;
-
-    // keep references to menu items so we can update text on culture change
-    private ToolStripItem _openSettingsMenuItem;
-    private ToolStripItem _exitMenuItem;
-
-    // handler reference so we can unsubscribe
-    private PropertyChangedEventHandler _localizationHandler;
+    private src.Views.ClipboardManagerWindow _clipboardManagerWindow;
 
     // クリップボードの統計情報を保持
     private string _currentClipboardText = string.Empty;
@@ -82,48 +76,11 @@ public class TaskTrayService : ITaskTrayService, IDisposable
             return;
         }
 
-        var menu = new ContextMenuStrip();
-
-        // Use localized strings
-        _openSettingsMenuItem = menu.Items.Add(LocalizedStrings.Instance.OpenSettingText, null, OnShowClicked);
-        _exitMenuItem = menu.Items.Add(LocalizedStrings.Instance.ExitText, null, OnExitClicked);
-
-        // subscribe to localization changes to update menu text dynamically
-        _localizationHandler = (s, e) =>
-        {
-            try
-            {
-                if (e.PropertyName == nameof(LocalizedStrings.OpenSettingText) && _openSettingsMenuItem != null)
-                {
-                    _openSettingsMenuItem.Text = LocalizedStrings.Instance.OpenSettingText;
-                }
-                else if (e.PropertyName == nameof(LocalizedStrings.ExitText) && _exitMenuItem != null)
-                {
-                    _exitMenuItem.Text = LocalizedStrings.Instance.ExitText;
-                }
-                // ツールチップに関連するプロパティが変更されたときにツールチップを更新
-                else if (e.PropertyName == nameof(LocalizedStrings.NoClipboardDataText) ||
-                         e.PropertyName == nameof(LocalizedStrings.CharacterCountText) ||
-                         e.PropertyName == nameof(LocalizedStrings.WordCountText) ||
-                         e.PropertyName == nameof(LocalizedStrings.LineCountText))
-                {
-                    UpdateTooltip(_currentClipboardText);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"TaskTrayService: localization update failed: {ex}");
-            }
-        };
-
-        LocalizedStrings.Instance.PropertyChanged += _localizationHandler;
-
         _notifyIcon = new NotifyIcon
         {
             Visible = true,
             Icon = new Icon(iconStream),
-            Text = "Clipboard Utility",
-            ContextMenuStrip = menu
+            Text = "Clipboard Utility"
         };
 
         _notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(OnNotifyIconClicked);
@@ -226,8 +183,48 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     {
         if (e.Button == MouseButtons.Left)
         {
-            // イベントを発火
+            // 左クリック: クリップボード操作を実行
             ClipboardOperationRequested?.Invoke(this, EventArgs.Empty);
+        }
+        else if (e.Button == MouseButtons.Right)
+        {
+            // 右クリック: クリップボードマネージャーウィンドウを表示
+            ShowClipboardManager();
+        }
+    }
+
+    /// <summary>
+    /// クリップボードマネージャーウィンドウを表示します
+    /// </summary>
+    private void ShowClipboardManager()
+    {
+        try
+        {
+            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            {
+                // 既にウィンドウが開いている場合は、それをアクティブにする
+                if (_clipboardManagerWindow != null && _clipboardManagerWindow.IsLoaded)
+                {
+                    if (_clipboardManagerWindow.WindowState == WindowState.Minimized)
+                    {
+                        _clipboardManagerWindow.WindowState = WindowState.Normal;
+                    }
+                    _clipboardManagerWindow.Activate();
+                }
+                else
+                {
+                    // 新しいウィンドウを作成
+                    _clipboardManagerWindow = new src.Views.ClipboardManagerWindow();
+                    _clipboardManagerWindow.Closed += (s, e) => _clipboardManagerWindow = null;
+                    _clipboardManagerWindow.Show();
+                    _clipboardManagerWindow.Activate();
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"TaskTrayService: Failed to show clipboard manager: {ex.Message}");
+            FileLogger.LogException(ex, "TaskTrayService.ShowClipboardManager");
         }
     }
 
@@ -245,23 +242,18 @@ public class TaskTrayService : ITaskTrayService, IDisposable
 
     public void Dispose()
     {
+        if (_clipboardManagerWindow != null)
+        {
+            _clipboardManagerWindow.Close();
+            _clipboardManagerWindow = null;
+        }
+        
         if (_notifyIcon != null)
         {
             _notifyIcon.Dispose();
             _notifyIcon = null;
         }
         _isInitialized = false;
-
-        // unsubscribe localization handler
-        try
-        {
-            if (_localizationHandler != null)
-            {
-                LocalizedStrings.Instance.PropertyChanged -= _localizationHandler;
-                _localizationHandler = null;
-            }
-        }
-        catch { }
 
         // Singletonインスタンスもリセット
         lock (_lock)
