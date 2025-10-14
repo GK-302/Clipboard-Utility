@@ -68,6 +68,21 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string LicenseDescription => Resources.LicenseDescription;
     public string AddStartUpGuidanceManuallyText => Resources.AddStartUpGuidanceManuallyText;
     public string AddStartUpGuidanceManuallyTitle => Resources.AddStartUpGuidanceManuallyTitle;
+    public string NoClipboardDataText => Resources.NoClipboardDataText;
+    public string CharacterCountText => Resources.CharacterCountText;
+    public string WordCountText => Resources.WordCountText;
+    public string LineCountText => Resources.LineCountText;
+    public string ClipboardManagerTitle => Resources.ClipboardManagerTitle;
+    public string ClipboardPreviewText => Resources.ClipboardPreviewText;
+    public string TextProcessingText => Resources.TextProcessingText;
+    public string SelectProcessingModeText => Resources.SelectProcessingModeText;
+    public string ApplyText => Resources.ApplyText;
+    public string ProcessingInfoText => Resources.ProcessingInfoText;
+    public string ActionsText => Resources.ActionsText;
+    public string CopyToClipboardText => Resources.CopyToClipboardText;
+    public string RefreshText => Resources.RefreshText;
+    public string ClearText => Resources.ClearText;
+    public string CloseText => Resources.CloseText;
 
     public void ChangeCulture(CultureInfo culture)
     {
@@ -126,6 +141,21 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(LicenseDescription));
         OnPropertyChanged(nameof(AddStartUpGuidanceManuallyText));
         OnPropertyChanged(nameof(AddStartUpGuidanceManuallyTitle));
+        OnPropertyChanged(nameof(NoClipboardDataText));
+        OnPropertyChanged(nameof(CharacterCountText));
+        OnPropertyChanged(nameof(WordCountText));
+        OnPropertyChanged(nameof(LineCountText));
+        OnPropertyChanged(nameof(ClipboardManagerTitle));
+        OnPropertyChanged(nameof(ClipboardPreviewText));
+        OnPropertyChanged(nameof(TextProcessingText));
+        OnPropertyChanged(nameof(SelectProcessingModeText));
+        OnPropertyChanged(nameof(ApplyText));
+        OnPropertyChanged(nameof(ProcessingInfoText));
+        OnPropertyChanged(nameof(ActionsText));
+        OnPropertyChanged(nameof(CopyToClipboardText));
+        OnPropertyChanged(nameof(RefreshText));
+        OnPropertyChanged(nameof(ClearText));
+        OnPropertyChanged(nameof(CloseText));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

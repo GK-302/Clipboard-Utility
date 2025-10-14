@@ -36,7 +36,8 @@ public class MainViewModel : INotifyPropertyChanged
         _clipboardEventCoordinator = new ClipboardEventCoordinator(
             textProcessingService,
             notificationsService,
-            () => _isInternalClipboardOperation);
+            () => _isInternalClipboardOperation,
+            TaskTrayService.Instance);
 
         // 設定変更通知を購読
         SettingsService.Instance.SettingsChanged += OnSettingsChanged;

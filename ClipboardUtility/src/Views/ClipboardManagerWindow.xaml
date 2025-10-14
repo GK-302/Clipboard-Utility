@@ -1,0 +1,141 @@
+<Window x:Class="ClipboardUtility.src.Views.ClipboardManagerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
+        xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
+        mc:Ignorable="d"
+        Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ClipboardManagerTitle}" 
+        Height="500" Width="600"
+        ResizeMode="NoResize"
+		WindowStyle="None"
+        WindowStartupLocation="Manual"
+        ShowInTaskbar="True"
+        Topmost="False">
+    
+    <Window.Resources>
+        <conv:ProcessingModeToDisplayConverter x:Key="ProcModeToDisplay" />
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" 
+                   FontWeight="Bold" 
+                   FontSize="16" 
+                   Margin="0,0,0,12"
+                   Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ClipboardManagerTitle}" />
+
+        <GroupBox Grid.Row="1" 
+                  Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ClipboardPreviewText}"
+                  Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4,4,4,8">
+                    <TextBlock Margin="0,0,16,0">
+                        <Run Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CharacterCountText, Mode=OneWay}" />
+                        <Run Text=": " />
+                        <Run Text="{Binding CharacterCount, Mode=OneWay}" FontWeight="Bold" />
+                    </TextBlock>
+                    <TextBlock Margin="0,0,16,0">
+                        <Run Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WordCountText, Mode=OneWay}" />
+                        <Run Text=": " />
+                        <Run Text="{Binding WordCount, Mode=OneWay}" FontWeight="Bold" />       
+                    </TextBlock>
+                    <TextBlock>
+                        <Run Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LineCountText, Mode=OneWay}" />
+                        <Run Text=": " />
+                        <Run Text="{Binding LineCount, Mode=OneWay}" FontWeight="Bold" />
+                    </TextBlock>
+                </StackPanel>
+
+                <TextBox Grid.Row="1"
+                         Text="{Binding ClipboardText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"
+                         FontFamily="Consolas"
+                         IsReadOnly="False"
+                         Margin="4" />
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Row="2" 
+                  Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=TextProcessingText}"
+                  Margin="0,0,0,12">
+            <StackPanel Margin="4">
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,8">
+                    <TextBlock VerticalAlignment="Center" 
+                               Margin="0,0,8,0"
+                               Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SelectProcessingModeText}" />
+                    <ComboBox Width="280" 
+                              ItemsSource="{Binding ProcessingModes}" 
+                              SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ApplyText}" 
+                            Width="80" 
+                            Margin="8,0,0,0"
+                            Command="{Binding ApplyProcessingCommand}" />
+                </StackPanel>
+                <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ProcessingInfoText}" 
+                           FontSize="11"
+                           Foreground="Gray"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,4" />
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Grid.Row="3" 
+                  Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ActionsText}"
+                  Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" Margin="4" HorizontalAlignment="Left">
+                <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CopyToClipboardText}" 
+                        Width="140" 
+                        Margin="0,4,8,4"
+                        Command="{Binding CopyToClipboardCommand}" />
+                <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=RefreshText}" 
+                        Width="100" 
+                        Margin="0,4,8,4"
+                        Command="{Binding RefreshClipboardCommand}" />
+                <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ClearText}" 
+                        Width="100" 
+                        Margin="0,4,0,4"
+                        Command="{Binding ClearCommand}" />
+            </StackPanel>
+        </GroupBox>
+
+        <StackPanel Grid.Row="4" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right">
+            <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=OpenSettingText}" 
+                    Width="100" 
+                    Margin="0,0,8,0"
+                    Command="{Binding OpenSettingsCommand}" />
+            <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ExitText}" 
+                    Width="100" 
+                    Margin="0,0,8,0"
+                    Command="{Binding ExitApplicationCommand}" />
+            <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CloseText}" 
+                    Width="100"
+                    IsCancel="True"
+                    Click="CloseButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>
