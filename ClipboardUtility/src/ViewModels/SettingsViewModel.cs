@@ -1,6 +1,7 @@
 ﻿using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Services;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -40,13 +41,13 @@ internal class SettingsViewModel : INotifyPropertyChanged
 
         // 利用可能なカルチャ一覧（必要に応じて追加）
         AvailableCultures = new List<CultureInfo> { new("en-US"), new("ja-JP") };
-        // 初期選択
-        SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name))
-                          ?? CultureInfo.CurrentUICulture;
-
+        
         // Preset manager を作成してプリセットを読み込む
         _presetManager = new PresetManager(new TextProcessingService());
         _presetManager.LoadPresets();
+
+        // ObservableCollection に変更して動的更新を可能にする
+        AvailablePresets = new ObservableCollection<ProcessingPreset>(_presetManager.Presets);
 
         // 初期選択: 先頭のビルトインプリセットを選択しておく（UI側で変更可能）
         SelectedPreset = AvailablePresets.FirstOrDefault();
@@ -77,8 +78,8 @@ internal class SettingsViewModel : INotifyPropertyChanged
     
     public IList<CultureInfo> AvailableCultures { get; }
 
-    // Presets
-    public IReadOnlyList<ProcessingPreset> AvailablePresets => _presetManager?.Presets ?? new List<ProcessingPreset>();
+    // Presets - ObservableCollection に変更
+    public ObservableCollection<ProcessingPreset> AvailablePresets { get; }
 
     private bool _usePresets;
     public bool UsePresets
@@ -185,6 +186,43 @@ internal class SettingsViewModel : INotifyPropertyChanged
         
         // 選択を復元
         SelectedProcessingMode = currentMode;
+
+        // プリセットのローカライゼーションを更新（AvailablePresets が null でない場合のみ）
+        if (AvailablePresets != null)
+        {
+            RefreshPresetLocalization();
+        }
+    }
+
+    /// <summary>
+    /// プリセットのローカライゼーションを更新します（カルチャ変更時）
+    /// </summary>
+    private void RefreshPresetLocalization()
+    {
+        // Null チェックを追加
+        if (_presetManager == null || AvailablePresets == null) return;
+
+        _presetManager.LoadPresets();
+        
+        // 現在の選択を保存
+        var selectedId = _selectedPreset?.Id;
+
+        // 既存の ObservableCollection を更新（UI が自動的に反映される）
+        AvailablePresets.Clear();
+        foreach (var preset in _presetManager.Presets)
+        {
+            AvailablePresets.Add(preset);
+        }
+
+        // 選択を復元（ID で検索）
+        if (selectedId.HasValue)
+        {
+            SelectedPreset = AvailablePresets.FirstOrDefault(p => p.Id == selectedId.Value);
+        }
+        else
+        {
+            SelectedPreset = AvailablePresets.FirstOrDefault();
+        }
     }
 
     // Notification size/offset props
@@ -249,26 +287,41 @@ internal class SettingsViewModel : INotifyPropertyChanged
         set { if (_settings.ShowOperationNotification != value) { _settings.ShowOperationNotification = value; OnPropertyChanged(); } }
     }
 
-    // Preset management helper wrappers
+    // Preset management helper wrappers - ObservableCollection を直接操作
     public ProcessingPreset CreatePreset(string name, string description, List<ProcessingStep> steps)
     {
-        var p = _presetManager.CreatePreset(name, description, steps);
-        OnPropertyChanged(nameof(AvailablePresets));
-        return p;
+        var preset = _presetManager.CreatePreset(name, description, steps);
+        AvailablePresets.Add(preset);
+        SelectedPreset = preset;
+        return preset;
     }
 
     public bool UpdatePreset(ProcessingPreset preset)
     {
-        var ok = _presetManager.UpdatePreset(preset);
-        if (ok) OnPropertyChanged(nameof(AvailablePresets));
-        return ok;
+        if (!_presetManager.UpdatePreset(preset)) return false;
+
+        // ObservableCollection 内の既存アイテムを更新
+        var existing = AvailablePresets.FirstOrDefault(p => p.Id == preset.Id);
+        if (existing != null)
+        {
+            var index = AvailablePresets.IndexOf(existing);
+            AvailablePresets[index] = preset;
+            SelectedPreset = preset;
+        }
+        return true;
     }
 
     public bool DeletePreset(System.Guid id)
     {
-        var ok = _presetManager.DeletePreset(id);
-        if (ok) OnPropertyChanged(nameof(AvailablePresets));
-        return ok;
+        if (!_presetManager.DeletePreset(id)) return false;
+
+        var preset = AvailablePresets.FirstOrDefault(p => p.Id == id);
+        if (preset != null)
+        {
+            AvailablePresets.Remove(preset);
+            SelectedPreset = AvailablePresets.FirstOrDefault();
+        }
+        return true;
     }
 
     // Called by the view to persist changes

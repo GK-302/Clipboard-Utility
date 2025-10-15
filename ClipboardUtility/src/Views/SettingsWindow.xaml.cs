@@ -10,15 +10,12 @@ namespace ClipboardUtility.src.Views
     {
         private readonly SettingsViewModel _vm;
 
-        // 明示的に AppSettings を要求するコンストラクタのみ提供する（互換性は不要）
         internal SettingsWindow(AppSettings settings)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
 
             InitializeComponent();
 
-            // 必要なら最新のランタイム設定にフォールバックするが、
-            // 呼び出し側は適切な settings を渡すことを期待する
             var settingsToUse = settings;
             _vm = new SettingsViewModel(settingsToUse);
             DataContext = _vm;
@@ -48,10 +45,8 @@ namespace ClipboardUtility.src.Views
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             LicenseWindow licenseWindow = new LicenseWindow();
-            licenseWindow.Owner = this; // モーダルウィンドウの所有者を設定
-            licenseWindow.ShowDialog(); // モーダルウィンドウとして表示
-
-
+            licenseWindow.Owner = this;
+            licenseWindow.ShowDialog();
         }
 
         private void BtnNewPreset_Click(object sender, RoutedEventArgs e)
@@ -60,15 +55,15 @@ namespace ClipboardUtility.src.Views
             {
                 // Create an empty preset and open editor
                 var preset = new ProcessingPreset { Name = "New Preset", Description = string.Empty };
-                var editor = new PresetEditorWindow(preset);
+                var editor = new PresetEditorWindow(preset) { Owner = this };
+                
                 if (editor.ShowDialog() == true)
                 {
                     var edited = editor.GetEditedPreset();
                     if (edited != null)
                     {
                         vm.CreatePreset(edited.Name, edited.Description, edited.Steps);
-                        // refresh list
-                        OnPresetsChanged(vm);
+                        // ObservableCollection なので自動的に UI が更新される
                     }
                 }
             }
@@ -79,18 +74,29 @@ namespace ClipboardUtility.src.Views
             if (DataContext is SettingsViewModel vm)
             {
                 var selected = vm.SelectedPreset;
-                if (selected == null) return;
+                if (selected == null)
+                {
+                    MessageBox.Show("Please select a preset to edit.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
 
-                var editor = new PresetEditorWindow(selected);
+                if (selected.IsBuiltIn)
+                {
+                    MessageBox.Show("Built-in presets cannot be edited.", "Cannot Edit", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var editor = new PresetEditorWindow(selected) { Owner = this };
+                
                 if (editor.ShowDialog() == true)
                 {
                     var edited = editor.GetEditedPreset();
                     if (edited != null)
                     {
-                        // update existing preset
-                        edited.Id = selected.Id; // preserve ID
+                        // preserve ID
+                        edited.Id = selected.Id;
                         vm.UpdatePreset(edited);
-                        OnPresetsChanged(vm);
+                        // ObservableCollection なので自動的に UI が更新される
                     }
                 }
             }
@@ -101,30 +107,30 @@ namespace ClipboardUtility.src.Views
             if (DataContext is SettingsViewModel vm)
             {
                 var selected = vm.SelectedPreset;
-                if (selected == null) return;
-                if (selected.IsBuiltIn)
+                if (selected == null)
                 {
-                    MessageBox.Show("Built-in preset cannot be deleted.");
+                    MessageBox.Show("Please select a preset to delete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                var result = MessageBox.Show($"Delete preset '{selected.Name}'?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (selected.IsBuiltIn)
+                {
+                    MessageBox.Show("Built-in presets cannot be deleted.", "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var result = MessageBox.Show(
+                    $"Are you sure you want to delete the preset '{selected.Name}'?", 
+                    "Confirm Delete", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Warning);
+
                 if (result == MessageBoxResult.Yes)
                 {
                     vm.DeletePreset(selected.Id);
-                    OnPresetsChanged(vm);
+                    // ObservableCollection なので自動的に UI が更新される
                 }
             }
-        }
-
-        private void OnPresetsChanged(SettingsViewModel vm)
-        {
-            // force reload from vm's PresetManager via SettingsViewModel's properties
-            // SettingsViewModel exposes AvailablePresets via PresetManager, but UI binding needs update
-            // Raise property changed for AvailablePresets by reassigning DataContext to itself (simple workaround)
-            var ctx = DataContext;
-            DataContext = null;
-            DataContext = ctx;
         }
     }
 }
