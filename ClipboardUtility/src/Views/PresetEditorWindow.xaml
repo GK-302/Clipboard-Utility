@@ -4,8 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
+        xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
         mc:Ignorable="d"
-        Title="Preset Editor" Height="400" Width="640">
+        Title="Preset Editor" Height="450" Width="640">
+    <Window.Resources>
+        <conv:ProcessingModeToDisplayConverter x:Key="ProcModeToDisplay" />
+    </Window.Resources>
+    
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -16,15 +21,22 @@
         <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,8">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                 <TextBlock Width="80" VerticalAlignment="Center">Name:</TextBlock>
-                <TextBox Width="420" Text="{Binding EditingPreset.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Width="520" Text="{Binding EditingPreset.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                 <TextBlock Width="80" VerticalAlignment="Center">Description:</TextBlock>
-                <TextBox Width="420" Text="{Binding EditingPreset.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Width="520" Text="{Binding EditingPreset.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                 <TextBlock Width="80" VerticalAlignment="Center">Operation:</TextBlock>
-                <ComboBox Width="420" ItemsSource="{Binding ProcessingModes}"  Text="{Binding EditingPreset.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <ComboBox Width="420" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedModeToAdd, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Content="Add" Command="{Binding AddSelectedModeCommand}" Width="84" Margin="6,0,0,0" />
             </StackPanel>
         </StackPanel>
 
@@ -38,23 +50,22 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Width="30" Text="{Binding Order}" />
-                            <TextBlock Width="200" Text="{Binding Mode}" />
+                            <TextBlock Width="30" Text="{Binding Order}" Margin="0,0,8,0" />
+                            <TextBlock Width="250" Text="{Binding Mode, Converter={StaticResource ProcModeToDisplay}}" />
                             <CheckBox IsChecked="{Binding IsEnabled}" Content="Enabled" />
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Stretch">
-                <Button Content="Add" Command="{Binding AddStepCommand}" Margin="0,0,0,6" />
+            <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Stretch" Margin="6,0,0,0">
                 <Button Content="Remove" Command="{Binding RemoveStepCommand}" Margin="0,0,0,6" />
                 <Button IsEnabled="False" Content="Move Up" Command="{Binding MoveUpCommand}" Margin="0,0,0,6" />
                 <Button IsEnabled="False" Content="Move Down" Command="{Binding MoveDownCommand}" Margin="0,0,0,6" />
             </StackPanel>
         </Grid>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
             <Button x:Name="BtnOk" Width="84" Margin="6" Click="BtnOk_Click">OK</Button>
             <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click">Cancel</Button>
         </StackPanel>

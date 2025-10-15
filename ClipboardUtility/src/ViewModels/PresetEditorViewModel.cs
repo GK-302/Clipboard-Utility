@@ -22,7 +22,11 @@ namespace ClipboardUtility.src.ViewModels
             // Available modes for UI
             ProcessingModes = System.Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
 
+            // 初期選択モード
+            SelectedModeToAdd = ProcessingMode.None;
+
             AddStepCommand = new RelayCommand(ExecuteAddStep);
+            AddSelectedModeCommand = new RelayCommand(ExecuteAddSelectedMode);
             RemoveStepCommand = new RelayCommand(ExecuteRemoveStep);
             MoveUpCommand = new RelayCommand(ExecuteMoveUp);
             MoveDownCommand = new RelayCommand(ExecuteMoveDown);
@@ -41,7 +45,23 @@ namespace ClipboardUtility.src.ViewModels
             set { if (_selectedStep != value) { _selectedStep = value; OnPropertyChanged(); } }
         }
 
+        // ComboBox で選択された ProcessingMode
+        private ProcessingMode _selectedModeToAdd;
+        public ProcessingMode SelectedModeToAdd
+        {
+            get => _selectedModeToAdd;
+            set
+            {
+                if (_selectedModeToAdd != value)
+                {
+                    _selectedModeToAdd = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public ICommand AddStepCommand { get; }
+        public ICommand AddSelectedModeCommand { get; }
         public ICommand RemoveStepCommand { get; }
         public ICommand MoveUpCommand { get; }
         public ICommand MoveDownCommand { get; }
@@ -50,6 +70,16 @@ namespace ClipboardUtility.src.ViewModels
         {
             var order = Steps.Any() ? Steps.Max(s => s.Order) + 1 : 0;
             var step = new ProcessingStep(order, ProcessingMode.None, true);
+            Steps.Add(step);
+            SelectedStep = step;
+            RefreshOrderIndexes();
+        }
+
+        private void ExecuteAddSelectedMode(object? _)
+        {
+            // ComboBox で選択されたモードを追加
+            var order = Steps.Any() ? Steps.Max(s => s.Order) + 1 : 0;
+            var step = new ProcessingStep(order, SelectedModeToAdd, true);
             Steps.Add(step);
             SelectedStep = step;
             RefreshOrderIndexes();
