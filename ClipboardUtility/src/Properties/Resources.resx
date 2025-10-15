@@ -465,4 +465,17 @@
     <value>Close</value>
     <comment>Button text to close window</comment>
   </data>
+  <!-- Preset resource entries (English) -->
+  <data name="Preset_RemoveLineBreaks_Name" xml:space="preserve">
+    <value>Remove Line Breaks</value>
+  </data>
+  <data name="Preset_RemoveLineBreaks_Description" xml:space="preserve">
+    <value>Removes all line breaks and replaces them with spaces</value>
+  </data>
+  <data name="Preset_NormalizeWhitespace_Name" xml:space="preserve">
+    <value>Normalize Whitespace (All)</value>
+  </data>
+  <data name="Preset_NormalizeWhitespace_Description" xml:space="preserve">
+    <value>Normalizes all whitespace including full-width and half-width spaces</value>
+  </data>
 </root>

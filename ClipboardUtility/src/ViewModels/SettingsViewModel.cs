@@ -12,6 +12,9 @@ internal class SettingsViewModel : INotifyPropertyChanged
     private AppSettings _settings;
     public event PropertyChangedEventHandler PropertyChanged;
 
+    // Preset manager
+    private readonly PresetManager _presetManager;
+
     public SettingsViewModel(AppSettings settings)
     {
         _settings = new AppSettings
@@ -38,12 +41,36 @@ internal class SettingsViewModel : INotifyPropertyChanged
         // 初期選択
         SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name))
                           ?? CultureInfo.CurrentUICulture;
+
+        // Preset manager を作成してプリセットを読み込む
+        _presetManager = new PresetManager(new TextProcessingService());
+        _presetManager.LoadPresets();
+
+        // 初期選択: 先頭のビルトインプリセットを選択しておく（UI側で変更可能）
+        SelectedPreset = _presetManager.Presets.FirstOrDefault();
     }
 
     private IList<ProcessingMode> _processingModes;
     public IList<ProcessingMode> ProcessingModes => _processingModes;
     
     public IList<CultureInfo> AvailableCultures { get; }
+
+    // Presets
+    public IReadOnlyList<ProcessingPreset> AvailablePresets => _presetManager?.Presets ?? new List<ProcessingPreset>();
+
+    private ProcessingPreset? _selectedPreset;
+    public ProcessingPreset? SelectedPreset
+    {
+        get => _selectedPreset;
+        set
+        {
+            if (_selectedPreset?.Id != value?.Id)
+            {
+                _selectedPreset = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     // 追加: SelectedProcessingMode プロパティ（XAMLバインドと参照用）
     public ProcessingMode SelectedProcessingMode
@@ -163,6 +190,28 @@ internal class SettingsViewModel : INotifyPropertyChanged
     {
         get => _settings.ShowOperationNotification;
         set { if (_settings.ShowOperationNotification != value) { _settings.ShowOperationNotification = value; OnPropertyChanged(); } }
+    }
+
+    // Preset management helper wrappers
+    public ProcessingPreset CreatePreset(string name, string description, List<ProcessingStep> steps)
+    {
+        var p = _presetManager.CreatePreset(name, description, steps);
+        OnPropertyChanged(nameof(AvailablePresets));
+        return p;
+    }
+
+    public bool UpdatePreset(ProcessingPreset preset)
+    {
+        var ok = _presetManager.UpdatePreset(preset);
+        if (ok) OnPropertyChanged(nameof(AvailablePresets));
+        return ok;
+    }
+
+    public bool DeletePreset(System.Guid id)
+    {
+        var ok = _presetManager.DeletePreset(id);
+        if (ok) OnPropertyChanged(nameof(AvailablePresets));
+        return ok;
     }
 
     // Called by the view to persist changes

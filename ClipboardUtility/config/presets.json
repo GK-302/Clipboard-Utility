@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "presets": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Remove Line Breaks",
+      "nameResourceKey": "Preset_RemoveLineBreaks_Name",
+      "description": "Removes all line breaks and replaces them with spaces",
+      "descriptionResourceKey": "Preset_RemoveLineBreaks_Description",
+      "isBuiltIn": true,
+      "createdAt": "2025-01-01T00:00:00Z",
+      "modifiedAt": "2025-01-01T00:00:00Z",
+      "steps": [
+        {
+          "order": 0,
+          "mode": "RemoveLineBreaks",
+          "isEnabled": true
+        },
+        {
+          "order": 1,
+          "mode": "Trim",
+          "isEnabled": true
+        }
+      ]
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000002",
+      "name": "Normalize Whitespace (All)",
+      "nameResourceKey": "Preset_NormalizeWhitespace_Name",
+      "description": "Normalizes all whitespace including full-width and half-width spaces",
+      "descriptionResourceKey": "Preset_NormalizeWhitespace_Description",
+      "isBuiltIn": true,
+      "createdAt": "2025-01-01T00:00:00Z",
+      "modifiedAt": "2025-01-01T00:00:00Z",
+      "steps": [
+        {
+          "order": 0,
+          "mode": "NormalizeWhitespace",
+          "isEnabled": true
+        },
+        {
+          "order": 1,
+          "mode": "NormalizeUnicode",
+          "isEnabled": true,
+          "options": {
+            "normalizationForm": "FormKC"
+          }
+        },
+        {
+          "order": 2,
+          "mode": "CollapseWhitespace",
+          "isEnabled": true
+        }
+      ]
+    }
+  ]
+}
