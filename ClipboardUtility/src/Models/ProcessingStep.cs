@@ -6,7 +6,7 @@ namespace ClipboardUtility.src.Models
     /// <summary>
     /// プリセット内の単一処理ステップを表します。
     /// </summary>
-    internal sealed class ProcessingStep
+    public sealed class ProcessingStep
     {
         /// <summary>
         /// 実行順序（0から始まる）
@@ -62,7 +62,7 @@ namespace ClipboardUtility.src.Models
     /// <summary>
     /// ProcessingStep 固有のオプション（TextProcessingOptions のシリアライズ可能版）
     /// </summary>
-    internal sealed class ProcessingStepOptions
+    public sealed class ProcessingStepOptions
     {
         [JsonPropertyName("tabSize")]
         public int? TabSize { get; set; }

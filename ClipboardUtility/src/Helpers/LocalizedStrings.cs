@@ -83,6 +83,17 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string RefreshText => Resources.RefreshText;
     public string ClearText => Resources.ClearText;
     public string CloseText => Resources.CloseText;
+    public string NewText => Resources.NewText;
+    public string EditText => Resources.EditText;
+    public string DeleteText => Resources.Deletetext;
+    public string GeneralText => Resources.GeneralText;
+    public string PresetsText => Resources.PresetsText;
+    public string UsePresetsText => Resources.ResourceManager.GetString("UsePresetsText", CultureInfo.CurrentUICulture) ?? "Use Presets";
+    public string PresetForTrayClickTitle => Resources.ResourceManager.GetString("PresetForTrayClickTitle", CultureInfo.CurrentUICulture) ?? "Preset for tray click:";
+    public string NotificationText => Resources.ResourceManager.GetString("NotificationText", CultureInfo.CurrentUICulture) ?? "Notification";
+    public string LicenseText => Resources.ResourceManager.GetString("LicenseText", CultureInfo.CurrentUICulture) ?? "LICENSE";
+    public string TaskTrayClickOperationText => Resources.TaskTrayClickOperationText;
+
 
     public void ChangeCulture(CultureInfo culture)
     {
@@ -156,6 +167,12 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(RefreshText));
         OnPropertyChanged(nameof(ClearText));
         OnPropertyChanged(nameof(CloseText));
+        OnPropertyChanged(nameof(NewText));
+        OnPropertyChanged(nameof(EditText));
+        OnPropertyChanged(nameof(DeleteText));
+        OnPropertyChanged(nameof(GeneralText));
+        OnPropertyChanged(nameof(PresetsText));
+        OnPropertyChanged(nameof(TaskTrayClickOperationText));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

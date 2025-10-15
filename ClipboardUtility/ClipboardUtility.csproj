@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include=".github\" />
+    <Folder Include="src\Common\" />
   </ItemGroup>
 
   <ItemGroup>

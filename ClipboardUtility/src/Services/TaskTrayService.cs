@@ -1,4 +1,5 @@
 ﻿using ClipboardUtility.src.Helpers;
+using ClipboardUtility.src.Models;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
@@ -46,6 +47,9 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     private NotifyIcon _notifyIcon;
     private bool _isInitialized = false;
     private src.Views.ClipboardManagerWindow _clipboardManagerWindow;
+    private PresetService _presetService;
+    private TextProcessingService _textProcessingService;
+    private ClipboardService _clipboardService;
 
     // クリップボードの統計情報を保持
     private string _currentClipboardText = string.Empty;
@@ -54,6 +58,7 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     public event EventHandler ClipboardOperationRequested;
     public event EventHandler ShowWindowRequested;
     public event EventHandler ExitApplicationRequested;
+    public event EventHandler<ProcessingPreset> PresetExecutionRequested;
 
     public void Initialize()
     {
@@ -63,6 +68,12 @@ public class TaskTrayService : ITaskTrayService, IDisposable
             Debug.WriteLine("TaskTrayService is already initialized.");
             return;
         }
+
+        // サービスの初期化
+        _textProcessingService = new TextProcessingService();
+        _presetService = new PresetService(_textProcessingService);
+        _presetService.LoadPresets();
+        _clipboardService = new ClipboardService();
 
         System.IO.Stream iconStream;
         try
@@ -183,13 +194,58 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     {
         if (e.Button == MouseButtons.Left)
         {
-            // 左クリック: クリップボード操作を実行
-            ClipboardOperationRequested?.Invoke(this, EventArgs.Empty);
+            // 左クリック: 設定で選択されたプリセットを実行
+            ExecuteSelectedPreset();
         }
         else if (e.Button == MouseButtons.Right)
         {
             // 右クリック: クリップボードマネージャーウィンドウを表示
             ShowClipboardManager();
+        }
+    }
+
+    /// <summary>
+    /// 設定で選択されたプリセットを実行します
+    /// </summary>
+    private void ExecuteSelectedPreset()
+    {
+        try
+        {
+            var settings = SettingsService.Instance.Current;
+            if (!settings.SelectedPresetId.HasValue)
+            {
+                Debug.WriteLine("TaskTrayService.ExecuteSelectedPreset: No preset selected in settings");
+                ClipboardOperationRequested?.Invoke(this, EventArgs.Empty); // フォールバック：既存のイベント
+                return;
+            }
+
+            var preset = _presetService.GetPresetById(settings.SelectedPresetId.Value);
+            if (preset == null)
+            {
+                Debug.WriteLine($"TaskTrayService.ExecuteSelectedPreset: Preset not found: {settings.SelectedPresetId.Value}");
+                ClipboardOperationRequested?.Invoke(this, EventArgs.Empty); // フォールバック：既存のイベント
+                return;
+            }
+
+            var clipboardText = _clipboardService.GetTextSafely();
+            if (string.IsNullOrEmpty(clipboardText))
+            {
+                Debug.WriteLine("TaskTrayService.ExecuteSelectedPreset: No text in clipboard");
+                return;
+            }
+
+            var result = _presetService.ExecutePreset(preset, clipboardText);
+            _clipboardService.SetText(result);
+
+            Debug.WriteLine($"TaskTrayService.ExecuteSelectedPreset: Executed preset '{preset.Name}'");
+            
+            // イベントを発火（通知表示用）
+            PresetExecutionRequested?.Invoke(this, preset);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"TaskTrayService.ExecuteSelectedPreset: Failed: {ex.Message}");
+            FileLogger.LogException(ex, "TaskTrayService.ExecuteSelectedPreset");
         }
     }
 

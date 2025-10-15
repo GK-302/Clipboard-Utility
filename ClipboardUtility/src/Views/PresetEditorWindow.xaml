@@ -1,0 +1,62 @@
+<Window x:Class="ClipboardUtility.src.Views.PresetEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
+        mc:Ignorable="d"
+        Title="Preset Editor" Height="400" Width="640">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <TextBlock Width="80" VerticalAlignment="Center">Name:</TextBlock>
+                <TextBox Width="420" Text="{Binding EditingPreset.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <TextBlock Width="80" VerticalAlignment="Center">Description:</TextBlock>
+                <TextBox Width="420" Text="{Binding EditingPreset.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Width="80" VerticalAlignment="Center">Operation:</TextBlock>
+                <ComboBox Width="420" ItemsSource="{Binding ProcessingModes}"  Text="{Binding EditingPreset.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+
+            <ListBox Grid.Column="0" ItemsSource="{Binding Steps}" SelectedItem="{Binding SelectedStep}" DisplayMemberPath="Mode">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Width="30" Text="{Binding Order}" />
+                            <TextBlock Width="200" Text="{Binding Mode}" />
+                            <CheckBox IsChecked="{Binding IsEnabled}" Content="Enabled" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Stretch">
+                <Button Content="Add" Command="{Binding AddStepCommand}" Margin="0,0,0,6" />
+                <Button Content="Remove" Command="{Binding RemoveStepCommand}" Margin="0,0,0,6" />
+                <Button IsEnabled="False" Content="Move Up" Command="{Binding MoveUpCommand}" Margin="0,0,0,6" />
+                <Button IsEnabled="False" Content="Move Down" Command="{Binding MoveDownCommand}" Margin="0,0,0,6" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="BtnOk" Width="84" Margin="6" Click="BtnOk_Click">OK</Button>
+            <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click">Cancel</Button>
+        </StackPanel>
+    </Grid>
+</Window>

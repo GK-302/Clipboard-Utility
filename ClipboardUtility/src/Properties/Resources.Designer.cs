@@ -200,11 +200,38 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Delete に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Deletetext {
+            get {
+                return ResourceManager.GetString("Deletetext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Edit に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EditText {
+            get {
+                return ResourceManager.GetString("EditText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Exit に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Exit {
             get {
                 return ResourceManager.GetString("Exit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   General に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GeneralText {
+            get {
+                return ResourceManager.GetString("GeneralText", resourceCulture);
             }
         }
         
@@ -227,6 +254,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   LICENSE に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LicenseText {
+            get {
+                return ResourceManager.GetString("LicenseText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Lines に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string LineCountText {
@@ -241,6 +277,15 @@ namespace ClipboardUtility.src.Properties {
         public static string NeverShowAgainText {
             get {
                 return ResourceManager.GetString("NeverShowAgainText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   New に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NewText {
+            get {
+                return ResourceManager.GetString("NewText", resourceCulture);
             }
         }
         
@@ -524,6 +569,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Notification に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationText {
+            get {
+                return ResourceManager.GetString("NotificationText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Setting に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string OpenSetting {
@@ -539,6 +593,60 @@ namespace ClipboardUtility.src.Properties {
         public static string OperationGuidanceText {
             get {
                 return ResourceManager.GetString("OperationGuidanceText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Normalizes all whitespace including full-width and half-width spaces に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_NormalizeWhitespace_Description {
+            get {
+                return ResourceManager.GetString("Preset_NormalizeWhitespace_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Normalize Whitespace (All) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_NormalizeWhitespace_Name {
+            get {
+                return ResourceManager.GetString("Preset_NormalizeWhitespace_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Removes all line breaks and replaces them with spaces に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_RemoveLineBreaks_Description {
+            get {
+                return ResourceManager.GetString("Preset_RemoveLineBreaks_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Line Breaks(Built-in) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_RemoveLineBreaks_Name {
+            get {
+                return ResourceManager.GetString("Preset_RemoveLineBreaks_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Preset for tray click: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string PresetForTrayClickTitle {
+            get {
+                return ResourceManager.GetString("PresetForTrayClickTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Presets に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string PresetsText {
+            get {
+                return ResourceManager.GetString("PresetsText", resourceCulture);
             }
         }
         
@@ -822,11 +930,29 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   TaskTray Action に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string TaskTrayClickOperationText {
+            get {
+                return ResourceManager.GetString("TaskTrayClickOperationText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Text Processing に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string TextProcessingText {
             get {
                 return ResourceManager.GetString("TextProcessingText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Use Presets に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UsePresetsText {
+            get {
+                return ResourceManager.GetString("UsePresetsText", resourceCulture);
             }
         }
         

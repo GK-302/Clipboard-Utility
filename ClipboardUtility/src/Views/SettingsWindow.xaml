@@ -6,9 +6,25 @@
         xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
         xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
         mc:Ignorable="d"
-        Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WindowTitle}" Height="400" Width="480">
+        Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WindowTitle}" Height="520" Width="640">
     <Window.Resources>
         <conv:ProcessingModeToDisplayConverter x:Key="ProcModeToDisplay" />
+        <conv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <!-- Simple styles for consistent spacing and alignment -->
+        <Style x:Key="FormLabel" TargetType="TextBlock">
+            <Setter Property="Width" Value="180" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,4,8,4" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+        <Style x:Key="FormInput" TargetType="FrameworkElement">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,4,0,4" />
+        </Style>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Width" Value="84" />
+            <Setter Property="Margin" Value="6" />
+        </Style>
     </Window.Resources>
 
     <Grid Margin="12">
@@ -25,84 +41,151 @@
                        Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SettingInfomationText}" Margin="10 0 0 0" />
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowCopyNotificationTitle}" />
-                <CheckBox IsChecked="{Binding ShowCopyNotification, Mode=TwoWay}" VerticalAlignment="Center" />
-            </StackPanel>
+        <TabControl Grid.Row="1">
+            <TabItem Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=GeneralText}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <GroupBox Grid.ColumnSpan="2" Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=TaskTrayClickOperationText}" Margin="0,0,0,8">
+                            <Grid Margin="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowOperationNotificationTitle}" />
-                <CheckBox IsChecked="{Binding ShowOperationNotification, Mode=TwoWay}" VerticalAlignment="Center" />
-            </StackPanel>
+                                <!-- Use Presets -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=UsePresetsText}" Style="{StaticResource FormLabel}" />
+                                <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding UsePresets, Mode=TwoWay}" Style="{StaticResource FormInput}" />
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ProcessingModeTitle}" />
-                <ComboBox Width="200" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
+                                <!-- Processing Mode -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ProcessingModeTitle}" Style="{StaticResource FormLabel}" />
+                                <ComboBox Grid.Row="1" Grid.Column="1" Width="260" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}"
+                                          IsEnabled="{Binding UsePresets, Converter={StaticResource InverseBooleanConverter}}" Style="{StaticResource FormInput}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
-                <ComboBox Width="200"
-                          ItemsSource="{Binding AvailableCultures}"
-                          SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
-                          DisplayMemberPath="NativeName" />
-            </StackPanel>
+                                <!-- Preset for tray click -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=PresetForTrayClickTitle}" Style="{StaticResource FormLabel}" />
+                                <ComboBox Grid.Row="2" Grid.Column="1" Width="260" ItemsSource="{Binding AvailablePresets}"
+                                          SelectedItem="{Binding SelectedPresetForTrayClick, Mode=TwoWay}" DisplayMemberPath="Name"
+                                          IsEnabled="{Binding UsePresets}" Style="{StaticResource FormInput}" ></ComboBox>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetXTitle}" />
-                <TextBox Width="80" Text="{Binding NotificationOffsetX, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
-            </StackPanel>
+            <TabItem Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=PresetsText}">
+                <Grid Margin="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetYTitle}" />
-                <TextBox Width="80" Text="{Binding NotificationOffsetY, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
-            </StackPanel>
+                    <ListBox ItemsSource="{Binding AvailablePresets}" SelectedItem="{Binding SelectedPreset}" DisplayMemberPath="Name" MinHeight="180" />
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMarginTitle}" />
-                <TextBox Width="80" Text="{Binding NotificationMargin, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
-            </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <Button Style="{StaticResource ActionButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NewText}" Click="BtnNewPreset_Click" />
+                        <Button Style="{StaticResource ActionButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=EditText}" Click="BtnEditPreset_Click" />
+                        <Button Style="{StaticResource ActionButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=DeleteText}" Click="BtnDeletePreset_Click" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Notification">
+                <ScrollViewer>
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="6">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowCopyNotificationTitle}" />
+                            <CheckBox IsChecked="{Binding ShowCopyNotification, Mode=TwoWay}" VerticalAlignment="Center" />
+                        </StackPanel>
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinWidthTitle}" />
-                <TextBox Width="80" Text="{Binding NotificationMinWidth, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
-            </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowOperationNotificationTitle}" />
+                            <CheckBox IsChecked="{Binding ShowOperationNotification, Mode=TwoWay}" VerticalAlignment="Center" />
+                        </StackPanel>
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxWidthTitle}" />
-                <TextBox Width="80" Text="{Binding NotificationMaxWidth, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
-            </StackPanel>
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinHeightTitle}" />
-                <TextBox Width="80" Text="{Binding NotificationMinHeight, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
-            </StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetXTitle}" />
+                            <TextBox Width="80" Text="{Binding NotificationOffsetX, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
+                        </StackPanel>
 
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxHeightTitle}" />
-                <TextBox Width="80" Text="{Binding NotificationMaxHeight, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationDurationTitle}" />
-                <TextBox Width="80" Text="{Binding NotificationDelay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Width="40" VerticalAlignment="Center">ms</TextBlock>
-            </StackPanel>
-        </StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetYTitle}" />
+                            <TextBox Width="80" Text="{Binding NotificationOffsetY, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
+                        </StackPanel>
 
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMarginTitle}" />
+                            <TextBox Width="80" Text="{Binding NotificationMargin, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinWidthTitle}" />
+                            <TextBox Width="80" Text="{Binding NotificationMinWidth, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxWidthTitle}" />
+                            <TextBox Width="80" Text="{Binding NotificationMaxWidth, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinHeightTitle}" />
+                            <TextBox Width="80" Text="{Binding NotificationMinHeight, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxHeightTitle}" />
+                            <TextBox Width="80" Text="{Binding NotificationMaxHeight, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationDurationTitle}" />
+                            <TextBox Width="80" Text="{Binding NotificationDelay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Width="40" VerticalAlignment="Center">ms</TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}">
+                <ScrollViewer>
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="6">
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
+                            <ComboBox Width="200"
+                                      ItemsSource="{Binding AvailableCultures}"
+                                      SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
+                                      DisplayMemberPath="NativeName" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
 
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>

@@ -30,7 +30,8 @@ internal class SettingsViewModel : INotifyPropertyChanged
             NotificationDelay = settings.NotificationDelay,
             ShowCopyNotification = settings.ShowCopyNotification,
             ShowOperationNotification = settings.ShowOperationNotification,
-            CultureName = settings.CultureName
+            CultureName = settings.CultureName,
+            SelectedPresetId = settings.SelectedPresetId
         };
 
         _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
@@ -47,7 +48,27 @@ internal class SettingsViewModel : INotifyPropertyChanged
         _presetManager.LoadPresets();
 
         // 初期選択: 先頭のビルトインプリセットを選択しておく（UI側で変更可能）
-        SelectedPreset = _presetManager.Presets.FirstOrDefault();
+        SelectedPreset = AvailablePresets.FirstOrDefault();
+
+        // 初期 UsePresets を反映（UI のチェックボックスと内部設定を一致させる）
+        _usePresets = _settings.UsePresets;
+
+        // タスクトレイクリック用のプリセットを復元、なければ最初に読み込んだプリセットを初期値として使う
+        if (_settings.SelectedPresetId.HasValue)
+        {
+            SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault(p => p.Id == _settings.SelectedPresetId.Value)
+                                       ?? AvailablePresets.FirstOrDefault();
+        }
+        else
+        {
+            // Default to first loaded preset and persist in the runtime copy of settings so UI and internal state match
+            SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault();
+            _settings.SelectedPresetId = SelectedPresetForTrayClick?.Id;
+        }
+
+        // カルチャの初期選択（AvailablePresets 初期化後に行う）
+        SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name))
+                          ?? CultureInfo.CurrentUICulture;
     }
 
     private IList<ProcessingMode> _processingModes;
@@ -58,6 +79,25 @@ internal class SettingsViewModel : INotifyPropertyChanged
     // Presets
     public IReadOnlyList<ProcessingPreset> AvailablePresets => _presetManager?.Presets ?? new List<ProcessingPreset>();
 
+    private bool _usePresets;
+    public bool UsePresets
+    {
+        get => _usePresets;
+        set
+        {
+            if (_usePresets != value)
+            {
+                _usePresets = value;
+                // Persist selection to settings when toggling
+                _settings.UsePresets = value;
+                OnPropertyChanged();
+                // When switching modes, ensure either preset selection or processing mode is applied
+                OnPropertyChanged(nameof(SelectedPreset));
+                OnPropertyChanged(nameof(SelectedProcessingMode));
+            }
+        }
+    }
+
     private ProcessingPreset? _selectedPreset;
     public ProcessingPreset? SelectedPreset
     {
@@ -67,6 +107,22 @@ internal class SettingsViewModel : INotifyPropertyChanged
             if (_selectedPreset?.Id != value?.Id)
             {
                 _selectedPreset = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // タスクトレイアイコン左クリック時のアクション用プリセット
+    private ProcessingPreset? _selectedPresetForTrayClick;
+    public ProcessingPreset? SelectedPresetForTrayClick
+    {
+        get => _selectedPresetForTrayClick;
+        set
+        {
+            if (_selectedPresetForTrayClick?.Id != value?.Id)
+            {
+                _selectedPresetForTrayClick = value;
+                _settings.SelectedPresetId = value?.Id;
                 OnPropertyChanged();
             }
         }
@@ -233,7 +289,9 @@ internal class SettingsViewModel : INotifyPropertyChanged
         NotificationDelay = _settings.NotificationDelay,
         ShowCopyNotification = _settings.ShowCopyNotification,
         ShowOperationNotification = _settings.ShowOperationNotification,
-        CultureName = _settings.CultureName
+        CultureName = _settings.CultureName,
+        SelectedPresetId = _settings.SelectedPresetId,
+        UsePresets = _settings.UsePresets
     };
 
     protected void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

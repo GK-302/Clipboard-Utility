@@ -8,7 +8,7 @@ namespace ClipboardUtility.src.Models
     /// <summary>
     /// 複数の処理ステップをまとめたプリセットを表します。
     /// </summary>
-    internal sealed class ProcessingPreset
+    public sealed class ProcessingPreset
     {
         /// <summary>
         /// プリセットの一意識別子
@@ -32,7 +32,7 @@ namespace ClipboardUtility.src.Models
         /// 処理ステップのリスト（Order でソートされる）
         /// </summary>
         [JsonPropertyName("steps")]
-        public List<ProcessingStep> Steps { get; set; } = [];
+        public List<ProcessingStep> Steps { get; set; } = new List<ProcessingStep>();
 
         /// <summary>
         /// 作成日時

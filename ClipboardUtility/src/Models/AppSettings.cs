@@ -34,9 +34,15 @@ namespace ClipboardUtility.src.Models
         public bool ShowCopyNotification { get; set; } = true;
         public bool ShowOperationNotification { get; set; } = true;
         public bool ShowWelcomeNotification { get; set; } = true;
-
+        
+        // Whether to use presets for the main operation (if true, a preset is used;
+        // otherwise use the simple ProcessingMode selection)
+        public bool UsePresets { get; set; } = false;
         // 追加: 保存するカルチャ名 (例: "ja-JP" / "en-US")
         public string CultureName { get; set; } = CultureInfo.CurrentUICulture.Name;
+
+        // タスクトレイアイコン左クリック時に実行するプリセット ID
+        public Guid? SelectedPresetId { get; set; } = null;
 
         // 将来の拡張用
         public static AppSettings Load()

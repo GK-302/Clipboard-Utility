@@ -284,7 +284,7 @@ namespace ClipboardUtility.src.Services
     /// 必要に応じてモードを追加していく
     /// 各値に ResourceKey 属性を付与して Resources と結びつけられます。
     /// </summary>
-    internal enum ProcessingMode
+    public enum ProcessingMode
     {
         None = 0,
 
