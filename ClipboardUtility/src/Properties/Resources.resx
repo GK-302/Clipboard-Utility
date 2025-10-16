@@ -471,9 +471,6 @@
   <data name="Preset_RemoveLineBreaks_Description" xml:space="preserve">
     <value>Removes all line breaks and replaces them with spaces</value>
   </data>
-  <data name="Preset_NormalizeWhitespace_Name" xml:space="preserve">
-    <value>Normalize Whitespace (All)(Built-in)</value>
-  </data>
   <data name="Preset_NormalizeWhitespace_Description" xml:space="preserve">
     <value>Normalizes all whitespace including full-width and half-width spaces</value>
   </data>
@@ -509,5 +506,8 @@
   </data>
   <data name="NotificationFormat_CollapseWhitespaceAll" xml:space="preserve">
     <value>All whiteSpace removed</value>
+  </data>
+  <data name="Preset_RemoveLineBreaksAndNormalizeWhitespace_Name" xml:space="preserve">
+    <value>Remove Line Breaks and Normalize Whitespace(Built-in)</value>
   </data>
 </root>
