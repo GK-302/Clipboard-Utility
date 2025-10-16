@@ -273,9 +273,10 @@ namespace ClipboardUtility.src.Services
                 ProcessingMode.Truncate => Truncate(input, options.MaxLength, options.TruncateSuffix),
                 ProcessingMode.JoinLinesWithSpace => JoinLinesWithSpace(input),
                 ProcessingMode.RemoveDuplicateLines => RemoveDuplicateLines(input),
-                ProcessingMode.CollapseWhitespace => _multiWhitespaceRegex.Replace(input ?? string.Empty, " ").Trim(),
+                // Remove all whitespace characters rather than collapsing to a single space.
+                ProcessingMode.CollapseWhitespace => _multiWhitespaceRegex.Replace(input ?? string.Empty, string.Empty),
                 _ => input ?? string.Empty,
-            };
+            };          
         }
     }
 
@@ -284,7 +285,7 @@ namespace ClipboardUtility.src.Services
     /// 必要に応じてモードを追加していく
     /// 各値に ResourceKey 属性を付与して Resources と結びつけられます。
     /// </summary>
-    internal enum ProcessingMode
+    public enum ProcessingMode
     {
         None = 0,
 

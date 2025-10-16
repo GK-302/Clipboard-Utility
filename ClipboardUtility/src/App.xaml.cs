@@ -3,6 +3,7 @@ using ClipboardUtility.src.Services;
 using ClipboardUtility.src.ViewModels;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 using System.Windows;
 
 namespace ClipboardUtility
@@ -15,9 +16,32 @@ namespace ClipboardUtility
         private TaskTrayService _taskTrayService;
         private MainViewModel _mainViewModel;
         private WelcomeService _welcomeService;
+        private Mutex? _instanceMutex;
+        // 固有のミューテックス名（アプリケーションごとに変更してください）
+        private const string MutexName = "ClipboardUtility_{6F1A9C2E-3A4B-4D5E-9F12-ABCDEF123456}";
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // 二重起動防止のためミューテックスを作成
+            bool createdNew = false;
+            try
+            {
+                _instanceMutex = new Mutex(initiallyOwned: true, name: MutexName, createdNew: out createdNew);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Debug.WriteLine($"Failed to create/open mutex: {ex}");
+                // アクセス権限の問題があっても続行は試みる
+            }
+
+            if (!createdNew)
+            {
+                Debug.WriteLine("Another instance is already running. Exiting.");
+                // 既に起動しているため即座に終了
+                Shutdown();
+                return;
+            }
+
             base.OnStartup(e);
             // 設定に保存されているカルチャを適用してからウィンドウを生成する
             try
@@ -67,6 +91,20 @@ namespace ClipboardUtility
         {
             _mainViewModel?.Cleanup();
             TaskTrayService.Instance?.Dispose(); // Singletonインスタンスを取得してDispose
+            try
+            {
+                _instanceMutex?.ReleaseMutex();
+            }
+            catch (ApplicationException)
+            {
+                // ミューテックスが現在所有されていない場合は無視
+            }
+            finally
+            {
+                _instanceMutex?.Dispose();
+                _instanceMutex = null;
+            }
+
             base.OnExit(e);
         }
     }

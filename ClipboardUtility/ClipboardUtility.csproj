@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include=".github\" />
+    <Folder Include="src\Common\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,6 +67,9 @@
 
   <ItemGroup>
     <None Update="config\appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config\presets.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

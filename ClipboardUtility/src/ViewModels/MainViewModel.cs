@@ -19,6 +19,16 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly ClipboardEventCoordinator _clipboardEventCoordinator;
     private bool _isInternalClipboardOperation = false;
 
+    // デバッグ用: _isInternalClipboardOperation の変更を追跡
+    private void SetInternalClipboardOperation(bool value)
+    {
+        if (_isInternalClipboardOperation != value)
+        {
+            Debug.WriteLine($"MainViewModel: _isInternalClipboardOperation changed from {_isInternalClipboardOperation} to {value} at {DateTime.Now:HH:mm:ss.fff}");
+            _isInternalClipboardOperation = value;
+        }
+    }
+
     public event PropertyChangedEventHandler PropertyChanged;
 
     public MainViewModel()
@@ -26,12 +36,18 @@ public class MainViewModel : INotifyPropertyChanged
         _clipboardService = new ClipboardService();
         var textProcessingService = new TextProcessingService();
         var notificationsService = new NotificationsService();
+        var presetService = new PresetService(textProcessingService);
+        
+        // プリセットを読み込み
+        presetService.LoadPresets();
+        Debug.WriteLine($"MainViewModel: Loaded {presetService.Presets.Count} presets");
 
         // サービスの初期化（依存関係注入）
         _clipboardOperationService = new ClipboardOperationService(
             _clipboardService,
             textProcessingService,
-            notificationsService);
+            notificationsService,
+            presetService);
 
         _clipboardEventCoordinator = new ClipboardEventCoordinator(
             textProcessingService,
@@ -109,9 +125,11 @@ public class MainViewModel : INotifyPropertyChanged
 
     public async Task DoClipboardOperationAsync()
     {
+        Debug.WriteLine($"MainViewModel: DoClipboardOperationAsync called at {DateTime.Now:HH:mm:ss.fff}");
         _ = await _clipboardOperationService.ExecuteClipboardOperationAsync(
             () => _isInternalClipboardOperation,
-            value => _isInternalClipboardOperation = value);
+            SetInternalClipboardOperation);
+        Debug.WriteLine($"MainViewModel: DoClipboardOperationAsync completed at {DateTime.Now:HH:mm:ss.fff}");
     }
 
     public void DoClipboardOperation()

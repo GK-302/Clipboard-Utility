@@ -34,13 +34,16 @@ internal class ClipboardEventCoordinator
     /// </summary>
     public void OnClipboardUpdated(object sender, string newText)
     {
-        Debug.WriteLine("ClipboardEventCoordinator: Clipboard updated");
+        bool isInternalOp = _isInternalOperationGetter();
+        Debug.WriteLine($"ClipboardEventCoordinator: Clipboard updated. _isInternalOperation={isInternalOp}, TextLength={newText?.Length ?? 0}, Time={DateTime.Now:HH:mm:ss.fff}");
 
-        if (_isInternalOperationGetter())
+        if (isInternalOp)
         {
-            Debug.WriteLine("ClipboardEventCoordinator: Skipping update (internal operation)");
+            Debug.WriteLine("ClipboardEventCoordinator: Skipping update (internal operation in progress)");
             return;
         }
+        
+        Debug.WriteLine("ClipboardEventCoordinator: Processing clipboard update (not internal operation)");
 
         // TaskTrayServiceにクリップボード情報を更新
         try
