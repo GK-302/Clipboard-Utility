@@ -20,9 +20,21 @@ namespace ClipboardUtility.src.Services
         private static readonly Regex _controlCharsRegex = new(@"[\p{Cc}]", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         /// <summary>
-        /// 文字数カウント（ヌル安全）
+        /// ユーザーが認識する文字数（書記素クラスター）を返します。
+        /// 絵文字やアクセント付き文字を1文字として正確にカウントします。
         /// </summary>
-        public int CountCharacters(string? input) => string.IsNullOrEmpty(input) ? 0 : input!.Length;
+        public int CountCharacters(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return 0;
+            
+            var enumerator = StringInfo.GetTextElementEnumerator(input!);
+            int count = 0;
+            while (enumerator.MoveNext())
+            {
+                count++;
+            }
+            return count;
+        }
 
         /// <summary>
         /// 改行をスペースに置換します（元の挙動を保持）。
