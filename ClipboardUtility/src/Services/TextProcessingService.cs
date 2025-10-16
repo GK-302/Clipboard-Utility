@@ -248,6 +248,20 @@ namespace ClipboardUtility.src.Services
             return info.ToTitleCase(input!.ToLower(culture ?? CultureInfo.CurrentCulture));
         }
 
+        public string DeteleWhiteSpace(string? input, CultureInfo? culture = null)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return string.Empty;
+            }
+
+            // 1. 1つ以上の連続する空白文字(\s+)を単一のスペースに置換します。
+            string normalized = Regex.Replace(input, @"\s+", " ");
+
+            // 2. 先頭と末尾に残る可能性のあるスペースを削除します。
+            return normalized.Trim();
+        }
+
         // --- 処理モードに応じて呼び分ける統合インターフェイス ---
 
         /// <summary>
@@ -286,7 +300,8 @@ namespace ClipboardUtility.src.Services
                 ProcessingMode.JoinLinesWithSpace => JoinLinesWithSpace(input),
                 ProcessingMode.RemoveDuplicateLines => RemoveDuplicateLines(input),
                 // Remove all whitespace characters rather than collapsing to a single space.
-                ProcessingMode.CollapseWhitespace => _multiWhitespaceRegex.Replace(input ?? string.Empty, string.Empty),
+                ProcessingMode.CollapseWhitespace => DeteleWhiteSpace(input),
+                ProcessingMode.CollapseWhitespaceAll => _multiWhitespaceRegex.Replace(input ?? string.Empty, string.Empty),
                 _ => input ?? string.Empty,
             };          
         }
@@ -362,7 +377,11 @@ namespace ClipboardUtility.src.Services
         RemoveDuplicateLines = 20,
 
         [ResourceKey("NotificationFormat_CollapseWhitespace")]
-        CollapseWhitespace = 21
+        CollapseWhitespace = 21,
+
+        [ResourceKey("NotificationFormat_CollapseWhitespaceAll")]
+        CollapseWhitespaceAll = 22
+
     }
 
     /// <summary>

@@ -112,4 +112,5 @@ public partial class ClipboardManagerWindow : Window
     {
         Close();
     }
+
 }

@@ -35,24 +35,10 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
         Presets = new ObservableCollection<ProcessingPreset>(_presetService.Presets);
         SelectedPreset = Presets.FirstOrDefault();
 
-        // 利用可能な処理モードを設定
-        ProcessingModes = new ObservableCollection<ProcessingMode>
-        {
-            ProcessingMode.None,
-            ProcessingMode.RemoveLineBreaks,
-            ProcessingMode.NormalizeWhitespace,
-            ProcessingMode.Trim,
-            ProcessingMode.ToUpper,
-            ProcessingMode.ToLower,
-            ProcessingMode.ToTitleCase,
-            ProcessingMode.ToPascalCase,
-            ProcessingMode.ToCamelCase,
-            ProcessingMode.RemovePunctuation,
-            ProcessingMode.RemoveControlCharacters,
-            ProcessingMode.RemoveUrls,
-            ProcessingMode.RemoveEmails,
-            ProcessingMode.CollapseWhitespace
-        };
+        // 利用可能な処理モードを設定（すべての列挙値を自動取得）
+        ProcessingModes = new ObservableCollection<ProcessingMode>(
+            Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>()
+        );
 
         SelectedProcessingMode = ProcessingMode.None;
 
