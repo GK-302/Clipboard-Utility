@@ -131,6 +131,7 @@
             <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ExitText}" 
                     Width="100" 
                     Margin="0,0,8,0"
+                    Background="BurlyWood"
                     Command="{Binding ExitApplicationCommand}" />
             <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CloseText}" 
                     Width="100"

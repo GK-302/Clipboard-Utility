@@ -1,5 +1,7 @@
 using ClipboardUtility.src.Helpers;
+using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Services;
+using ClipboardUtility.src.Common;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -12,6 +14,7 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
 {
     private readonly ClipboardService _clipboardService;
     private readonly TextProcessingService _textProcessingService;
+    private readonly PresetService _presetService;
     private string _clipboardText = string.Empty;
     private ProcessingMode _selectedProcessingMode;
 
@@ -24,6 +27,13 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
     {
         _clipboardService = new ClipboardService();
         _textProcessingService = new TextProcessingService();
+
+        // PresetService を初期化してプリセットを読み込む
+        _presetService = new PresetService(_textProcessingService);
+        _presetService.LoadPresets();
+
+        Presets = new ObservableCollection<ProcessingPreset>(_presetService.Presets);
+        SelectedPreset = Presets.FirstOrDefault();
 
         // 利用可能な処理モードを設定
         ProcessingModes = new ObservableCollection<ProcessingMode>
@@ -47,12 +57,13 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
         SelectedProcessingMode = ProcessingMode.None;
 
         // コマンドの初期化
-        ApplyProcessingCommand = new RelayCommand(ExecuteApplyProcessing);
-        CopyToClipboardCommand = new RelayCommand(ExecuteCopyToClipboard);
-        RefreshClipboardCommand = new RelayCommand(ExecuteRefreshClipboard);
-        ClearCommand = new RelayCommand(ExecuteClear);
-        OpenSettingsCommand = new RelayCommand(ExecuteOpenSettings);
-        ExitApplicationCommand = new RelayCommand(ExecuteExitApplication);
+        ApplyProcessingCommand = new RelayCommand(_ => ExecuteApplyProcessing());
+        ApplyPresetCommand = new RelayCommand(_ => ExecuteApplyPreset());
+        CopyToClipboardCommand = new RelayCommand(_ => ExecuteCopyToClipboard());
+        RefreshClipboardCommand = new RelayCommand(_ => ExecuteRefreshClipboard());
+        ClearCommand = new RelayCommand(_ => ExecuteClear());
+        OpenSettingsCommand = new RelayCommand(_ => ExecuteOpenSettings());
+        ExitApplicationCommand = new RelayCommand(_ => ExecuteExitApplication());
 
         // 初期クリップボード読み込み
         LoadClipboardContent();
@@ -93,7 +104,25 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ProcessingMode> ProcessingModes { get; }
 
+    // Preset support
+    public ObservableCollection<ProcessingPreset> Presets { get; }
+
+    private ProcessingPreset? _selectedPreset;
+    public ProcessingPreset? SelectedPreset
+    {
+        get => _selectedPreset;
+        set
+        {
+            if (_selectedPreset?.Id != value?.Id)
+            {
+                _selectedPreset = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public ICommand ApplyProcessingCommand { get; }
+    public ICommand ApplyPresetCommand { get; }
     public ICommand CopyToClipboardCommand { get; }
     public ICommand RefreshClipboardCommand { get; }
     public ICommand ClearCommand { get; }
@@ -133,6 +162,27 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
         {
             Debug.WriteLine($"ClipboardManagerViewModel: Failed to apply processing: {ex.Message}");
             FileLogger.LogException(ex, "ClipboardManagerViewModel.ExecuteApplyProcessing");
+        }
+    }
+
+    private void ExecuteApplyPreset()
+    {
+        try
+        {
+            if (SelectedPreset is null)
+            {
+                Debug.WriteLine("ClipboardManagerViewModel: No preset selected");
+                return;
+            }
+
+            var result = _presetService.ExecutePreset(SelectedPreset, ClipboardText);
+            ClipboardText = result;
+            Debug.WriteLine($"ClipboardManagerViewModel: Applied preset {SelectedPreset.Name}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"ClipboardManagerViewModel: Failed to apply preset: {ex.Message}");
+            FileLogger.LogException(ex, "ClipboardManagerViewModel.ExecuteApplyPreset");
         }
     }
 
@@ -178,6 +228,15 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
                 }
                 
                 settingsWindow.ShowDialog();
+
+                // 設定画面でプリセットが変更された可能性があるため、プリセットを再読み込みして UI を更新
+                _presetService.LoadPresets();
+                Presets.Clear();
+                foreach (var p in _presetService.Presets)
+                {
+                    Presets.Add(p);
+                }
+                SelectedPreset = Presets.FirstOrDefault();
             });
         }
         catch (Exception ex)
