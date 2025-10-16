@@ -262,7 +262,7 @@ namespace ClipboardUtility.src.Helpers
 
             double contrastRatio = (lighter + 0.05) / (darker + 0.05);
 
-            Debug.WriteLine($"ColorHelper: Contrast ratio between colors: {contrastRatio:F2}");
+            //Debug.WriteLine($"ColorHelper: Contrast ratio between colors: {contrastRatio:F2}");
             return contrastRatio;
         }
 
@@ -276,7 +276,7 @@ namespace ClipboardUtility.src.Helpers
         {
             try
             {
-                Debug.WriteLine($"ColorHelper: Determining optimal text color for screen background R={backgroundColor.R}, G={backgroundColor.G}, B={backgroundColor.B}");
+                //Debug.WriteLine($"ColorHelper: Determining optimal text color for screen background R={backgroundColor.R}, G={backgroundColor.G}, B={backgroundColor.B}");
 
                 // 基本的な白と黒の候補
                 WpfColor white = Colors.White;
@@ -316,7 +316,7 @@ namespace ClipboardUtility.src.Helpers
                                       bestContrast >= 4.5 ? "AA" :
                                       bestContrast >= 3.0 ? "AA Large" : "Poor";
 
-                Debug.WriteLine($"ColorHelper: Selected text color R={bestColor.R}, G={bestColor.G}, B={bestColor.B} with contrast ratio {bestContrast:F2} ({contrastLevel})");
+                //Debug.WriteLine($"ColorHelper: Selected text color R={bestColor.R}, G={bestColor.G}, B={bestColor.B} with contrast ratio {bestContrast:F2} ({contrastLevel})");
 
                 return bestColor;
             }
@@ -355,7 +355,7 @@ namespace ClipboardUtility.src.Helpers
                 // 縁取り色と背景色のコントラストもチェック
                 double outlineBackgroundContrast = CalculateContrastRatio(outlineColor, backgroundColor);
 
-                Debug.WriteLine($"ColorHelper: Outline color R={outlineColor.R}, G={outlineColor.G}, B={outlineColor.B} with background contrast {outlineBackgroundContrast:F2}");
+                //Debug.WriteLine($"ColorHelper: Outline color R={outlineColor.R}, G={outlineColor.G}, B={outlineColor.B} with background contrast {outlineBackgroundContrast:F2}");
 
                 return outlineColor;
             }

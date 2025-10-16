@@ -31,7 +31,8 @@ internal class SettingsViewModel : INotifyPropertyChanged
             ShowCopyNotification = settings.ShowCopyNotification,
             ShowOperationNotification = settings.ShowOperationNotification,
             CultureName = settings.CultureName,
-            SelectedPresetId = settings.SelectedPresetId
+            SelectedPresetId = settings.SelectedPresetId,
+            UsePresets = settings.UsePresets
         };
 
         _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();

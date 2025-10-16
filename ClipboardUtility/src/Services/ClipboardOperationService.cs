@@ -1,4 +1,5 @@
 using ClipboardUtility.Services;
+using ClipboardUtility.src.Models;
 using System.Diagnostics;
 
 namespace ClipboardUtility.src.Services;
@@ -82,7 +83,9 @@ internal class ClipboardOperationService
                     var preset = _presetService.GetPresetById(currentSettings.SelectedPresetId.Value);
                     if (preset != null)
                     {
-                        await _notificationsService.ShowNotification($"プリセット実行: {preset.Name}", NotificationType.Operation);
+                        // プリセット名を含む通知メッセージを表示
+                        string presetNotificationMessage = $"{preset.Name}";
+                        await _notificationsService.ShowNotification(presetNotificationMessage, NotificationType.Operation);
                         Debug.WriteLine($"ClipboardOperationService: Preset '{preset.Name}' executed successfully");
                     }
                     else
@@ -94,12 +97,25 @@ internal class ClipboardOperationService
                 {
                     await ShowOperationSuccessNotificationAsync(currentSettings.ClipboardProcessingMode);
                 }
+                
+                // 通知表示後に少し待機してからフラグをリセット（コピー通知の抑制を確実にする）
+                await Task.Delay(300);
+                setInternalOperation(false);
+                Debug.WriteLine("ClipboardOperationService: Operation completed, internal flag reset");
+                
                 return true;
             }
             else
             {
                 Debug.WriteLine("ClipboardOperationService: Primary operation failed, attempting fallback");
-                return await AttemptFallbackOperationAsync(processedText, currentSettings.ClipboardProcessingMode, cts.Token);
+                bool fallbackResult = await AttemptFallbackOperationAsync(processedText, currentSettings, cts.Token);
+                
+                // フォールバック後も待機してフラグをリセット
+                await Task.Delay(300);
+                setInternalOperation(false);
+                Debug.WriteLine("ClipboardOperationService: Fallback completed, internal flag reset");
+                
+                return fallbackResult;
             }
         }
         catch (TaskCanceledException tce)
@@ -116,9 +132,13 @@ internal class ClipboardOperationService
         }
         finally
         {
-            await Task.Delay(200);
-            setInternalOperation(false);
-            Debug.WriteLine("ClipboardOperationService: Operation completed, internal flag reset");
+            // 失敗時やフォールバック時のために、念のため最終的にフラグをリセット
+            if (isInternalOperation())
+            {
+                await Task.Delay(200);
+                setInternalOperation(false);
+                Debug.WriteLine("ClipboardOperationService: Internal flag reset in finally block");
+            }
         }
     }
 
@@ -135,7 +155,7 @@ internal class ClipboardOperationService
     /// <summary>
     /// フォールバック操作を試行
     /// </summary>
-    private async Task<bool> AttemptFallbackOperationAsync(string processedText, ProcessingMode mode, CancellationToken cancellationToken)
+    private async Task<bool> AttemptFallbackOperationAsync(string processedText, AppSettings currentSettings, CancellationToken cancellationToken)
     {
         try
         {
@@ -145,7 +165,25 @@ internal class ClipboardOperationService
             bool verified = await _clipboardService.VerifyClipboardContentAsync(processedText, cancellationToken);
             if (verified)
             {
-                await ShowOperationSuccessNotificationAsync(mode);
+                // フォールバック成功時も適切な通知を表示
+                if (currentSettings.UsePresets && currentSettings.SelectedPresetId.HasValue)
+                {
+                    var preset = _presetService.GetPresetById(currentSettings.SelectedPresetId.Value);
+                    if (preset != null)
+                    {
+                        string presetNotificationMessage = $"{preset.Name}";
+                        await _notificationsService.ShowNotification(presetNotificationMessage, NotificationType.Operation);
+                    }
+                    else
+                    {
+                        await ShowOperationSuccessNotificationAsync(currentSettings.ClipboardProcessingMode);
+                    }
+                }
+                else
+                {
+                    await ShowOperationSuccessNotificationAsync(currentSettings.ClipboardProcessingMode);
+                }
+                
                 Debug.WriteLine("ClipboardOperationService: Fallback operation succeeded");
                 return true;
             }

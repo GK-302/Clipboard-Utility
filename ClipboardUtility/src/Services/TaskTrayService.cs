@@ -194,8 +194,9 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     {
         if (e.Button == MouseButtons.Left)
         {
-            // 左クリック: 設定で選択されたプリセットを実行
-            ExecuteSelectedPreset();
+            // 左クリック: ClipboardOperationRequestedイベントを発火してMainViewModelで処理
+            Debug.WriteLine("TaskTrayService: Left click detected, raising ClipboardOperationRequested event");
+            ClipboardOperationRequested?.Invoke(this, EventArgs.Empty);
         }
         else if (e.Button == MouseButtons.Right)
         {
@@ -206,7 +207,9 @@ public class TaskTrayService : ITaskTrayService, IDisposable
 
     /// <summary>
     /// 設定で選択されたプリセットを実行します
+    /// （現在は使用されていません - ClipboardOperationRequestedイベント経由でMainViewModelが処理）
     /// </summary>
+    [Obsolete("Use ClipboardOperationRequested event instead")]
     private void ExecuteSelectedPreset()
     {
         try

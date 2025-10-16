@@ -37,7 +37,7 @@ namespace ClipboardUtility.src.Models
         
         // Whether to use presets for the main operation (if true, a preset is used;
         // otherwise use the simple ProcessingMode selection)
-        public bool UsePresets { get; set; } = false;
+        public bool UsePresets { get; set; } = true;
         // 追加: 保存するカルチャ名 (例: "ja-JP" / "en-US")
         public string CultureName { get; set; } = CultureInfo.CurrentUICulture.Name;
 

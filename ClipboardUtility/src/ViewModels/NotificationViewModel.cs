@@ -94,7 +94,7 @@ internal class NotificationViewModel : INotifyPropertyChanged
     {
         try
         {
-            Debug.WriteLine($"NotificationViewModel: Setting colors for screen background R={screenBackgroundColor.R}, G={screenBackgroundColor.G}, B={screenBackgroundColor.B}");
+            //Debug.WriteLine($"NotificationViewModel: Setting colors for screen background R={screenBackgroundColor.R}, G={screenBackgroundColor.G}, B={screenBackgroundColor.B}");
 
             BackgroundColor = screenBackgroundColor;
 
@@ -106,8 +106,8 @@ internal class NotificationViewModel : INotifyPropertyChanged
             WpfColor outlineColor = ColorHelper.GetOutlineColor(optimalTextColor, screenBackgroundColor);
             OutlineColor = outlineColor;
 
-            Debug.WriteLine($"NotificationViewModel: Text color set to R={optimalTextColor.R}, G={optimalTextColor.G}, B={optimalTextColor.B}");
-            Debug.WriteLine($"NotificationViewModel: Outline color set to R={outlineColor.R}, G={outlineColor.G}, B={outlineColor.B}");
+            //Debug.WriteLine($"NotificationViewModel: Text color set to R={optimalTextColor.R}, G={optimalTextColor.G}, B={optimalTextColor.B}");
+            //Debug.WriteLine($"NotificationViewModel: Outline color set to R={outlineColor.R}, G={outlineColor.G}, B={outlineColor.B}");
         }
         catch (System.Exception ex)
         {
