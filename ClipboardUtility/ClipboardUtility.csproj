@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="ClipboardUtility.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="src\Assets\drawing_1.ico" />
     <None Remove="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
     <None Remove="src\Assets\Fonts\NotoSansJP\OFL.txt" />
