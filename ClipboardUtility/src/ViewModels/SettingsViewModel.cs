@@ -3,7 +3,9 @@ using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ClipboardUtility.src.ViewModels;
@@ -14,7 +16,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler PropertyChanged;
 
     // Preset manager
-    private readonly PresetManager _presetManager;
+    private readonly PresetService _presetService;
 
     public SettingsViewModel(AppSettings settings)
     {
@@ -43,11 +45,11 @@ internal class SettingsViewModel : INotifyPropertyChanged
         AvailableCultures = new List<CultureInfo> { new("en-US"), new("ja-JP") };
         
         // Preset manager を作成してプリセットを読み込む
-        _presetManager = new PresetManager(new TextProcessingService());
-        _presetManager.LoadPresets();
+        _presetService = new PresetService(new TextProcessingService());
+        _presetService.LoadPresets();
 
         // ObservableCollection に変更して動的更新を可能にする
-        AvailablePresets = new ObservableCollection<ProcessingPreset>(_presetManager.Presets);
+        AvailablePresets = new ObservableCollection<ProcessingPreset>(_presetService.Presets);
 
         // 初期選択: 先頭のビルトインプリセットを選択しておく（UI側で変更可能）
         SelectedPreset = AvailablePresets.FirstOrDefault();
@@ -58,14 +60,33 @@ internal class SettingsViewModel : INotifyPropertyChanged
         // タスクトレイクリック用のプリセットを復元、なければ最初に読み込んだプリセットを初期値として使う
         if (_settings.SelectedPresetId.HasValue)
         {
-            SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault(p => p.Id == _settings.SelectedPresetId.Value)
-                                       ?? AvailablePresets.FirstOrDefault();
+            Debug.WriteLine($"SettingsViewModel: Loading preset from settings, ID = {_settings.SelectedPresetId.Value}");
+            SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault(p => p.Id == _settings.SelectedPresetId.Value);
+            
+            if (SelectedPresetForTrayClick != null)
+            {
+                Debug.WriteLine($"SettingsViewModel: Found preset: {SelectedPresetForTrayClick.Name}");
+            }
+            else
+            {
+                Debug.WriteLine("SettingsViewModel: Preset not found, using first preset as fallback");
+                SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault();
+            }
         }
         else
         {
+            Debug.WriteLine("SettingsViewModel: No preset ID in settings, using first preset");
             // Default to first loaded preset and persist in the runtime copy of settings so UI and internal state match
             SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault();
             _settings.SelectedPresetId = SelectedPresetForTrayClick?.Id;
+        }
+        
+        Debug.WriteLine($"SettingsViewModel: Final SelectedPresetForTrayClick = {SelectedPresetForTrayClick?.Name ?? "null"}");
+        Debug.WriteLine($"SettingsViewModel: Final SelectedPresetForTrayClick.Id = {SelectedPresetForTrayClick?.Id.ToString() ?? "null"}");
+        Debug.WriteLine($"SettingsViewModel: AvailablePresets count = {AvailablePresets.Count}");
+        for (int i = 0; i < AvailablePresets.Count; i++)
+        {
+            Debug.WriteLine($"  [{i}] {AvailablePresets[i].Name} (ID: {AvailablePresets[i].Id})");
         }
 
         // カルチャの初期選択（AvailablePresets 初期化後に行う）
@@ -200,16 +221,16 @@ internal class SettingsViewModel : INotifyPropertyChanged
     private void RefreshPresetLocalization()
     {
         // Null チェックを追加
-        if (_presetManager == null || AvailablePresets == null) return;
+        if (_presetService == null || AvailablePresets == null) return;
 
-        _presetManager.LoadPresets();
+        _presetService.LoadPresets();
         
         // 現在の選択を保存
         var selectedId = _selectedPreset?.Id;
 
         // 既存の ObservableCollection を更新（UI が自動的に反映される）
         AvailablePresets.Clear();
-        foreach (var preset in _presetManager.Presets)
+        foreach (var preset in _presetService.Presets)
         {
             AvailablePresets.Add(preset);
         }
@@ -290,7 +311,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
     // Preset management helper wrappers - ObservableCollection を直接操作
     public ProcessingPreset CreatePreset(string name, string description, List<ProcessingStep> steps)
     {
-        var preset = _presetManager.CreatePreset(name, description, steps);
+        var preset = _presetService.CreatePreset(name, description, steps);
         AvailablePresets.Add(preset);
         SelectedPreset = preset;
         return preset;
@@ -298,7 +319,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
 
     public bool UpdatePreset(ProcessingPreset preset)
     {
-        if (!_presetManager.UpdatePreset(preset)) return false;
+        if (!_presetService.UpdatePreset(preset)) return false;
 
         // ObservableCollection 内の既存アイテムを更新
         var existing = AvailablePresets.FirstOrDefault(p => p.Id == preset.Id);
@@ -313,7 +334,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
 
     public bool DeletePreset(System.Guid id)
     {
-        if (!_presetManager.DeletePreset(id)) return false;
+        if (!_presetService.DeletePreset(id)) return false;
 
         var preset = AvailablePresets.FirstOrDefault(p => p.Id == id);
         if (preset != null)

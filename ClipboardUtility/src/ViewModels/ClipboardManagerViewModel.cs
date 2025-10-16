@@ -14,7 +14,7 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
 {
     private readonly ClipboardService _clipboardService;
     private readonly TextProcessingService _textProcessingService;
-    private readonly PresetManager _presetManager;
+    private readonly PresetService _presetService;
     private string _clipboardText = string.Empty;
     private ProcessingMode _selectedProcessingMode;
 
@@ -28,11 +28,11 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
         _clipboardService = new ClipboardService();
         _textProcessingService = new TextProcessingService();
 
-        // PresetManager を初期化してプリセットを読み込む
-        _presetManager = new PresetManager(_textProcessingService);
-        _presetManager.LoadPresets();
+        // PresetService を初期化してプリセットを読み込む
+        _presetService = new PresetService(_textProcessingService);
+        _presetService.LoadPresets();
 
-        Presets = new ObservableCollection<ProcessingPreset>(_presetManager.Presets);
+        Presets = new ObservableCollection<ProcessingPreset>(_presetService.Presets);
         SelectedPreset = Presets.FirstOrDefault();
 
         // 利用可能な処理モードを設定
@@ -175,7 +175,7 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
                 return;
             }
 
-            var result = _presetManager.ExecutePreset(SelectedPreset, ClipboardText);
+            var result = _presetService.ExecutePreset(SelectedPreset, ClipboardText);
             ClipboardText = result;
             Debug.WriteLine($"ClipboardManagerViewModel: Applied preset {SelectedPreset.Name}");
         }
@@ -230,9 +230,9 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
                 settingsWindow.ShowDialog();
 
                 // 設定画面でプリセットが変更された可能性があるため、プリセットを再読み込みして UI を更新
-                _presetManager.LoadPresets();
+                _presetService.LoadPresets();
                 Presets.Clear();
-                foreach (var p in _presetManager.Presets)
+                foreach (var p in _presetService.Presets)
                 {
                     Presets.Add(p);
                 }

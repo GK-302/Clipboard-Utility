@@ -178,7 +178,7 @@ internal class PresetService
         {
             var options = ConvertStepOptionsToTextProcessingOptions(step.Options);
                 Debug.WriteLine($"PresetService: Executing step Order={step.Order}, Mode={step.Mode}, IsEnabled={step.IsEnabled}");
-                result = _textProcessingService.Process(result, step.Mode, options);
+            result = _textProcessingService.Process(result, step.Mode, options);
         }
 
         Debug.WriteLine($"PresetService: Execution complete. Result length {result?.Length ?? 0}");

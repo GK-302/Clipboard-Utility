@@ -310,43 +310,43 @@
     <comment>キャンセルボタンのテキスト</comment>
   </data>
   <data name="ShowCopyNotification" xml:space="preserve">
-    <value>コピー通知を表示:</value>
+    <value>コピー通知を表示</value>
     <comment>「コピー通知を表示」設定のテキスト</comment>
   </data>
   <data name="ShowOperationNotification" xml:space="preserve">
-    <value>操作通知を表示:</value>
+    <value>操作通知を表示</value>
     <comment>「操作通知を表示」設定のテキスト</comment>
   </data>
   <data name="ProcessingMode" xml:space="preserve">
-    <value>処理モード:</value>
+    <value>処理モード</value>
     <comment>「処理モード」設定のテキスト</comment>
   </data>
   <data name="NotificationOffsetX" xml:space="preserve">
-    <value>通知オフセットX:</value>
+    <value>通知オフセットX</value>
     <comment>「通知オフセットX」設定のテキスト</comment>
   </data>
   <data name="NotificationOffsetY" xml:space="preserve">
-    <value>通知オフセットY:</value>
+    <value>通知オフセットY</value>
     <comment>「通知オフセットY」設定のテキスト</comment>
   </data>
   <data name="NotificationMargin" xml:space="preserve">
-    <value>通知マージン:</value>
+    <value>通知マージン</value>
     <comment>「通知マージン」設定のテキスト</comment>
   </data>
   <data name="NotificationMinWidth" xml:space="preserve">
-    <value>最小幅:</value>
+    <value>最小幅</value>
     <comment>「通知最小幅」設定のテキスト</comment>
   </data>
   <data name="NotificationMaxWidth" xml:space="preserve">
-    <value>最大幅:</value>
+    <value>最大幅</value>
     <comment>「通知最大幅」設定のテキスト</comment>
   </data>
   <data name="NotificationMinHeight" xml:space="preserve">
-    <value>最小高さ:</value>
+    <value>最小高さ</value>
     <comment>「通知最小高さ」設定のテキスト</comment>
   </data>
   <data name="NotificationMaxHeight" xml:space="preserve">
-    <value>最大高さ:</value>
+    <value>最大高さ</value>
     <comment>「通知最大高さ」設定のテキスト</comment>
   </data>
   <data name="OpenSetting" xml:space="preserve">
@@ -384,7 +384,7 @@
 ・タスクトレイアイコンをクリックすることで、文字列操作が行えます。</value>
   </data>
   <data name="LanguageSettingTitle" xml:space="preserve">
-    <value>言語:</value>
+    <value>言語</value>
   </data>
   <data name="SettingInfomationText" xml:space="preserve">
     <value>一部の項目は設定を開き直すことで反映されます。</value>
@@ -430,7 +430,7 @@
     <comment>テキスト処理セクションのラベル</comment>
   </data>
   <data name="SelectProcessingModeText" xml:space="preserve">
-    <value>モードを選択:</value>
+    <value>モードを選択</value>
     <comment>処理モード選択のラベル</comment>
   </data>
   <data name="ApplyText" xml:space="preserve">
@@ -483,7 +483,7 @@
     <value>プリセットを使用</value>
   </data>
   <data name="PresetForTrayClickTitle" xml:space="preserve">
-    <value>トレイクリック用プリセット:</value>
+    <value>トレイクリック用プリセット</value>
   </data>
   <data name="NotificationText" xml:space="preserve">
     <value>通知</value>

@@ -18,7 +18,7 @@
         },
         {
           "order": 1,
-          "mode": "Trim",
+          "mode": "CollapseWhitespace",
           "isEnabled": true
         }
       ]

@@ -322,7 +322,7 @@
     <comment>Text for the "Processing Mode" setting.</comment>
   </data>
   <data name="NotificationOffsetX" xml:space="preserve">
-    <value>Notification Offset X:</value>
+    <value>Notification Offset X</value>
     <comment>Text for the "Notification Offset X" setting.</comment>
   </data>
   <data name="NotificationOffsetY" xml:space="preserve">
@@ -334,19 +334,19 @@
     <comment>Text for the "Notification Margin" setting.</comment>
   </data>
   <data name="NotificationMinWidth" xml:space="preserve">
-    <value>Min Width:</value>
+    <value>Min Width</value>
     <comment>Text for the "Notification Min Width" setting.</comment>
   </data>
   <data name="NotificationMaxWidth" xml:space="preserve">
-    <value>Max Width:</value>
+    <value>Max Width</value>
     <comment>Text for the "Notification Max Width" setting.</comment>
   </data>
   <data name="NotificationMinHeight" xml:space="preserve">
-    <value>Min Height:</value>
+    <value>Min Height</value>
     <comment>Text for the "Notification Min Height" setting.</comment>
   </data>
   <data name="NotificationMaxHeight" xml:space="preserve">
-    <value>Max Height:</value>
+    <value>Max Height</value>
     <comment>Text for the "Notification Max Height" setting.</comment>
   </data>
   <data name="OpenSetting" xml:space="preserve">
@@ -387,7 +387,7 @@
 ・Clicking the taskbar icon performs a string operation</value>
   </data>
   <data name="LanguageSettingTitle" xml:space="preserve">
-    <value>Language:</value>
+    <value>Language</value>
   </data>
   <data name="SettingInfomationText" xml:space="preserve">
     <value>Some setting items will be reflected to reopen setting.</value>

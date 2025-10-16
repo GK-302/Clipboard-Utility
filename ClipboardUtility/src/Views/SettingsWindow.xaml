@@ -84,9 +84,15 @@
 
                                 <!-- Preset for tray click -->
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=PresetForTrayClickTitle}" Style="{StaticResource FormLabel}" />
-                                <ComboBox Grid.Row="2" Grid.Column="1" Width="260" ItemsSource="{Binding AvailablePresets}"
-                                          SelectedItem="{Binding SelectedPresetForTrayClick, Mode=TwoWay}" DisplayMemberPath="Name"
-                                          IsEnabled="{Binding UsePresets}" Style="{StaticResource FormInput}" ></ComboBox>
+                                <ComboBox Grid.Row="2" Grid.Column="1" Width="260" ItemsSource="{Binding AvailablePresets}" x:Name="presetCombobox"
+                                          SelectedItem="{Binding SelectedPresetForTrayClick, Mode=TwoWay}"
+                                          IsEnabled="{Binding UsePresets}" Style="{StaticResource FormInput}" >
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </Grid>
                         </GroupBox>
                     </Grid>
@@ -109,7 +115,7 @@
                     </StackPanel>
                 </Grid>
             </TabItem>
-            <TabItem Header="Notification">
+            <TabItem Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationText}">
                 <ScrollViewer>
                     <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="6">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">

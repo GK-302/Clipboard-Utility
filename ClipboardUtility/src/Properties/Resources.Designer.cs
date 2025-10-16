@@ -236,7 +236,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Language: に類似しているローカライズされた文字列を検索します。
+        ///   Language に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string LanguageSettingTitle {
             get {
@@ -515,7 +515,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Max Height: に類似しているローカライズされた文字列を検索します。
+        ///   Max Height に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationMaxHeight {
             get {
@@ -524,7 +524,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Max Width: に類似しているローカライズされた文字列を検索します。
+        ///   Max Width に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationMaxWidth {
             get {
@@ -533,7 +533,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Min Height: に類似しているローカライズされた文字列を検索します。
+        ///   Min Height に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationMinHeight {
             get {
@@ -542,7 +542,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Min Width: に類似しているローカライズされた文字列を検索します。
+        ///   Min Width に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationMinWidth {
             get {
@@ -551,7 +551,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Notification Offset X: に類似しているローカライズされた文字列を検索します。
+        ///   Notification Offset X に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotificationOffsetX {
             get {
