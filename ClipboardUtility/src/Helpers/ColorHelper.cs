@@ -39,7 +39,7 @@ namespace ClipboardUtility.src.Helpers
                 IntPtr hdc = GetDC(IntPtr.Zero);
                 if (hdc == IntPtr.Zero)
                 {
-                    Debug.WriteLine("ColorHelper: Failed to get device context");
+                    //Debug.WriteLine("ColorHelper: Failed to get device context");
                     return GetDefaultBackgroundColor();
                 }
 
@@ -53,7 +53,7 @@ namespace ClipboardUtility.src.Helpers
                     byte b = (byte)((pixel >> 16) & 0xFF);
 
                     WpfColor backgroundColor = WpfColor.FromRgb(r, g, b);
-                    Debug.WriteLine($"ColorHelper: Background color at ({x}, {y}): R={r}, G={g}, B={b}");
+                    //Debug.WriteLine($"ColorHelper: Background color at ({x}, {y}): R={r}, G={g}, B={b}");
 
                     return backgroundColor;
                 }
@@ -129,7 +129,7 @@ namespace ClipboardUtility.src.Helpers
                         totalB += color.B;
                         validSamples++;
 
-                        Debug.WriteLine($"ColorHelper: Sample at ({point.X:F0}, {point.Y:F0}): R={color.R}, G={color.G}, B={color.B}");
+                        //Debug.WriteLine($"ColorHelper: Sample at ({point.X:F0}, {point.Y:F0}): R={color.R}, G={color.G}, B={color.B}");
                     }
                 }
 
@@ -242,7 +242,7 @@ namespace ClipboardUtility.src.Helpers
             // ‹P“xŒvŽZ
             double luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
-            Debug.WriteLine($"ColorHelper: Color R={color.R}, G={color.G}, B={color.B} has luminance {luminance:F3}");
+            //Debug.WriteLine($"ColorHelper: Color R={color.R}, G={color.G}, B={color.B} has luminance {luminance:F3}");
             return luminance;
         }
 

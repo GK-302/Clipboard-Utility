@@ -12,15 +12,18 @@ internal class ClipboardOperationService
     private readonly ClipboardService _clipboardService;
     private readonly TextProcessingService _textProcessingService;
     private readonly NotificationsService _notificationsService;
+    private readonly PresetService _presetService;
 
     public ClipboardOperationService(
         ClipboardService clipboardService,
         TextProcessingService textProcessingService,
-        NotificationsService notificationsService)
+        NotificationsService notificationsService,
+        PresetService presetService)
     {
         _clipboardService = clipboardService ?? throw new ArgumentNullException(nameof(clipboardService));
         _textProcessingService = textProcessingService ?? throw new ArgumentNullException(nameof(textProcessingService));
         _notificationsService = notificationsService ?? throw new ArgumentNullException(nameof(notificationsService));
+        _presetService = presetService ?? throw new ArgumentNullException(nameof(presetService));
     }
 
     /// <summary>
@@ -43,15 +46,54 @@ internal class ClipboardOperationService
         {
             var currentSettings = SettingsService.Instance.Current;
 
-            Debug.WriteLine($"ClipboardOperationService: Processing clipboard with mode {currentSettings.ClipboardProcessingMode}");
-            string processedText = _textProcessingService.Process(clipboardText, currentSettings.ClipboardProcessingMode);
+            string processedText;
+
+            // UsePresetsが有効な場合はプリセットを実行、そうでなければ通常の処理モードを実行
+            if (currentSettings.UsePresets && currentSettings.SelectedPresetId.HasValue)
+            {
+                Debug.WriteLine($"ClipboardOperationService: Using preset mode. Preset ID: {currentSettings.SelectedPresetId.Value}");
+                var preset = _presetService.GetPresetById(currentSettings.SelectedPresetId.Value);
+                
+                if (preset != null)
+                {
+                    Debug.WriteLine($"ClipboardOperationService: Executing preset '{preset.Name}' (ID: {preset.Id})");
+                    processedText = _presetService.ExecutePreset(preset, clipboardText);
+                }
+                else
+                {
+                    Debug.WriteLine($"ClipboardOperationService: Preset not found (ID: {currentSettings.SelectedPresetId.Value}), falling back to normal mode");
+                    processedText = _textProcessingService.Process(clipboardText, currentSettings.ClipboardProcessingMode);
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"ClipboardOperationService: Processing clipboard with mode {currentSettings.ClipboardProcessingMode}");
+                processedText = _textProcessingService.Process(clipboardText, currentSettings.ClipboardProcessingMode);
+            }
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             bool success = await _clipboardService.SetTextAsync(processedText, cts.Token);
 
             if (success)
             {
-                await ShowOperationSuccessNotificationAsync(currentSettings.ClipboardProcessingMode);
+                // UsePresetsが有効な場合は専用の通知を表示
+                if (currentSettings.UsePresets && currentSettings.SelectedPresetId.HasValue)
+                {
+                    var preset = _presetService.GetPresetById(currentSettings.SelectedPresetId.Value);
+                    if (preset != null)
+                    {
+                        await _notificationsService.ShowNotification($"プリセット実行: {preset.Name}", NotificationType.Operation);
+                        Debug.WriteLine($"ClipboardOperationService: Preset '{preset.Name}' executed successfully");
+                    }
+                    else
+                    {
+                        await ShowOperationSuccessNotificationAsync(currentSettings.ClipboardProcessingMode);
+                    }
+                }
+                else
+                {
+                    await ShowOperationSuccessNotificationAsync(currentSettings.ClipboardProcessingMode);
+                }
                 return true;
             }
             else

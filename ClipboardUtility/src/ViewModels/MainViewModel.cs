@@ -26,12 +26,18 @@ public class MainViewModel : INotifyPropertyChanged
         _clipboardService = new ClipboardService();
         var textProcessingService = new TextProcessingService();
         var notificationsService = new NotificationsService();
+        var presetService = new PresetService(textProcessingService);
+        
+        // プリセットを読み込み
+        presetService.LoadPresets();
+        Debug.WriteLine($"MainViewModel: Loaded {presetService.Presets.Count} presets");
 
         // サービスの初期化（依存関係注入）
         _clipboardOperationService = new ClipboardOperationService(
             _clipboardService,
             textProcessingService,
-            notificationsService);
+            notificationsService,
+            presetService);
 
         _clipboardEventCoordinator = new ClipboardEventCoordinator(
             textProcessingService,

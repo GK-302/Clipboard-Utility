@@ -461,21 +461,18 @@
     <value>閉じる</value>
     <comment>ウィンドウを閉じるボタンのテキスト</comment>
   </data>
-  <!-- Preset resource entries (Japanese) -->
   <data name="Preset_RemoveLineBreaks_Name" xml:space="preserve">
-    <value>改行削除</value>
+    <value>改行削除（ビルトイン）</value>
   </data>
   <data name="Preset_RemoveLineBreaks_Description" xml:space="preserve">
     <value>すべての改行を削除してスペースに置き換えます</value>
   </data>
   <data name="Preset_NormalizeWhitespace_Name" xml:space="preserve">
-    <value>空白正規化（全角半角）</value>
+    <value>空白正規化（全角半角）（ビルトイン）</value>
   </data>
   <data name="Preset_NormalizeWhitespace_Description" xml:space="preserve">
     <value>全角・半角を含むすべての空白文字を正規化します</value>
   </data>
-  
-  <!-- UI Tab Headers -->
   <data name="GeneralText" xml:space="preserve">
     <value>一般</value>
   </data>

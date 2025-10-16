@@ -606,7 +606,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Normalize Whitespace (All) に類似しているローカライズされた文字列を検索します。
+        ///   Normalize Whitespace (All)(Built-in) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Preset_NormalizeWhitespace_Name {
             get {
