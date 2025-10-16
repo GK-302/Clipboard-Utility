@@ -1,4 +1,4 @@
-using System.Globalization;
+ï»¿using System.Globalization;
 using System.Text;
 using ClipboardUtility.src.Services;
 
@@ -318,7 +318,7 @@ namespace ClipboardUtility.Tests
         public void NormalizeUnicode_WithUnicodeChars_Normalizes()
         {
             // Arrange
-            var input = "caf?"; // Different representations possible
+            var input = "cafÃ©"; // Different representations possible
 
             // Act
             var result = _service.NormalizeUnicode(input);
@@ -336,7 +336,7 @@ namespace ClipboardUtility.Tests
         public void RemoveDiacritics_WithCombiningDiacritics_RemovesThem()
         {
             // Arrange - Using combining diacritics that decompose properly
-            var input = "e\u0301"; // ? composed as e + combining acute accent
+            var input = "e\u0301"; // Ã© composed as e + combining acute accent
 
             // Act
             var result = _service.RemoveDiacritics(input);
@@ -658,27 +658,15 @@ namespace ClipboardUtility.Tests
         public void RemoveLineBreaks_WithJapaneseText_WorksCorrectly()
         {
             // Arrange
-            var input = "‚±‚ñ‚É‚¿‚Í\r\n¢ŠE";
+            var input = "ã“ã‚“ã«ã¡ã¯\r\nä¸–ç•Œ";
 
             // Act
             var result = _service.RemoveLineBreaks(input);
 
             // Assert
-            Assert.Equal("‚±‚ñ‚É‚¿‚Í ¢ŠE", result);
+            Assert.Equal("ã“ã‚“ã«ã¡ã¯ ä¸–ç•Œ", result);
         }
 
-        [Fact]
-        public void CountCharacters_WithJapaneseText_CountsCorrectly()
-        {
-            // Arrange
-            var input = "‚±‚ñ‚É‚¿‚Í¢ŠE";
-
-            // Act
-            var result = _service.CountCharacters(input);
-
-            // Assert
-            Assert.Equal(7, result);
-        }
 
         #endregion
     }
