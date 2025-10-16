@@ -1,5 +1,9 @@
 name: .NET Tests
 
+permissions:
+  checks: write
+  contents: read
+
 on:
   push:
     branches:
