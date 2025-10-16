@@ -275,6 +275,7 @@ namespace ClipboardUtility.src.Services
                 ProcessingMode.RemoveDuplicateLines => RemoveDuplicateLines(input),
                 // Remove all whitespace characters rather than collapsing to a single space.
                 ProcessingMode.CollapseWhitespace => _multiWhitespaceRegex.Replace(input ?? string.Empty, string.Empty),
+                ProcessingMode.CollapseWhitespaceAll => _multiWhitespaceRegex.Replace(input ?? string.Empty, string.Empty),
                 _ => input ?? string.Empty,
             };          
         }
@@ -350,7 +351,11 @@ namespace ClipboardUtility.src.Services
         RemoveDuplicateLines = 20,
 
         [ResourceKey("NotificationFormat_CollapseWhitespace")]
-        CollapseWhitespace = 21
+        CollapseWhitespace = 21,
+
+        [ResourceKey("NotificationFormat_CollapseWhitespaceAll")]
+        CollapseWhitespaceAll = 22
+
     }
 
     /// <summary>

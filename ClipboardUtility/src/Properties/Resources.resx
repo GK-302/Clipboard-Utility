@@ -507,4 +507,7 @@
   <data name="TaskTrayClickOperationText" xml:space="preserve">
     <value>TaskTray Action</value>
   </data>
+  <data name="NotificationFormat_CollapseWhitespaceAll" xml:space="preserve">
+    <value>All whiteSpace removed</value>
+  </data>
 </root>

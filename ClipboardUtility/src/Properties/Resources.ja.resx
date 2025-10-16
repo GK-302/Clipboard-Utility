@@ -503,4 +503,7 @@
   <data name="TaskTrayClickOperationText" xml:space="preserve">
     <value>タスクトレイアクション</value>
   </data>
+  <data name="NotificationFormat_CollapseWhitespaceAll" xml:space="preserve">
+    <value>すべての空白を削除しました</value>
+  </data>
 </root>
