@@ -32,26 +32,47 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           # プロジェクトで使用している.NETのバージョンを指定
-          dotnet-version: '8.0.x' 
+          dotnet-version: '8.0.x'
 
-      # 3. プロジェクトをビルドし、発行（publish）する
-      - name: Publish Project
+      # 3. MSBuildをセットアップする (インストーラーのビルドに必要)
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # 4. ソリューション全体のNuGetパッケージを復元する
+      - name: Restore NuGet packages
+        # ソリューションファイル名を指定してください
+        run: dotnet restore ClipboardUtility.sln
+
+           # 5. WPFアプリケーションを発行する (単一exeファイル用)
+      - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
         # --configuration Release: リリースモードでビルド
         # --runtime win-x64: 64bitのWindows向けにビルド
         # --self-contained true: .NETがインストールされていなくても動くように自己完結型でビルド
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
-        
-      # 4. README.mdをpublishディレクトリにコピーする
+
+      # 6. MSIインストーラーをビルドする (依存関係もビルドされます)
+      - name: Build MSI Installer
+        # .vdprojはmsbuildではビルドできないため、Visual Studio本体のdevenv.comを使います。
+        # GitHub ActionsのWindows環境にはVisual Studioがプリインストールされています。
+        run: |
+          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU"
+
+      # 7. README.mdをpublishディレクトリにコピーする
       - name: Copy README to publish folder
         run: Copy-Item -Path ./README* -Destination ./publish/
 
-      # 5. 発行された成果物をZIPファイルに圧縮する
-      - name: Zip the artifacts
-        run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-${{ github.ref_name }}.zip
+      # 8. 単一exeファイルの成果物をZIPに圧縮する
+      - name: Zip the standalone artifact
+        run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-Standalone-${{ github.ref_name }}.zip
 
-      # 6. GitHubリリースを作成する
+      # 9. インストーラーの成果物をZIPに圧縮する
+      - name: Zip the installer artifact
+        # インストーラーの出力先フォルダを指定してください (通常は ProjectName/Release)
+        run: Compress-Archive -Path ./ClipboardUtilityInstaller/Release/* -DestinationPath ClipboardUtility-Installer-${{ github.ref_name }}.zip
+
+      # 10. GitHubリリースを作成する
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -63,14 +84,25 @@ jobs:
           draft: false
           prerelease: false
 
-      # 7. ZIPファイルをリリースにアップロードする
-      - name: Upload Release Asset
+      # 11. 単一exe版(ZIP)をリリースにアップロードする
+      - name: Upload Standalone Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # 6で作成したリリースのURL
-          asset_path: ./ClipboardUtility-${{ github.ref_name }}.zip # 5で作成したZIPファイルのパス
-          asset_name: ClipboardUtility-${{ github.ref_name }}.zip # リリースに表示されるファイル名
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ClipboardUtility-Standalone-${{ github.ref_name }}.zip
+          asset_name: ClipboardUtility-Standalone-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
+
+      # 12. インストーラー版(ZIP)をリリースにアップロードする
+      - name: Upload Installer Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ClipboardUtility-Installer-${{ github.ref_name }}.zip
+          asset_name: ClipboardUtility-Installer-${{ github.ref_name }}.zip
           asset_content_type: application/zip
 
