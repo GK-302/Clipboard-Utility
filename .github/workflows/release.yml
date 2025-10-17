@@ -6,7 +6,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-      - 'v*.*'
 
   workflow_dispatch:
 
@@ -32,24 +31,45 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           # プロジェクトで使用している.NETのバージョンを指定
-          dotnet-version: '8.0.x' 
+          dotnet-version: '8.0.x'
 
-      # 3. プロジェクトをビルドし、発行（publish）する
-      - name: Publish Project
-        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
+      # 3a. 【単一ファイル版】プロジェクトを発行（publish）する
+      - name: Publish Standalone Project
+        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish-standalone ClipboardUtility/ClipboardUtility.csproj
         # --configuration Release: リリースモードでビルド
         # --runtime win-x64: 64bitのWindows向けにビルド
         # --self-contained true: .NETがインストールされていなくても動くように自己完結型でビルド
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
-        # -o ./publish: 'publish'という名前のフォルダに出力
-        
-      # 4. README.mdをpublishディレクトリにコピーする
-      - name: Copy README to publish folder
-        run: Copy-Item -Path ./README* -Destination ./publish/
+        # -o ./publish-standalone: 'publish-standalone'という名前のフォルダに出力
 
-      # 5. 発行された成果物をZIPファイルに圧縮する
-      - name: Zip the artifacts
-        run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-${{ github.ref_name }}.zip
+      # 3b. 【ClickOnce版】プロジェクトを発行（publish）する
+      - name: Publish ClickOnce Installer
+        run: |
+          # タグ名 'v1.2.3' から先頭の 'v' を削除
+          $version = "${{ github.ref_name }}".Substring(1)
+
+          # ClickOnceは4つのセグメントを持つバージョン番号(例: 1.2.3.0)を要求するため、末尾に'.0'を追加
+          $clickonce_version = $version + '.0'
+          
+          Write-Host "Tag is ${{ github.ref_name }}, setting ClickOnce ApplicationVersion to $clickonce_version"
+
+          dotnet publish --configuration Release --runtime win-x64 `
+            -p:PublishProtocol=ClickOnce `
+            -p:ApplicationVersion=$clickonce_version `
+            -o ./publish-clickonce `
+            ClipboardUtility/ClipboardUtility.csproj
+
+      # 4. README.mdを単一ファイル版のpublishディレクトリにコピーする
+      - name: Copy README to standalone publish folder
+        run: Copy-Item -Path ./README* -Destination ./publish-standalone/
+
+      # 5a. 【単一ファイル版】発行された成果物をZIPファイルに圧縮する
+      - name: Zip the standalone artifacts
+        run: Compress-Archive -Path ./publish-standalone/* -DestinationPath ClipboardUtility-Standalone-${{ github.ref_name }}.zip
+
+      # 5b. 【ClickOnce版】発行された成果物をZIPファイルに圧縮する
+      - name: Zip the ClickOnce installer
+        run: Compress-Archive -Path ./publish-clickonce/* -DestinationPath ClipboardUtility-ClickOnce-Installer-${{ github.ref_name }}.zip
 
       # 6. GitHubリリースを作成する
       - name: Create Release
@@ -63,14 +83,24 @@ jobs:
           draft: false
           prerelease: false
 
-      # 7. ZIPファイルをリリースにアップロードする
-      - name: Upload Release Asset
+      # 7a. 【単一ファイル版】ZIPファイルをリリースにアップロードする
+      - name: Upload Standalone Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # 6で作成したリリースのURL
-          asset_path: ./ClipboardUtility-${{ github.ref_name }}.zip # 5で作成したZIPファイルのパス
-          asset_name: ClipboardUtility-${{ github.ref_name }}.zip # リリースに表示されるファイル名
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ClipboardUtility-Standalone-${{ github.ref_name }}.zip
+          asset_name: ClipboardUtility-Standalone-${{ github.ref_name }}.zip
           asset_content_type: application/zip
 
+      # 7b. 【ClickOnce版】ZIPファイルをリリースにアップロードする
+      - name: Upload ClickOnce Installer Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ClipboardUtility-ClickOnce-Installer-${{ github.ref_name }}.zip
+          asset_name: ClipboardUtility-ClickOnce-Installer-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
