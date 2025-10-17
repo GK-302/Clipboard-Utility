@@ -42,20 +42,49 @@ jobs:
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish-standalone: 'publish-standalone'という名前のフォルダに出力
 
-      # 3b. 【ClickOnce版】プロジェクトを発行（publish）する
-      - name: Publish ClickOnce Installer
+# 3b. バージョン情報を解析し、プレリリースか判定する
+      - name: Parse Version Information
+        id: version_info
+        shell: pwsh
         run: |
-          # タグ名 'v1.2.3' から先頭の 'v' を削除
-          $version = "${{ github.ref_name }}".Substring(1)
+          $tagName = "${{ github.ref_name }}"
+          $isPrerelease = $false
+          $baseVersion = $tagName.Substring(1) # 'v'を削除
 
-          # ClickOnceは4つのセグメントを持つバージョン番号(例: 1.2.3.0)を要求するため、末尾に'.0'を追加
-          $clickonce_version = $version + '.0'
+          # ハイフンが含まれているかチェック
+          if ($tagName.Contains("-")) {
+            $isPrerelease = $true
+            # ハイフンより前の部分だけを取り出す -> '1.2.3-beta.1' -> '1.2.3'
+            $baseVersion = $baseVersion.Split("-")[0]
+          }
           
-          Write-Host "Tag is ${{ github.ref_name }}, setting ClickOnce ApplicationVersion to $clickonce_version"
+          # バージョンを '.' で分割
+          $versionParts = [System.Collections.Generic.List[string]]@($baseVersion.Split('.'))
+          
+          # バージョンが4つの部分になるまで '0' を追加
+          while ($versionParts.Count -lt 4) {
+            $versionParts.Add('0')
+          }
+          
+          # 配列を '.' で結合して完全なバージョン番号を作成
+          $fullVersion = $versionParts -join '.'
+          
+          # 後続のステップで使えるように結果を出力変数に設定
+          Write-Host "Tag: $tagName"
+          Write-Host "Is Prerelease: $isPrerelease"
+          Write-Host "Full Version: $fullVersion"
+          echo "is_prerelease=$isPrerelease" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          echo "full_version=$fullVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
+      # 3c. 【ClickOnce版】プロジェクトを発行（publish）する
+      - name: Publish ClickOnce Installer
+        shell: pwsh
+        run: |
+          $fullVersion = "${{ steps.version_info.outputs.full_version }}"
           dotnet publish --configuration Release --runtime win-x64 `
             -p:PublishProtocol=ClickOnce `
-            -p:ApplicationVersion=$clickonce_version `
+            -p:ApplicationVersion=$fullVersion `
+            -p:AssemblyVersion=$fullVersion `
             -p:GenerateManifests=True `
             -o ./publish-clickonce `
             ClipboardUtility/ClipboardUtility.csproj
@@ -72,17 +101,18 @@ jobs:
       - name: Zip the ClickOnce installer
         run: Compress-Archive -Path ./publish-clickonce/* -DestinationPath ClipboardUtility-ClickOnce-Installer-${{ github.ref_name }}.zip
 
-      # 6. GitHubリリースを作成する
+# 6. GitHubリリースを作成する
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # トークンは自動で設定されます
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
           draft: false
-          prerelease: false
+          # version_infoステップの結果を使ってプレリリースかどうかを動的に設定
+          prerelease: ${{ steps.version_info.outputs.is_prerelease }}
 
       # 7a. 【単一ファイル版】ZIPファイルをリリースにアップロードする
       - name: Upload Standalone Release Asset
