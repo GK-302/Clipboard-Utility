@@ -27,7 +27,6 @@ namespace ClipboardUtility.src.ViewModels
                     try
                     {
                         var settings = SettingsService.Instance.Current ?? new AppSettings();
-                        settings.RunAtStartup = value;
                         SettingsService.Instance.Save(settings);
                     }
                     catch (Exception ex)
@@ -52,19 +51,10 @@ namespace ClipboardUtility.src.ViewModels
             _selectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == cultureName)
                               ?? CultureInfo.CurrentUICulture;
 
-            // RunAtStartup ‰Šú‰»
-            _runAtStartup = settings?.RunAtStartup ?? false;
 
             // İ’è•ÏX‚ÌŠÄ‹
-            SettingsService.Instance.SettingsChanged += OnSettingsChanged;
         }
 
-        private void OnSettingsChanged(object? sender, AppSettings newSettings)
-        {
-            if (newSettings == null) return;
-            _runAtStartup = newSettings.RunAtStartup;
-            OnPropertyChanged(nameof(RunAtStartup));
-        }
 
         public IList<CultureInfo> AvailableCultures { get; }
 

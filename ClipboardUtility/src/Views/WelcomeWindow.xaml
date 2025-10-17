@@ -20,8 +20,6 @@
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AppDescription}" FontSize="14" Margin="10"/>
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AppVersion}" FontSize="14" Margin="10"/>
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=OperationGuidanceText}" FontSize="14" Margin="10"/>
-            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AddStartUpGuidanceManuallyTitle}" FontSize="18" Margin="10"/>
-            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AddStartUpGuidanceManuallyText}" FontSize="14" Margin="10"/>
         </StackPanel>
 
         <Grid Grid.Row="1" Margin="10">
@@ -48,9 +46,6 @@
                    Foreground="Gray"/>
                 <CheckBox Name="IsShowAgain" Margin="10,0,10,0" VerticalAlignment="Center"/>
 
-                <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=RunAtStartupText}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="Gray"/>
-                <CheckBox Name="Welcome_RunAtStartup" Margin="6,0,10,0" VerticalAlignment="Center" IsChecked="{Binding RunAtStartup, Mode=TwoWay}" />
 
                 <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WelcomeNotificationCloseText}"
                 HorizontalAlignment="Center"

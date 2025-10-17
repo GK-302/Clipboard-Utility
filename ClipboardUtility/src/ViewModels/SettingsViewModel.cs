@@ -35,9 +35,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
             ShowOperationNotification = settings.ShowOperationNotification,
             CultureName = settings.CultureName,
             SelectedPresetId = settings.SelectedPresetId,
-            UsePresets = settings.UsePresets
-            ,
-            RunAtStartup = settings.RunAtStartup
+            UsePresets = settings.UsePresets,
         };
 
         _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
@@ -368,16 +366,9 @@ internal class SettingsViewModel : INotifyPropertyChanged
         ShowOperationNotification = _settings.ShowOperationNotification,
         CultureName = _settings.CultureName,
         SelectedPresetId = _settings.SelectedPresetId,
-        UsePresets = _settings.UsePresets
-        ,
-        RunAtStartup = _settings.RunAtStartup
+        UsePresets = _settings.UsePresets,
     };
 
-    public bool RunAtStartup
-    {
-        get => _settings.RunAtStartup;
-        set { if (_settings.RunAtStartup != value) { _settings.RunAtStartup = value; OnPropertyChanged(); } }
-    }
 
     protected void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
