@@ -43,3 +43,8 @@ Windows
 
 This project is licensed under the [MIT License](LICENSE.txt).
 
+---
+
+## Contributers
+- 羊兎(design)
+
