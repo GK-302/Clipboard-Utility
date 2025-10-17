@@ -54,8 +54,10 @@ jobs:
 
       # 6. MSIインストーラーをビルドする
       - name: Build MSI Installer
-        # msbuild [ソリューションファイル] /p:Configuration=Release /t:[インストーラーのプロジェクト名]
-        run: msbuild ClipboardUtility.sln /p:Configuration=Release /t:ClipboardUtilityInstaller
+        # .vdprojはmsbuildではビルドできないため、Visual Studio本体のdevenv.comを使います。
+        # GitHub ActionsのWindows環境にはVisual Studioがプリインストールされています。
+        run: |
+          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU"
 
       # 7. README.mdをpublishディレクトリにコピーする
       - name: Copy README to publish folder
@@ -103,3 +105,4 @@ jobs:
           asset_path: ./ClipboardUtility-Installer-${{ github.ref_name }}.zip
           asset_name: ClipboardUtility-Installer-${{ github.ref_name }}.zip
           asset_content_type: application/zip
+
