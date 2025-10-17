@@ -115,6 +115,7 @@ namespace ClipboardUtility.src.Views
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             bool neverShowAgain = IsShowAgain.IsChecked == true;
+            bool runAtStartup = Welcome_RunAtStartup.IsChecked == true;
             try
             {
                 // 現在の設定を取得（null安全）
@@ -122,6 +123,17 @@ namespace ClipboardUtility.src.Views
 
                 // プロパティを更新
                 settings.ShowWelcomeNotification = !neverShowAgain;
+                settings.RunAtStartup = runAtStartup;
+
+                // Try to apply startup registration immediately
+                try
+                {
+                    ClipboardUtility.src.Helpers.StartupHelper.SetRunAtStartup(runAtStartup);
+                }
+                catch (Exception ex)
+                {
+                    ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow: SetRunAtStartup failed");
+                }
 
                 // 保存（SettingsService がファイル書き込みと通知を行う）
                 ClipboardUtility.src.Services.SettingsService.Instance.Save(settings);

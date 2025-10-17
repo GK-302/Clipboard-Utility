@@ -26,12 +26,13 @@
 
         <Grid Grid.Row="1" Margin="10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="272"/>
+                <ColumnDefinition Width="108"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Grid.ColumnSpan="2">
                 <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
                 <ComboBox Width="200"
                   ItemsSource="{Binding AvailableCultures}"
@@ -39,18 +40,25 @@
                   DisplayMemberPath="NativeName" />
             </StackPanel>
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Grid.ColumnSpan="2" Margin="215,0,0,0">
                 <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NeverShowAgainText}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Margin="0"
                    Foreground="Gray"/>
                 <CheckBox Name="IsShowAgain" Margin="10,0,10,0" VerticalAlignment="Center"/>
+
+                <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AddStartUpGuidanceManuallyTitle}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="Gray"/>
+                <CheckBox Name="Welcome_RunAtStartup" Margin="6,0,10,0" VerticalAlignment="Center" IsChecked="{Binding RunAtStartup, Mode=TwoWay}" />
+
                 <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WelcomeNotificationCloseText}"
                 HorizontalAlignment="Center"
                 Click="Button_Click"
                 Padding="10,5"/>
             </StackPanel>
+
+
         </Grid>
     </Grid>
 </Window>

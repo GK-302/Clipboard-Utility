@@ -93,6 +93,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string NotificationText => Resources.ResourceManager.GetString("NotificationText", CultureInfo.CurrentUICulture) ?? "Notification";
     public string LicenseText => Resources.ResourceManager.GetString("LicenseText", CultureInfo.CurrentUICulture) ?? "LICENSE";
     public string TaskTrayClickOperationText => Resources.TaskTrayClickOperationText;
+    public string RunAtStartupText => Resources.ResourceManager.GetString("RunAtStartupText", CultureInfo.CurrentUICulture) ?? "Run at startup";
 
 
     public void ChangeCulture(CultureInfo culture)
