@@ -74,12 +74,34 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
     {
         "CustomAction"
         {
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_E7269ED5764A422892BD33D352F36579"
+            {
+            "Name" = "8:Launch Application"
+            "Condition" = "8:"
+            "Object" = "8:_BE0F15CD0B3448D488B25BEEB719015F"
+            "FileType" = "3:2"
+            "InstallAction" = "3:2"
+            "Arguments" = "8:/Commit"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_510A1124_CCA9_4B1E_9349_272495B1443F"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
         }
         "DefaultFeature"
         {
@@ -711,7 +733,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BE0F15CD0B3448D488B25BEEB719015F"
             {
-            "SourcePath" = "8:..\\ClipboardUtility\\obj\\Debug\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\ClipboardUtility\\obj\\Release\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_11D7C0EA47E049EBB5B6B970DEC27C4B"
