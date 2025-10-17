@@ -34,6 +34,8 @@ namespace ClipboardUtility.src.Models
         public bool ShowCopyNotification { get; set; } = true;
         public bool ShowOperationNotification { get; set; } = true;
         public bool ShowWelcomeNotification { get; set; } = true;
+        // Whether the application should run at Windows startup
+        public bool RunAtStartup { get; set; } = false;
         
         // Whether to use presets for the main operation (if true, a preset is used;
         // otherwise use the simple ProcessingMode selection)

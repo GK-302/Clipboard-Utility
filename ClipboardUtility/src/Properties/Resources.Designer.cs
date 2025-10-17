@@ -885,6 +885,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Run at startup に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RunAtStartupText {
+            get {
+                return ResourceManager.GetString("RunAtStartupText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Save に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SaveText {
