@@ -43,7 +43,7 @@ jobs:
         # ソリューションファイル名を指定してください
         run: dotnet restore ClipboardUtility.sln
 
-      # 5. WPFアプリケーションを発行する (単一exeファイル用)
+           # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
         # --configuration Release: リリースモードでビルド
@@ -52,10 +52,11 @@ jobs:
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
 
-      # 6. MSIインストーラーをビルドする
+      # 6. MSIインストーラーをビルドする (依存関係もビルドされます)
       - name: Build MSI Installer
-        # msbuild [ソリューションファイル] /p:Configuration=Release /t:[インストーラーのプロジェクト名]
-        run: msbuild ClipboardUtility.sln /p:Configuration=Release /t:ClipboardUtilityInstaller
+        # ソリューション(.sln)ではなく、インストーラープロジェクト(.vdproj)を直接ビルドします。
+        # これにより、構成の問題を回避し、確実に出力ファイルが生成されます。
+        run: msbuild ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj /p:Configuration=Release
 
       # 7. README.mdをpublishディレクトリにコピーする
       - name: Copy README to publish folder
