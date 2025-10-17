@@ -96,16 +96,6 @@
                                 </ComboBox>
                             </Grid>
                         </GroupBox>
-                        <GroupBox Grid.Row="3" Grid.ColumnSpan="2" Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=RunAtStartupText}" Margin="0,8,0,0">
-                            <Grid Margin="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="200" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=RunAtStartupText}" Style="{StaticResource FormLabel}" />
-                                <CheckBox Grid.Column="1" IsChecked="{Binding RunAtStartup, Mode=TwoWay}" Style="{StaticResource FormInput}" />
-                            </Grid>
-                        </GroupBox>
                     </Grid>
                 </ScrollViewer>
             </TabItem>

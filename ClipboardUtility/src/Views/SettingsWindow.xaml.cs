@@ -61,15 +61,6 @@ namespace ClipboardUtility.src.Views
                 Debug.WriteLine("SettingsWindow.BtnSave_Click: invoking ViewModel.Save()");
                 vm.Save();
 
-                // Apply startup registration immediately
-                try
-                {
-                    ClipboardUtility.src.Helpers.StartupHelper.SetRunAtStartup(vm.RunAtStartup);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"SettingsWindow.BtnSave_Click: SetRunAtStartup failed: {ex}");
-                }
             }
             else
             {
