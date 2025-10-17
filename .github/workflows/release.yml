@@ -43,7 +43,7 @@ jobs:
         # ソリューションファイル名を指定してください
         run: dotnet restore ClipboardUtility.sln
 
-      # 5. WPFアプリケーションを発行する (単一exeファイル用)
+           # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
         # --configuration Release: リリースモードでビルド
@@ -52,7 +52,7 @@ jobs:
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
 
-      # 6. MSIインストーラーをビルドする
+      # 6. MSIインストーラーをビルドする (依存関係もビルドされます)
       - name: Build MSI Installer
         # .vdprojはmsbuildではビルドできないため、Visual Studio本体のdevenv.comを使います。
         # GitHub ActionsのWindows環境にはVisual Studioがプリインストールされています。
