@@ -1,85 +1,50 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121
+このファイルは、ClickOnceの配置を制御するために発行プロセスで使用されます。
+モダンな.NET 8 SDKでのビルドに対応するよう修正済みです。
+-->
+<Project>
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <!-- 基本的なアプリケーション設定 -->
+    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
+
+    <!-- ビルド構成 -->
+    <Configuration>Release</Configuration>
+    <Platform>Any CPU</Platform>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>src\Assets\Icons\big_icon.ico</ApplicationIcon>
+    <PublishProtocol>ClickOnce</PublishProtocol>
+
+    <!-- 
+      マニフェスト設定 (最重要の修正点) 
+      マニフェスト署名を明示的に無効化し、古い署名ツールが呼び出されるのを防ぎます。
+    -->
+    <GenerateManifests>true</GenerateManifests>
+    <SignManifests>false</SignManifests>
+
+    <!-- 出力設定 (これらの設定はビルドコマンドで上書きされることが多い) -->
+    <PublishDir>bin\Release\net8.0-windows\app.publish\</PublishDir>
+    <PublishUrl>bin\publish\</PublishUrl>
+
+    <!-- その他の設定 -->
+    <IsRevisionIncremented>false</IsRevisionIncremented>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <MapFileExtensions>true</MapFileExtensions>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <SkipPublishVerification>false</SkipPublishVerification>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="ClipboardUtility.Tests" />
+    <BootstrapperPackage Include="Microsoft.NetCore.DesktopRuntime.8.0.x64">
+      <Install>True</Install>
+      <ProductName>.NET Desktop Runtime 8.0.21 (x64)</ProductName>
+    </BootstrapperPackage>
   </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="src\Assets\drawing_1.ico" />
-    <None Remove="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
-    <None Remove="src\Assets\Fonts\NotoSansJP\OFL.txt" />
-    <None Remove="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
-    <None Remove="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Regular.ttf" />
-    <None Remove="src\Assets\Fonts\Roboto\OFL.txt" />
-    <None Remove="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
-    <None Remove="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
-    <None Remove="src\Assets\Icons\small_icon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Remove="src\App.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ApplicationDefinition Include="src\App.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include=".github\" />
-    <Folder Include="src\Common\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="src\Assets\drawing_1.ico" />
-    <Resource Include="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
-    <Content Include="src\Assets\Fonts\NotoSansJP\OFL.txt">
-      <Link>licences\NotoSansJP\OFL.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
-    <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Regular.ttf" />
-    <Content Include="src\Assets\Fonts\Roboto\OFL.txt">
-      <Link>licences\Roboto\OFL.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
-    <Resource Include="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
-    <Resource Include="src\Assets\Icons\small_icon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="src\Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="src\Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="config\appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="config\presets.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-
 </Project>
