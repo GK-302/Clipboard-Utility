@@ -14,6 +14,31 @@ namespace ClipboardUtility.src.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private bool _runAtStartup;
+
+        public bool RunAtStartup
+        {
+            get => _runAtStartup;
+            set
+            {
+                if (_runAtStartup != value)
+                {
+                    _runAtStartup = value;
+                    try
+                    {
+                        var settings = SettingsService.Instance.Current ?? new AppSettings();
+                        settings.RunAtStartup = value;
+                        SettingsService.Instance.Save(settings);
+                    }
+                    catch (Exception ex)
+                    {
+                        FileLogger.LogException(ex, "WelcomeWindowViewModel: Save RunAtStartup failed");
+                    }
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public WelcomeWindowViewModel()
         {
             // 利用可能なカルチャ一覧
@@ -26,6 +51,19 @@ namespace ClipboardUtility.src.ViewModels
             // 初期選択
             _selectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == cultureName)
                               ?? CultureInfo.CurrentUICulture;
+
+            // RunAtStartup 初期化
+            _runAtStartup = settings?.RunAtStartup ?? false;
+
+            // 設定変更の監視
+            SettingsService.Instance.SettingsChanged += OnSettingsChanged;
+        }
+
+        private void OnSettingsChanged(object? sender, AppSettings newSettings)
+        {
+            if (newSettings == null) return;
+            _runAtStartup = newSettings.RunAtStartup;
+            OnPropertyChanged(nameof(RunAtStartup));
         }
 
         public IList<CultureInfo> AvailableCultures { get; }

@@ -48,7 +48,7 @@
                    Foreground="Gray"/>
                 <CheckBox Name="IsShowAgain" Margin="10,0,10,0" VerticalAlignment="Center"/>
 
-                <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AddStartUpGuidanceManuallyTitle}"
+                <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=RunAtStartupText}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="Gray"/>
                 <CheckBox Name="Welcome_RunAtStartup" Margin="6,0,10,0" VerticalAlignment="Center" IsChecked="{Binding RunAtStartup, Mode=TwoWay}" />
 

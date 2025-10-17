@@ -5,9 +5,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
-using Microsoft.Win32;
-using System.Reflection;
-using System.IO;
 
 namespace ClipboardUtility
 {
@@ -41,11 +38,8 @@ namespace ClipboardUtility
                 return;
             }
 
-            // デバッグビルドではない場合にのみ、スタートアップ登録処理を実行します。
-            // これにより、発行されたアプリケーションでのみこの処理が行われます。
-#if !DEBUG
-            RegisterInStartup();
-#endif
+            // スタートアップ登録はユーザーの設定画面 / ウェルカム画面で行うようにしたため
+            // ここで自動的に登録は行わない。
 
             base.OnStartup(e);
 
@@ -109,59 +103,6 @@ namespace ClipboardUtility
             base.OnExit(e);
         }
 
-        /// <summary>
-        /// アプリケーションをWindowsのスタートアップに登録します。
-        /// </summary>
-        private void RegisterInStartup()
-        {
-            try
-            {
-                string productName = GetProductName();
-                if (string.IsNullOrEmpty(productName)) return;
-
-                string runKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
-                RegistryKey? startupKey = Registry.CurrentUser.OpenSubKey(runKeyPath, true);
-                if (startupKey == null) return;
-
-                if (startupKey.GetValue(productName) != null)
-                {
-                    startupKey.Close();
-                    return;
-                }
-
-                string publisherName = GetPublisherName();
-                string startupFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-                string shortcutPath = Path.Combine(startupFolderPath, publisherName, productName + ".appref-ms");
-
-                if (File.Exists(shortcutPath))
-                {
-                    startupKey.SetValue(productName, $"\"{shortcutPath}\"");
-                }
-
-                startupKey.Close();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Failed to register startup application: {ex}");
-            }
-        }
-
-        private string GetProductName()
-        {
-            var entryAssembly = Assembly.GetEntryAssembly();
-            if (entryAssembly == null) return string.Empty;
-
-            var productAttribute = entryAssembly.GetCustomAttribute<AssemblyProductAttribute>();
-            return productAttribute?.Product ?? entryAssembly.GetName().Name ?? "ClipboardUtility";
-        }
-
-        private string GetPublisherName()
-        {
-            var entryAssembly = Assembly.GetEntryAssembly();
-            if (entryAssembly == null) return string.Empty;
-
-            var companyAttribute = entryAssembly.GetCustomAttribute<AssemblyCompanyAttribute>();
-            return companyAttribute?.Company ?? GetProductName();
-        }
+        // Startup registration logic removed - handled by settings/welcome UI
     }
 }
