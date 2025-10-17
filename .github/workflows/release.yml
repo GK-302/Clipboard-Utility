@@ -43,7 +43,7 @@ jobs:
         # ソリューションファイル名を指定してください
         run: dotnet restore ClipboardUtility.sln
 
-           # 5. WPFアプリケーションを発行する (単一exeファイル用)
+      # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
         # --configuration Release: リリースモードでビルド
@@ -52,27 +52,45 @@ jobs:
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
 
-      # 6. MSIインストーラーをビルドする (依存関係もビルドされます)
+      # 6. MSIインストーラーをビルドする
       - name: Build MSI Installer
-        # .vdprojはmsbuildではビルドできないため、Visual Studio本体のdevenv.comを使います。
-        # GitHub ActionsのWindows環境にはVisual Studioがプリインストールされています。
+        # ビルド対象をインストーラープロジェクトに限定して時間を短縮します。
+        # devenvは依存関係を解決し、必要なWPFプロジェクトも自動でビルドしてくれます。
         run: |
-          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU"
+          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller"
 
-      # 7. README.mdをpublishディレクトリにコピーする
+      # 7. MSIファイルからUAC昇格要求を削除する
+      - name: Remove UAC Requirement from MSI
+        run: |
+          # Windows SDKの中から最新のmsiinfo.exeを探す
+          $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Sort-Object FullName -Descending | Select-Object -First 1).FullName
+          if (-not $sdkPath) {
+            Write-Error "msiinfo.exe not found in Windows SDK."
+            exit 1
+          }
+          Write-Host "Found msiinfo.exe at $sdkPath"
+          
+          # MSIファイルのパスを指定
+          $msiPath = "./ClipboardUtilityInstaller/Release/ClipboardUtilityInstaller.msi"
+          
+          # msiinfoを実行して、UAC昇格フラグを削除 (値を2に設定)
+          # 値2は「圧縮パッケージ」を意味し、UAC昇格要求フラグ(8)を含まない
+          & $sdkPath $msiPath /W 2
+
+      # 8. README.mdをpublishディレクトリにコピーする
       - name: Copy README to publish folder
         run: Copy-Item -Path ./README* -Destination ./publish/
 
-      # 8. 単一exeファイルの成果物をZIPに圧縮する
+      # 9. 単一exeファイルの成果物をZIPに圧縮する
       - name: Zip the standalone artifact
         run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-Standalone-${{ github.ref_name }}.zip
 
-      # 9. インストーラーの成果物をZIPに圧縮する
+      # 10. インストーラーの成果物をZIPに圧縮する
       - name: Zip the installer artifact
         # インストーラーの出力先フォルダを指定してください (通常は ProjectName/Release)
         run: Compress-Archive -Path ./ClipboardUtilityInstaller/Release/* -DestinationPath ClipboardUtility-Installer-${{ github.ref_name }}.zip
 
-      # 10. GitHubリリースを作成する
+      # 11. GitHubリリースを作成する
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -84,7 +102,7 @@ jobs:
           draft: false
           prerelease: false
 
-      # 11. 単一exe版(ZIP)をリリースにアップロードする
+      # 12. 単一exe版(ZIP)をリリースにアップロードする
       - name: Upload Standalone Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -95,7 +113,7 @@ jobs:
           asset_name: ClipboardUtility-Standalone-${{ github.ref_name }}.zip
           asset_content_type: application/zip
 
-      # 12. インストーラー版(ZIP)をリリースにアップロードする
+      # 13. インストーラー版(ZIP)をリリースにアップロードする
       - name: Upload Installer Release Asset
         uses: actions/upload-release-asset@v1
         env:
