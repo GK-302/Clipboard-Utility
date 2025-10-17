@@ -573,7 +573,7 @@ namespace ClipboardUtility.Tests
             var input = "Hello World Test";
 
             // Act
-            var result = _service.Process(input, ProcessingMode.CollapseWhitespace);
+            var result = _service.Process(input, ProcessingMode.CollapseWhitespaceAll);
 
             // Assert
             Assert.Equal("HelloWorldTest", result);
