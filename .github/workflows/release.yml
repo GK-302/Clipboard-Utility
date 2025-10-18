@@ -5,8 +5,7 @@ name: .NET WPF Release
 on:
   push:
     tags:
-      - 'v*.*.*'
-      - 'v*.*'
+      - 'v*.*.*' # vで始まり、.が2つ含まれるタグ（例: v0.1.2, v0.1.2-beta）で実行
 
   workflow_dispatch:
 
@@ -107,7 +106,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
           draft: false
-          prerelease: false
+          # タグ名にハイフンが含まれていれば true (プレリリース) に、そうでなければ false (通常リリース) になります
+          prerelease: ${{ contains(github.ref_name, '-') }}
 
       # 13. 単一exe版(ZIP)をリリースにアップロードする
       - name: Upload Standalone Release Asset
@@ -141,4 +141,3 @@ jobs:
           asset_path: ./ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
           asset_name: ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
           asset_content_type: application/zip
-
