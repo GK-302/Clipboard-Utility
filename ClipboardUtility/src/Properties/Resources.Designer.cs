@@ -119,7 +119,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   v0.1 に類似しているローカライズされた文字列を検索します。
+        ///   v0.5.1 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string AppVersion {
             get {

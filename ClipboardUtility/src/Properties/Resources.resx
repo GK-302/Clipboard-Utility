@@ -370,7 +370,7 @@
     <comment>App title</comment>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>v0.1</value>
+    <value>v0.5.1</value>
     <comment>App version</comment>
   </data>
   <data name="AppDescription" xml:space="preserve">

@@ -368,7 +368,7 @@
     <value>Clipboard Utility</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>v0.1</value>
+    <value>v0.5.1</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
     <value>このアプリはクリップボードツールです。文字数をカウントしたり、文字列処理を行ったりします。</value>
