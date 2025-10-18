@@ -42,6 +42,36 @@ jobs:
         # ソリューションファイル名を指定してください
         run: dotnet restore ClipboardUtility.sln
 
+      # 4a. タグ名からバージョン番号を抽出
+      - name: Extract version number from tag
+        id: extract_version
+        run: |
+          # タグ名 (v1.2.3 や v1.2.3-beta) から 'v' と '-beta' などのプレリリース部分を除去
+          $VERSION_NUMBER = "${{ github.ref_name }}" -replace '^v', '' -replace '-.*', ''
+          Write-Host "Extracted version: $VERSION_NUMBER"
+          # 抽出したバージョン番号を、後のステップで使えるように 'outputs' にセット
+          echo "VERSION_NUMBER=$VERSION_NUMBER" >> $env:GITHUB_OUTPUT
+      # 4b. .resx ファイル内のバージョンを置換 (パスとキー名を要確認)
+      - name: Update version in .resx file
+        run: |
+          $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
+          $RESX_PATH = "ClipboardUtility/src/Properties/Resources.resx" 
+          $RESOURCE_KEY = "AppVersion"  
+
+          Write-Host "Updating $RESX_PATH ($RESOURCE_KEY) with version: $VERSION_NUMBER"
+          
+          $xml = [xml](Get-Content $RESX_PATH)
+          $node = $xml.SelectSingleNode("//data[@name='$RESOURCE_KEY']/value")
+          
+          if ($node) {
+            $node.'#text' = $VERSION_NUMBER
+            $xml.Save($RESX_PATH)
+            Write-Host "Successfully updated $RESX_PATH"
+          } else {
+            Write-Error "Resource key '$RESOURCE_KEY' not found in $RESX_PATH"
+            exit 1
+          }
+
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
