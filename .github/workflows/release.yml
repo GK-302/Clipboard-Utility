@@ -51,7 +51,7 @@ jobs:
           Write-Host "Extracted version: $VERSION_NUMBER"
           # 抽出したバージョン番号を、後のステップで使えるように 'outputs' にセット
           echo "VERSION_NUMBER=$VERSION_NUMBER" >> $env:GITHUB_OUTPUT
-      # 4b. .resx ファイル内のバージョンを置換 (パスとキー名を要確認)
+      # 4b. .resx ファイル内のバージョンを置換
       - name: Update version in .resx file
         run: |
           $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
@@ -72,31 +72,35 @@ jobs:
             exit 1
           }
 
-      # 4c. MSIインストーラー(.vdproj)のバージョンとPackageCodeを置換
-      - name: Update MSI Installer Version and PackageCode
+      # 4a. タグとインストーラーのバージョンを比較
+      - name: Compare Tag Version with Installer Version
         run: |
-          $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
+          # タグ名 (v1.0.1 や v1.0.1-beta) から 'v' と '-beta' などを除去
+          $TAG_VERSION = "${{ github.ref_name }}" -replace '^v', '' -replace '-.*', ''
+          Write-Host "Checking Tag Version: $TAG_VERSION"
+
           $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj"
 
-          # PowerShell で新しい GUID を {XXXXXXXX-XXXX...} の形式で生成
-          $NEW_PACKAGE_CODE_GUID = "[guid]::NewGuid().ToString('B')"
-          Write-Host "Generated new PackageCode GUID: $NEW_PACKAGE_CODE_GUID"
+          # .vdproj ファイルから "ProductVersion" = "8:1.0.0" の行を探す
+          $FILE_CONTENT = Get-Content $VDPROJ_PATH
+          $FILE_VERSION_LINE = $FILE_CONTENT | Select-String -Pattern '("ProductVersion" = "8:)([\d\.]+)"'
 
-          Write-Host "Updating $VDPROJ_PATH with Version: $VERSION_NUMBER and new PackageCode..."
+          if (-not $FILE_VERSION_LINE) {
+            Write-Error "Could not find 'ProductVersion' in $VDPROJ_PATH"
+            exit 1
+          }
 
-          # .vdproj ファイルの内容を読み込む
-          $content = Get-Content $VDPROJ_PATH
+          # マッチした部分からバージョン番号(例: 1.0.0)のみを抽出
+          $FILE_VERSION = $FILE_VERSION_LINE.Matches.Groups[2].Value
+          Write-Host "Found Installer Version: $FILE_VERSION"
 
-          # 1. ProductVersion を置換
-          $content = $content -replace '("ProductVersion" = "8:)\d+\.\d+\.\d+"', "`"$1$VERSION_NUMBER`""
+          # バージョンを比較
+          if ($TAG_VERSION -ne $FILE_VERSION) {
+            Write-Error "Tag version ($TAG_VERSION) does not match installer version ($FILE_VERSION). Please update $VDPROJ_PATH and re-tag."
+            exit 1
+          }
 
-          # 2. PackageCode を新しい GUID で置換 (正規表現で既存のGUIDを検索)
-          $content = $content -replace '("PackageCode" = "8:){[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}}"', "`"$1$NEW_PACKAGE_CODE_GUID`""
-
-          # 3. VSが読み込める UTF-8 BOM 形式で保存
-          Set-Content $VDPROJ_PATH -Value $content -Encoding utf8BOM
-
-          Write-Host "Successfully updated $VDPROJ_PATH with UTF-8 BOM encoding."
+          Write-Host "Versions match. Proceeding with build."
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
@@ -106,7 +110,7 @@ jobs:
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
 
-# 6. MSIインストーラーをビルドする (ログ出力の追加)
+      # 6. MSIインストーラーをビルドする (ログ出力の追加)
       - name: Build MSI Installer (with logging)
         run: |
           & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller"
