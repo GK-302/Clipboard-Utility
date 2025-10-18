@@ -367,8 +367,9 @@
   <data name="AppTitle" xml:space="preserve">
     <value>Clipboard Utility</value>
   </data>
-  <data name="AppVersion" xml:space="preserve">
-    <value>v0.5.1</value>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="AppVersion" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
   </data>
   <data name="AppDescription" xml:space="preserve">
     <value>このアプリはクリップボードツールです。文字数をカウントしたり、文字列処理を行ったりします。</value>

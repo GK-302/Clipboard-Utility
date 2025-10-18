@@ -5,7 +5,7 @@ name: .NET WPF Release
 on:
   push:
     tags:
-      - 'v*.*.*' # vで始まり、.が2つ含まれるタグ（例: v0.1.2, v0.1.2-beta）で実行
+      - "v*.*.*" # vで始まり、.が2つ含まれるタグ（例: v0.1.2, v0.1.2-beta）で実行
 
   workflow_dispatch:
 
@@ -31,7 +31,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           # プロジェクトで使用している.NETのバージョンを指定
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
       # 3. MSBuildをセットアップする (インストーラーのビルドに必要)
       - name: Setup MSBuild
@@ -42,6 +42,65 @@ jobs:
         # ソリューションファイル名を指定してください
         run: dotnet restore ClipboardUtility.sln
 
+      # 4a. タグ名からバージョン番号を抽出
+      - name: Extract version number from tag
+        id: extract_version
+        run: |
+          # タグ名 (v1.2.3 や v1.2.3-beta) から 'v' と '-beta' などのプレリリース部分を除去
+          $VERSION_NUMBER = "${{ github.ref_name }}" -replace '^v', '' -replace '-.*', ''
+          Write-Host "Extracted version: $VERSION_NUMBER"
+          # 抽出したバージョン番号を、後のステップで使えるように 'outputs' にセット
+          echo "VERSION_NUMBER=$VERSION_NUMBER" >> $env:GITHUB_OUTPUT
+      # 4b. .resx ファイル内のバージョンを置換
+      - name: Update version in .resx file
+        run: |
+          $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
+          $RESX_PATH = "ClipboardUtility/src/Properties/Resources.resx" 
+          $RESOURCE_KEY = "AppVersion"  
+
+          Write-Host "Updating $RESX_PATH ($RESOURCE_KEY) with version: $VERSION_NUMBER"
+
+          $xml = [xml](Get-Content $RESX_PATH)
+          $node = $xml.SelectSingleNode("//data[@name='$RESOURCE_KEY']/value")
+
+          if ($node) {
+            $node.'#text' = $VERSION_NUMBER
+            $xml.Save($RESX_PATH)
+            Write-Host "Successfully updated $RESX_PATH"
+          } else {
+            Write-Error "Resource key '$RESOURCE_KEY' not found in $RESX_PATH"
+            exit 1
+          }
+
+      # 4a. タグとインストーラーのバージョンを比較
+      - name: Compare Tag Version with Installer Version
+        run: |
+          # タグ名 (v1.0.1 や v1.0.1-beta) から 'v' と '-beta' などを除去
+          $TAG_VERSION = "${{ github.ref_name }}" -replace '^v', '' -replace '-.*', ''
+          Write-Host "Checking Tag Version: $TAG_VERSION"
+
+          $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj"
+
+          # .vdproj ファイルから "ProductVersion" = "8:1.0.0" の行を探す
+          $FILE_CONTENT = Get-Content $VDPROJ_PATH
+          $FILE_VERSION_LINE = $FILE_CONTENT | Select-String -Pattern '("ProductVersion" = "8:)([\d\.]+)"'
+
+          if (-not $FILE_VERSION_LINE) {
+            Write-Error "Could not find 'ProductVersion' in $VDPROJ_PATH"
+            exit 1
+          }
+
+          # マッチした部分からバージョン番号(例: 1.0.0)のみを抽出
+          $FILE_VERSION = $FILE_VERSION_LINE.Matches.Groups[2].Value
+          Write-Host "Found Installer Version: $FILE_VERSION"
+
+          # バージョンを比較
+          if ($TAG_VERSION -ne $FILE_VERSION) {
+            Write-Error "Tag version ($TAG_VERSION) does not match installer version ($FILE_VERSION). Please update $VDPROJ_PATH and re-tag."
+            exit 1
+          }
+
+          Write-Host "Versions match. Proceeding with build."
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
@@ -51,20 +110,27 @@ jobs:
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
 
-      # 6. MSIインストーラーをビルドする (これが通常版の元になります)
+      # 6. MSIインストーラーをビルドする
       - name: Build MSI Installer
         run: |
           & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller"
 
+          Write-Host "--- Displaying IDE Activity Log (ide_activity.log) ---"
+          if (Test-Path "ide_activity.log") {
+            # XML形式のログなので、中身をそのままテキストとして表示
+            Get-Content "ide_activity.log" -Encoding UTF8 -ErrorAction SilentlyContinue
+          } else {
+            Write-Warning "ide_activity.log not found."
+          }
       # 7. noadmin版インストーラー用のファイルを作成し、UAC要求を削除する
       - name: Create and Modify NoAdmin Installer Version
         run: |
           # noadmin版を格納する新しいディレクトリを作成
           New-Item -ItemType Directory -Force -Path "./ClipboardUtilityInstaller/Release-NoAdmin"
-          
+
           # ビルドされた通常版のファイルをnoadmin用のディレクトリにコピー
           Copy-Item -Path ./ClipboardUtilityInstaller/Release/* -Destination ./ClipboardUtilityInstaller/Release-NoAdmin/ -Recurse
-          
+
           # Windows SDKの中から最新のmsiinfo.exeを探す
           $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Sort-Object FullName -Descending | Select-Object -First 1).FullName
           if (-not $sdkPath) {
@@ -72,10 +138,10 @@ jobs:
             exit 1
           }
           Write-Host "Found msiinfo.exe at $sdkPath"
-          
+
           # コピーされたMSIファイルのパスを指定
           $msiPath = "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi"
-          
+
           # コピーされたMSIファイルからUAC昇格要求を削除
           Write-Host "Modifying $msiPath to remove UAC requirement..."
           & $sdkPath $msiPath /W 10
