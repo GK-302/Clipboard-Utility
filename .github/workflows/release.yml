@@ -72,17 +72,30 @@ jobs:
             exit 1
           }
 
-      # 4c. MSIインストーラー(.vdproj)のバージョンを置換 (エンコーディング指定)
-      - name: Update MSI Installer version
+# 4c. MSIインストーラー(.vdproj)のバージョンとPackageCodeを置換 (エンコーディング指定)
+      - name: Update MSI Installer Version and PackageCode
         run: |
           $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
           $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj" # <- インストーラープロジェクトのパス
-
-          Write-Host "Updating $VDPROJ_PATH with version: $VERSION_NUMBER"
           
-          # .vdproj ファイル内の "ProductVersion" = "8:1.0.0" のような行を探して置換
-          # Set-Content 時に -Encoding utf8BOM を指定し、VSが読み込める形式で保存する
-          (Get-Content $VDPROJ_PATH) -replace '("ProductVersion" = "8:)\d+\.\d+\.\d+"', "`"$1$VERSION_NUMBER`"" | Set-Content $VDPROJ_PATH -Encoding utf8BOM
+          # PowerShell で新しい GUID を {XXXXXXXX-XXXX...} の形式で生成
+          $NEW_PACKAGE_CODE_GUID = "[guid]::NewGuid().ToString('B')"
+          Write-Host "Generated new PackageCode GUID: $NEW_PACKAGE_CODE_GUID"
+
+          Write-Host "Updating $VDPROJ_PATH with Version: $VERSION_NUMBER and new PackageCode..."
+          
+          # .vdproj ファイルの内容を読み込む
+          $content = Get-Content $VDPROJ_PATH
+          
+          # 1. ProductVersion を置換
+          $content = $content -replace '("ProductVersion" = "8:)\d+\.\d+\.\d+"', "`"$1$VERSION_NUMBER`""
+          
+          # 2. PackageCode を新しい GUID で置換 (正規表現で既存のGUIDを検索)
+          #    "PackageCode" = "8:{CE8F9951-8FFA-4DA3-99BE-C6E20224304C}" のような行を探す
+          $content = $content -replace '("PackageCode" = "8:){[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}}"', "`"$1$NEW_PACKAGE_CODE_GUID`""
+          
+          # 3. VSが読み込める UTF-8 BOM 形式で保存
+          Set-Content $VDPROJ_PATH -Value $content -Encoding utf8BOM
           
           Write-Host "Successfully updated $VDPROJ_PATH with UTF-8 BOM encoding."
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
