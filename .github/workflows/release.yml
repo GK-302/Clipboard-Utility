@@ -72,6 +72,19 @@ jobs:
             exit 1
           }
 
+      # 4c. MSIインストーラー(.vdproj)のバージョンを置換 (エンコーディング指定)
+      - name: Update MSI Installer version
+        run: |
+          $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
+          $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj" # <- インストーラープロジェクトのパス
+
+          Write-Host "Updating $VDPROJ_PATH with version: $VERSION_NUMBER"
+          
+          # .vdproj ファイル内の "ProductVersion" = "8:1.0.0" のような行を探して置換
+          # Set-Content 時に -Encoding utf8BOM を指定し、VSが読み込める形式で保存する
+          (Get-Content $VDPROJ_PATH) -replace '("ProductVersion" = "8:)\d+\.\d+\.\d+"', "`"$1$VERSION_NUMBER`"" | Set-Content $VDPROJ_PATH -Encoding utf8BOM
+          
+          Write-Host "Successfully updated $VDPROJ_PATH with UTF-8 BOM encoding."
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
