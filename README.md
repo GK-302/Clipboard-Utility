@@ -3,7 +3,7 @@
 [English](README.md) | [日本語](README.ja.md)
 
 ***
-<h1>Clipboard Utility</h1> 
+# Clipboard Utility
 <div align="center">
   <img "width="320" height="320" alt="337_20251015182315" src="https://github.com/user-attachments/assets/25a956a8-ae64-49e5-a72d-a38216c43803" /> 
 </div>
