@@ -5,7 +5,7 @@ name: .NET WPF Release
 on:
   push:
     tags:
-      - 'v*.*.*' # vで始まり、.が2つ含まれるタグ（例: v0.1.2, v0.1.2-beta）で実行
+      - "v*.*.*" # vで始まり、.が2つ含まれるタグ（例: v0.1.2, v0.1.2-beta）で実行
 
   workflow_dispatch:
 
@@ -31,7 +31,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           # プロジェクトで使用している.NETのバージョンを指定
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
       # 3. MSBuildをセットアップする (インストーラーのビルドに必要)
       - name: Setup MSBuild
@@ -59,10 +59,10 @@ jobs:
           $RESOURCE_KEY = "AppVersion"  
 
           Write-Host "Updating $RESX_PATH ($RESOURCE_KEY) with version: $VERSION_NUMBER"
-          
+
           $xml = [xml](Get-Content $RESX_PATH)
           $node = $xml.SelectSingleNode("//data[@name='$RESOURCE_KEY']/value")
-          
+
           if ($node) {
             $node.'#text' = $VERSION_NUMBER
             $xml.Save($RESX_PATH)
@@ -72,31 +72,30 @@ jobs:
             exit 1
           }
 
-# 4c. MSIインストーラー(.vdproj)のバージョンとPackageCodeを置換 (エンコーディング指定)
+      # 4c. MSIインストーラー(.vdproj)のバージョンとPackageCodeを置換
       - name: Update MSI Installer Version and PackageCode
         run: |
           $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
-          $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj" # <- インストーラープロジェクトのパス
-          
+          $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj"
+
           # PowerShell で新しい GUID を {XXXXXXXX-XXXX...} の形式で生成
           $NEW_PACKAGE_CODE_GUID = "[guid]::NewGuid().ToString('B')"
           Write-Host "Generated new PackageCode GUID: $NEW_PACKAGE_CODE_GUID"
 
           Write-Host "Updating $VDPROJ_PATH with Version: $VERSION_NUMBER and new PackageCode..."
-          
+
           # .vdproj ファイルの内容を読み込む
           $content = Get-Content $VDPROJ_PATH
-          
+
           # 1. ProductVersion を置換
           $content = $content -replace '("ProductVersion" = "8:)\d+\.\d+\.\d+"', "`"$1$VERSION_NUMBER`""
-          
+
           # 2. PackageCode を新しい GUID で置換 (正規表現で既存のGUIDを検索)
-          #    "PackageCode" = "8:{CE8F9951-8FFA-4DA3-99BE-C6E20224304C}" のような行を探す
           $content = $content -replace '("PackageCode" = "8:){[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}}"', "`"$1$NEW_PACKAGE_CODE_GUID`""
-          
+
           # 3. VSが読み込める UTF-8 BOM 形式で保存
           Set-Content $VDPROJ_PATH -Value $content -Encoding utf8BOM
-          
+
           Write-Host "Successfully updated $VDPROJ_PATH with UTF-8 BOM encoding."
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
@@ -112,15 +111,22 @@ jobs:
         run: |
           & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller"
 
+          Write-Host "--- Displaying IDE Activity Log (ide_activity.log) ---"
+          if (Test-Path "ide_activity.log") {
+            # XML形式のログなので、中身をそのままテキストとして表示
+            Get-Content "ide_activity.log" -Encoding UTF8 -ErrorAction SilentlyContinue
+          } else {
+            Write-Warning "ide_activity.log not found."
+          }
       # 7. noadmin版インストーラー用のファイルを作成し、UAC要求を削除する
       - name: Create and Modify NoAdmin Installer Version
         run: |
           # noadmin版を格納する新しいディレクトリを作成
           New-Item -ItemType Directory -Force -Path "./ClipboardUtilityInstaller/Release-NoAdmin"
-          
+
           # ビルドされた通常版のファイルをnoadmin用のディレクトリにコピー
           Copy-Item -Path ./ClipboardUtilityInstaller/Release/* -Destination ./ClipboardUtilityInstaller/Release-NoAdmin/ -Recurse
-          
+
           # Windows SDKの中から最新のmsiinfo.exeを探す
           $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Sort-Object FullName -Descending | Select-Object -First 1).FullName
           if (-not $sdkPath) {
@@ -128,10 +134,10 @@ jobs:
             exit 1
           }
           Write-Host "Found msiinfo.exe at $sdkPath"
-          
+
           # コピーされたMSIファイルのパスを指定
           $msiPath = "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi"
-          
+
           # コピーされたMSIファイルからUAC昇格要求を削除
           Write-Host "Modifying $msiPath to remove UAC requirement..."
           & $sdkPath $msiPath /W 10
