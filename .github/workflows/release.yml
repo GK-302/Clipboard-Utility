@@ -106,8 +106,8 @@ jobs:
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
 
-      # 6. MSIインストーラーをビルドする (これが通常版の元になります)
-      - name: Build MSI Installer
+# 6. MSIインストーラーをビルドする (ログ出力の追加)
+      - name: Build MSI Installer (with logging)
         run: |
           & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller"
 
