@@ -107,11 +107,31 @@ jobs:
         # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
         # -o ./publish: 'publish'という名前のフォルダに出力
 
-      # 6. MSIインストーラーをビルドする (これが通常版の元になります)
-      - name: Build MSI Installer
+# 6. MSIインストーラーをビルドする (ログ出力の追加)
+      - name: Build MSI Installer (with logging)
         run: |
-          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller"
-
+          # /Out と /Log を追加して、詳細ログをファイルに保存する
+          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller" /Out "build_output.log" /Log "ide_activity.log"
+          
+          
+    # 6b. 詳細なビルドログを出力する (失敗時も実行)
+      - name: Display Detailed Build Logs
+        if: always() # ★前のステップ(6)が失敗しても、必ずこのステップを実行する
+        run: |
+          Write-Host "--- Displaying Build Output Log (build_output.log) ---"
+          if (Test-Path "build_output.log") {
+            Get-Content "build_output.log" -ErrorAction SilentlyContinue
+          } else {
+            Write-Warning "build_output.log not found."
+          }
+          
+          Write-Host "--- Displaying IDE Activity Log (ide_activity.log) ---"
+          if (Test-Path "ide_activity.log") {
+            # XML形式のログなので、中身をそのままテキストとして表示
+            Get-Content "ide_activity.log" -Encoding UTF8 -ErrorAction SilentlyContinue
+          } else {
+            Write-Warning "ide_activity.log not found."
+          }
       # 7. noadmin版インストーラー用のファイルを作成し、UAC要求を削除する
       - name: Create and Modify NoAdmin Installer Version
         run: |
