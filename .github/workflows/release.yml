@@ -42,6 +42,29 @@ jobs:
         # ソリューションファイル名を指定してください
         run: dotnet restore ClipboardUtility.sln
 
+      # 4a. タグ名からバージョン番号を抽出
+      - name: Extract version number from tag
+        id: extract_version
+        run: |
+          # タグ名 (v1.2.3 や v1.2.3-beta) から 'v' と '-beta' などのプレリリース部分を除去
+          $VERSION_NUMBER = "${{ github.ref_name }}" -replace '^v', '' -replace '-.*', ''
+          Write-Host "Extracted version: $VERSION_NUMBER"
+          # 抽出したバージョン番号を、後のステップで使えるように 'outputs' にセット
+          echo "VERSION_NUMBER=$VERSION_NUMBER" >> $env:GITHUB_OUTPUT
+
+      # 4c. MSIインストーラー(.vdproj)のバージョンを置換
+      - name: Update MSI Installer version
+        run: |
+          $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
+          $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj"
+
+          Write-Host "Updating $VDPROJ_PATH with version: $VERSION_NUMBER"
+          
+          # .vdproj ファイル内の "ProductVersion" = "8:1.0.0" のような行を探して置換
+          (Get-Content $VDPROJ_PATH) -replace '("ProductVersion" = "8:)\d+\.\d+\.\d+"', "`"$1$VERSION_NUMBER`"" | Set-Content $VDPROJ_PATH
+          
+          Write-Host "Successfully updated $VDPROJ_PATH"
+
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
