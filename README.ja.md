@@ -3,7 +3,9 @@
 ***
 
 # Clipboard Utility
-
+<div align="center">
+  <img "width="320" height="320" alt="337_20251015182315" src="https://github.com/user-attachments/assets/25a956a8-ae64-49e5-a72d-a38216c43803" /> 
+</div>
 Clipboard Utilityは、クリップボードのユーティリティツールです。
 開発の初期段階にあり、今後さらに機能を追加していく予定です。
 
