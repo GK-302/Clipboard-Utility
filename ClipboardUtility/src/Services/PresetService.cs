@@ -1,4 +1,4 @@
-using ClipboardUtility.src.Models;
+ï»¿using ClipboardUtility.src.Models;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using System.Reflection;
 namespace ClipboardUtility.src.Services;
 
 /// <summary>
-/// ƒvƒŠƒZƒbƒg‚ÌŠÇ—‚ÆÀs‚ğ’S“–‚·‚éƒT[ƒrƒXB
+/// ãƒ—ãƒªã‚»ãƒƒãƒˆã®ç®¡ç†ã¨å®Ÿè¡Œã‚’æ‹…å½“ã™ã‚‹ã‚µãƒ¼ãƒ“ã‚¹ã€‚
 /// </summary>
 internal class PresetService
 {
@@ -45,52 +45,72 @@ internal class PresetService
     }
 
     /// <summary>
-    /// Œ»İ“Ç‚İ‚Ü‚ê‚Ä‚¢‚é‚·‚×‚Ä‚ÌƒvƒŠƒZƒbƒg
+    /// ç¾åœ¨èª­ã¿è¾¼ã¾ã‚Œã¦ã„ã‚‹ã™ã¹ã¦ã®ãƒ—ãƒªã‚»ãƒƒãƒˆ
     /// </summary>
     public IReadOnlyList<ProcessingPreset> Presets => _presets.AsReadOnly();
 
     /// <summary>
-    /// ƒrƒ‹ƒgƒCƒ“ƒvƒŠƒZƒbƒg‚Ì‚İ‚ğæ“¾
+    /// ãƒ“ãƒ«ãƒˆã‚¤ãƒ³ãƒ—ãƒªã‚»ãƒƒãƒˆã®ã¿ã‚’å–å¾—
     /// </summary>
     public IEnumerable<ProcessingPreset> GetBuiltInPresets() => _presets.Where(p => p.IsBuiltIn);
 
     /// <summary>
-    /// ƒ†[ƒU[ì¬ƒvƒŠƒZƒbƒg‚Ì‚İ‚ğæ“¾
+    /// ãƒ¦ãƒ¼ã‚¶ãƒ¼ä½œæˆãƒ—ãƒªã‚»ãƒƒãƒˆã®ã¿ã‚’å–å¾—
     /// </summary>
     public IEnumerable<ProcessingPreset> GetUserPresets() => _presets.Where(p => !p.IsBuiltIn);
 
     /// <summary>
-    /// ƒvƒŠƒZƒbƒg‚ğ“Ç‚İ‚İ‚Ü‚·iƒrƒ‹ƒgƒCƒ“ + ƒ†[ƒU[ì¬j
+    /// ãƒ—ãƒªã‚»ãƒƒãƒˆã‚’èª­ã¿è¾¼ã¿ã¾ã™ï¼ˆãƒ“ãƒ«ãƒˆã‚¤ãƒ³ + ãƒ¦ãƒ¼ã‚¶ãƒ¼ä½œæˆï¼‰
     /// </summary>
     public void LoadPresets()
     {
         _presets.Clear();
 
-        // 1. AppData—Dæ
-        if (!File.Exists(_appDataPresetPath) && File.Exists(_projectPresetPath))
+        Debug.WriteLine($"PresetService.LoadPresets: start. projectPresetExists={File.Exists(_projectPresetPath)}, appDataUserPresetExists={File.Exists(_appDataPresetPath)}");
+
+        // 1) ãƒ“ãƒ«ãƒˆã‚¤ãƒ³ï¼ˆé…å¸ƒï¼‰ã‚’å¸¸ã«èª­ã¿è¾¼ã‚€ï¼ˆèª­ã¿å–ã‚Šå°‚ç”¨ï¼‰
+        Debug.WriteLine($"PresetService.LoadPresets: Loading built-in presets from '{_projectPresetPath}'");
+        var builtInPresets = LoadPresetsFromFile(_projectPresetPath, isBuiltIn: true) ?? new List<ProcessingPreset>();
+        Debug.WriteLine($"PresetService.LoadPresets: Loaded {builtInPresets.Count} built-in presets from project file.");
+        LogPresetList("built-in (from project)", builtInPresets);
+        _presets.AddRange(builtInPresets);
+        Debug.WriteLine($"PresetService.LoadPresets: _presets.Count after adding built-ins = {_presets.Count}");
+
+        // 2) ãƒ¦ãƒ¼ã‚¶ãƒ¼ãƒ—ãƒªã‚»ãƒƒãƒˆï¼ˆAppDataï¼‰ã‚’èª­ã¿è¾¼ã¿ï¼ˆå­˜åœ¨ã—ãªã‘ã‚Œã°ç©ºã§ä½œæˆï¼‰
+        if (!File.Exists(_appDataPresetPath))
         {
-            // ƒvƒƒWƒFƒNƒg”z‰º‚©‚çAppData‚ÉƒRƒs[
-            Directory.CreateDirectory(_appDataDirectory);
-            File.Copy(_projectPresetPath, _appDataPresetPath, overwrite: true);
-            Debug.WriteLine($"PresetService: Copied default presets to AppData '{_appDataPresetPath}'");
+            Debug.WriteLine($"PresetService.LoadPresets: No user preset file in AppData; creating empty user preset at '{_appDataPresetPath}'");
+            try
+            {
+                Directory.CreateDirectory(_appDataDirectory);
+                var empty = new { version = "1.0", presets = new List<ProcessingPreset>() };
+                var jsonString = JsonSerializer.Serialize(empty, _jsonOptions);
+                File.WriteAllText(_appDataPresetPath, jsonString, Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"PresetService.LoadPresets: Failed to create empty user preset file: {ex}");
+            }
         }
 
-        // 2. ƒrƒ‹ƒgƒCƒ“ƒvƒŠƒZƒbƒgiƒvƒƒWƒFƒNƒg”z‰ºj‚ğ“Ç‚İ‚İ
-        var builtInPresets = LoadPresetsFromFile(_projectPresetPath, isBuiltIn: true);
-        _presets.AddRange(builtInPresets);
-
-        // 3. ƒ†[ƒU[ƒvƒŠƒZƒbƒgiAppData”z‰ºj‚ğ“Ç‚İ‚İ
         if (File.Exists(_appDataPresetPath))
         {
-            var userPresets = LoadPresetsFromFile(_appDataPresetPath, isBuiltIn: false);
+            Debug.WriteLine($"PresetService.LoadPresets: Loading user presets from '{_appDataPresetPath}'");
+            var userPresets = LoadPresetsFromFile(_appDataPresetPath, isBuiltIn: false) ?? new List<ProcessingPreset>();
+            Debug.WriteLine($"PresetService.LoadPresets: Loaded {userPresets.Count} user presets from AppData.");
+            LogPresetList("user (from AppData)", userPresets);
             _presets.AddRange(userPresets);
+            Debug.WriteLine($"PresetService.LoadPresets: _presets.Count after adding users = {_presets.Count}");
         }
 
+        // 3) ãƒ­ãƒ¼ã‚«ãƒ©ã‚¤ã‚º
+        Debug.WriteLine($"PresetService.LoadPresets: Starting localization. total presets = {_presets.Count}");
         LocalizeBuiltInPresets();
+        Debug.WriteLine($"PresetService.LoadPresets: Finished loading presets. final total = {_presets.Count}");
     }
 
     /// <summary>
-    /// ƒ†[ƒU[ƒvƒŠƒZƒbƒg‚ğ•Û‘¶‚µ‚Ü‚·iƒrƒ‹ƒgƒCƒ“‚Í•Û‘¶‚µ‚È‚¢j
+    /// ãƒ¦ãƒ¼ã‚¶ãƒ¼ãƒ—ãƒªã‚»ãƒƒãƒˆã‚’ä¿å­˜ã—ã¾ã™ï¼ˆãƒ“ãƒ«ãƒˆã‚¤ãƒ³ã¯ä¿å­˜ã—ãªã„ï¼‰
     /// </summary>
     public void SaveUserPresets()
     {
@@ -104,11 +124,11 @@ internal class PresetService
         var jsonString = JsonSerializer.Serialize(json, _jsonOptions);
         Directory.CreateDirectory(_appDataDirectory);
         File.WriteAllText(_appDataPresetPath, jsonString, Encoding.UTF8);
-        Debug.WriteLine($"PresetService: Saved user presets to '{_appDataPresetPath}'");
+        Debug.WriteLine($"PresetService.SaveUserPresets: Saved {userPresets.Count} user presets to '{_appDataPresetPath}' (bytes={Encoding.UTF8.GetByteCount(jsonString)})");
     }
 
     /// <summary>
-    /// V‚µ‚¢ƒvƒŠƒZƒbƒg‚ğì¬‚µ‚Ä’Ç‰Á‚µ‚Ü‚·
+    /// æ–°ã—ã„ãƒ—ãƒªã‚»ãƒƒãƒˆã‚’ä½œæˆã—ã¦è¿½åŠ ã—ã¾ã™
     /// </summary>
     public ProcessingPreset CreatePreset(string name, string description, List<ProcessingStep> steps)
     {
@@ -131,7 +151,7 @@ internal class PresetService
     }
 
     /// <summary>
-    /// ƒvƒŠƒZƒbƒg‚ğXV‚µ‚Ü‚·iƒrƒ‹ƒgƒCƒ“‚ÍXV•s‰Âj
+    /// ãƒ—ãƒªã‚»ãƒƒãƒˆã‚’æ›´æ–°ã—ã¾ã™ï¼ˆãƒ“ãƒ«ãƒˆã‚¤ãƒ³ã¯æ›´æ–°ä¸å¯ï¼‰
     /// </summary>
     public bool UpdatePreset(ProcessingPreset preset)
     {
@@ -152,7 +172,7 @@ internal class PresetService
     }
 
     /// <summary>
-    /// ƒvƒŠƒZƒbƒg‚ğíœ‚µ‚Ü‚·iƒrƒ‹ƒgƒCƒ“‚Ííœ•s‰Âj
+    /// ãƒ—ãƒªã‚»ãƒƒãƒˆã‚’å‰Šé™¤ã—ã¾ã™ï¼ˆãƒ“ãƒ«ãƒˆã‚¤ãƒ³ã¯å‰Šé™¤ä¸å¯ï¼‰
     /// </summary>
     public bool DeletePreset(Guid id)
     {
@@ -167,12 +187,12 @@ internal class PresetService
     }
 
     /// <summary>
-    /// ID ‚ÅƒvƒŠƒZƒbƒg‚ğæ“¾‚µ‚Ü‚·
+    /// ID ã§ãƒ—ãƒªã‚»ãƒƒãƒˆã‚’å–å¾—ã—ã¾ã™
     /// </summary>
     public ProcessingPreset? GetPresetById(Guid id) => _presets.FirstOrDefault(p => p.Id == id);
 
     /// <summary>
-    /// ƒvƒŠƒZƒbƒg‚ğÀs‚µ‚Ü‚·
+    /// ãƒ—ãƒªã‚»ãƒƒãƒˆã‚’å®Ÿè¡Œã—ã¾ã™
     /// </summary>
     public string ExecutePreset(ProcessingPreset preset, string? input)
     {
@@ -193,7 +213,7 @@ internal class PresetService
     }
 
     /// <summary>
-    /// ƒvƒŠƒZƒbƒg‚ğ ID ‚ÅÀs‚µ‚Ü‚·
+    /// ãƒ—ãƒªã‚»ãƒƒãƒˆã‚’ ID ã§å®Ÿè¡Œã—ã¾ã™
     /// </summary>
     public string? ExecutePresetById(Guid id, string? input)
     {
@@ -205,14 +225,14 @@ internal class PresetService
 
     private List<ProcessingPreset> LoadPresetsFromFile(string filePath, bool isBuiltIn)
     {
-        if (!File.Exists(filePath)) { 
-            Debug.WriteLine($"PresetService: Preset file {filePath} does not exist.");
-            return []; 
+        if (!File.Exists(filePath)) {
+            Debug.WriteLine($"PresetService.LoadPresetsFromFile: Preset file '{filePath}' does not exist.");
+            return [];
         };
 
         try
         {
-            Debug.WriteLine($"PresetService: Reading presets file {filePath}");
+            Debug.WriteLine($"PresetService.LoadPresetsFromFile: Reading presets file '{filePath}' (isBuiltIn={isBuiltIn})");
             var json = File.ReadAllText(filePath, Encoding.UTF8);
             var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
@@ -221,20 +241,26 @@ internal class PresetService
             {
                 var presets = JsonSerializer.Deserialize<List<ProcessingPreset>>(presetsElement.GetRawText(), _jsonOptions) ?? [];
                 
-                // IsBuiltIn ƒtƒ‰ƒO‚ğ‹­§İ’è
+                // IsBuiltIn ãƒ•ãƒ©ã‚°ã‚’å¼·åˆ¶è¨­å®š
                 foreach (var preset in presets)
                 {
                     preset.IsBuiltIn = isBuiltIn;
                 }
 
-                Debug.WriteLine($"PresetService: Loaded {presets.Count} presets from {filePath}");
+                Debug.WriteLine($"PresetService.LoadPresetsFromFile: Loaded {presets.Count} presets from '{filePath}' (isBuiltIn={isBuiltIn})");
+                // è©³ç´°ãƒ­ã‚°ï¼ˆID/Name/ResourceKeyï¼‰ã‚’å‡ºã™
+                for (int i = 0; i < presets.Count; i++)
+                {
+                    var p = presets[i];
+                    Debug.WriteLine($"  [{i}] {(isBuiltIn ? "BUILTIN" : "USER")} Id={p.Id}, Name='{p.Name}', NameResourceKey='{p.NameResourceKey}', IsBuiltIn={p.IsBuiltIn}");
+                }
+
                 return presets;
             }
         }
         catch (Exception ex)
         {
-            // ƒƒOo—ÍiÀÛ‚ÌÀ‘•‚Å‚Í ILogger ‚ğg—pj
-            Debug.WriteLine($"PresetService: Failed to load presets from {filePath}: {ex}");
+            Debug.WriteLine($"PresetService.LoadPresetsFromFile: Failed to load presets from '{filePath}': {ex}");
         }
 
         return [];
@@ -248,14 +274,14 @@ internal class PresetService
             if (!string.IsNullOrEmpty(preset.NameResourceKey))
             {
                 var res = GetResourceString(preset.NameResourceKey);
-                Debug.WriteLine($"PresetService: Resource lookup for {preset.NameResourceKey} => {(res ?? "(null)")}");
+                Debug.WriteLine($"PresetService: Resource lookup for {preset.NameResourceKey} => {(res ?? "(null)")} ");
                 preset.Name = res ?? preset.Name;
             }
 
             if (!string.IsNullOrEmpty(preset.DescriptionResourceKey))
             {
                 var res = GetResourceString(preset.DescriptionResourceKey);
-                Debug.WriteLine($"PresetService: Resource lookup for {preset.DescriptionResourceKey} => {(res ?? "(null)")}");
+                Debug.WriteLine($"PresetService: Resource lookup for {preset.DescriptionResourceKey} => {(res ?? "(null)")} ");
                 preset.Description = res ?? preset.Description;
             }
         }
@@ -314,7 +340,7 @@ internal class PresetService
         }
     }
 
-    // •â•: »•i–¼æ“¾
+    // è£œåŠ©: è£½å“åå–å¾—
     private static string GetProductFolderName()
     {
         try
@@ -327,6 +353,18 @@ internal class PresetService
         catch
         {
             return "ClipboardUtility";
+        }
+    }
+
+    // ãƒ‡ãƒãƒƒã‚°ç”¨ï¼šãƒ—ãƒªã‚»ãƒƒãƒˆä¸€è¦§ã‚’ç°¡æ½”ã«ãƒ­ã‚°å‡ºåŠ›ã™ã‚‹ãƒ˜ãƒ«ãƒ‘ãƒ¼
+    private void LogPresetList(string tag, IEnumerable<ProcessingPreset> presets)
+    {
+        var list = presets?.ToList() ?? new List<ProcessingPreset>();
+        Debug.WriteLine($"PresetService.LogPresetList: [{tag}] count={list.Count}");
+        for (int i = 0; i < list.Count; i++)
+        {
+            var p = list[i];
+            Debug.WriteLine($"  [{i}] Id={p.Id} Name='{p.Name}' IsBuiltIn={p.IsBuiltIn} NameResourceKey='{p.NameResourceKey}'");
         }
     }
 }
