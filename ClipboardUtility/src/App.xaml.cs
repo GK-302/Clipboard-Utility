@@ -8,9 +8,6 @@ using System.Windows;
 
 namespace ClipboardUtility
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : System.Windows.Application
     {
         private TaskTrayService _taskTrayService;
@@ -18,6 +15,9 @@ namespace ClipboardUtility
         private WelcomeService _welcomeService;
         private Mutex? _instanceMutex;
         private const string MutexName = "ClipboardUtility_{6F1A9C2E-3A4B-4D5E-9F12-ABCDEF123456}";
+
+        // 追加: アプリ共通の軽量サービスコンテナ
+        public static SimpleContainer Services { get; private set; } = new SimpleContainer();
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -38,10 +38,27 @@ namespace ClipboardUtility
                 return;
             }
 
-            // スタートアップ登録はユーザーの設定画面 / ウェルカム画面で行うようにしたため
-            // ここで自動的に登録は行わない。
-
             base.OnStartup(e);
+
+            // --- サービス登録（アプリ起動時に一度だけ） ---
+            try
+            {
+                // SettingsService は既にシングルトンなのでそのインスタンスを登録
+                Services.RegisterSingleton<SettingsService>(SettingsService.Instance);
+
+                // カルチャプロバイダーを登録
+                var cultureProvider = new CultureProvider();
+                Services.RegisterSingleton<ICultureProvider>(cultureProvider);
+
+                // アプリ再起動サービスを登録
+                Services.RegisterSingleton<IAppRestartService>(new AppRestartService());
+
+                Debug.WriteLine("App.OnStartup: core services registered in Services container.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"App.OnStartup: service registration failed: {ex}");
+            }
 
             try
             {
@@ -74,6 +91,7 @@ namespace ClipboardUtility
             {
                 Debug.WriteLine($"Failed to initialize WelcomeService: {ex}");
             }
+
             _mainViewModel = new MainViewModel();
             _mainViewModel.SubscribeToTaskTrayEvents(TaskTrayService.Instance);
 
@@ -102,7 +120,5 @@ namespace ClipboardUtility
 
             base.OnExit(e);
         }
-
-        // Startup registration logic removed - handled by settings/welcome UI
     }
 }
