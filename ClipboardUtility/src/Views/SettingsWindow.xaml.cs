@@ -61,7 +61,6 @@ namespace ClipboardUtility.src.Views
         {
             if (DataContext is SettingsViewModel vm)
             {
-                Debug.WriteLine($"SettingsWindow.BtnSave_Click: invoking ViewModel.Save() {DataContext.ToString()}");
                 vm.Save();
 
             }

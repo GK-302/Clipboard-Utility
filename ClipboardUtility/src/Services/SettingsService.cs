@@ -114,14 +114,18 @@ internal sealed class SettingsService
     public void Save(AppSettings settings)
     {
         Debug.WriteLine("SettingsService.Save: called");
-
-        if (settings == null) settings = new AppSettings();
-
-        // Current を受け取ったコピーで置き換える（呼び出し側は GetSettingsCopy() が渡される想定）
-        Current = settings;
-
         try
         {
+            // Log instance hashes and SelectedPresetId for debugging
+            Debug.WriteLine($"SettingsService.Save: incoming settings hash={(settings?.GetHashCode() ?? 0)}, incoming.SelectedPresetId={(settings?.SelectedPresetId?.ToString() ?? "<null>")}");
+            Debug.WriteLine($"SettingsService.Save: current Current hash={(Current?.GetHashCode() ?? 0)}, current.SelectedPresetId={(Current?.SelectedPresetId?.ToString() ?? "<null>")}");
+
+            if (settings == null) settings = new AppSettings();
+
+            // Replace Current (existing behavior) but log that we are doing so.
+            Current = settings;
+            Debug.WriteLine($"SettingsService.Save: assigned Current to incoming instance hash={Current?.GetHashCode()}, Current.SelectedPresetId={(Current?.SelectedPresetId?.ToString() ?? "<null>")}");
+
             var dir = Path.GetDirectoryName(_appDataConfigPath);
             if (!string.IsNullOrEmpty(dir)) _ = Directory.CreateDirectory(dir);
 
@@ -129,7 +133,9 @@ internal sealed class SettingsService
             opts.Converters.Add(new JsonStringEnumConverter());
             var json = JsonSerializer.Serialize(Current, opts);
             File.WriteAllText(_appDataConfigPath, json);
-            Debug.WriteLine($"SettingsService.Save: wrote settings to '{_appDataConfigPath}'");
+            Debug.WriteLine($"SettingsService.Save: wrote settings to '{_appDataConfigPath}' (bytes={System.Text.Encoding.UTF8.GetByteCount(json)})");
+
+            Debug.WriteLine($"SettingsService.Save: written JSON preview: {json.Substring(0, Math.Min(2000, json.Length))}");
         }
         catch (Exception ex)
         {
