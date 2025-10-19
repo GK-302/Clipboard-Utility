@@ -34,42 +34,36 @@ public partial class App : System.Windows.Application
     private void ConfigureServices(IServiceCollection services)
     {
         // --- シングルトンサービス (アプリ全体で1つ) ---
+        // アプリケーションのコア機能や状態を管理するサービス
 
-        // 修正: .Instance 呼び出しを、DIコンテナによるシングルトン管理に変更
         services.AddSingleton<SettingsService>();
         services.AddSingleton<TaskTrayService>();
-
-        // インターフェース指定のシングルトン (変更なし)
-        services.AddSingleton<ICultureProvider, CultureProvider>();
-        services.AddSingleton<IAppRestartService, AppRestartService>();
-
-        // <--- 追加: アプリのコアサービス (シングルトン)
         services.AddSingleton<ClipboardService>();
         services.AddSingleton<TextProcessingService>();
         services.AddSingleton<PresetService>();
 
-        // --- Transient (要求されるたびに新しいインスタンス) ---
+        // インターフェース指定のシングルトン
+        services.AddSingleton<ICultureProvider, CultureProvider>();
+        services.AddSingleton<IAppRestartService, AppRestartService>();
 
-        // <--- 追加: VMが依存するサービス
+
+        // --- Transient (要求されるたびに新しいインスタンス) ---
+        // 複数の場所で使われるが、状態を共有しないサービス
+
         services.AddTransient<NotificationsService>();
         services.AddTransient<ClipboardOperationService>();
+        services.AddTransient<WelcomeService>();
 
-        // ViewModel (MainViewModel以外も登録)
+        // ViewModel (基本的にTransient)
         services.AddTransient<MainViewModel>();
         services.AddTransient<WelcomeWindowViewModel>();
         services.AddTransient<ClipboardManagerViewModel>();
-        // ※SettingsViewModelはSettingsWindowが内部でnewしているため、ここでは不要
-        // App.xaml.cs の ConfigureServices に追加
         services.AddTransient<NotificationViewModel>();
 
         // View (Window)
         services.AddTransient<MainWindow>();
         services.AddTransient<WelcomeWindow>();
         services.AddTransient<ClipboardManagerWindow>();
-        // ※SettingsWindowはMainViewModelが動的にnewするため、ここでは不要
-
-        // その他
-        services.AddTransient<WelcomeService>();
     }
 
     protected override void OnStartup(StartupEventArgs e)

@@ -220,10 +220,12 @@ public class ClipboardManagerViewModel : INotifyPropertyChanged
             {
                 var currentSettings = _settingsService.Current;
                 var settingsWindow = new src.Views.SettingsWindow(
-                                    currentSettings,
-                                    _restartService,
-                                    _cultureProvider,
-                                    _settingsService);
+                                                        currentSettings,
+                                                        _restartService,
+                                                        _cultureProvider,
+                                                        _settingsService,
+                                                        _presetService, // <--- 追加
+                                                        _textProcessingService);
 
                 // 親ウィンドウを設定してモーダルダイアログとして表示
                 if (OwnerWindow != null)

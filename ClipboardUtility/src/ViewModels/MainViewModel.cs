@@ -24,6 +24,7 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly TextProcessingService _textProcessingService;
     private readonly NotificationsService _notificationsService;
     private readonly TaskTrayService _taskTrayService;
+    private readonly PresetService _presetService;
 
     // デバッグ用: _isInternalClipboardOperation の変更を追跡
     private void SetInternalClipboardOperation(bool value)
@@ -45,8 +46,8 @@ public class MainViewModel : INotifyPropertyChanged
             IAppRestartService restartService,
             ICultureProvider cultureProvider,
             TextProcessingService textProcessingService,
-            NotificationsService notificationsService
-            )
+            NotificationsService notificationsService,
+            PresetService presetService)
     {
         _clipboardService = clipboardService;
         _clipboardOperationService = clipboardOperationService;
@@ -56,6 +57,7 @@ public class MainViewModel : INotifyPropertyChanged
         _taskTrayService = taskTrayService;
         _textProcessingService = textProcessingService;
         _notificationsService = notificationsService;
+        _presetService = presetService;
         //　ClipboardEventCoordinator を手動で 'new' する
         _clipboardEventCoordinator = new ClipboardEventCoordinator(
             _textProcessingService,
@@ -159,10 +161,12 @@ public class MainViewModel : INotifyPropertyChanged
         {
             var currentSettings = _settingsService.Current;
             var settingsWindow = new SettingsWindow(
-                        currentSettings,
-                        _restartService,
-                        _cultureProvider,
-                        _settingsService);
+                                        currentSettings,
+                                        _restartService,
+                                        _cultureProvider,
+                                        _settingsService,
+                                        _presetService, // <--- 追加
+                                        _textProcessingService);
             bool? result = settingsWindow.ShowDialog();
 
             if (result == true)

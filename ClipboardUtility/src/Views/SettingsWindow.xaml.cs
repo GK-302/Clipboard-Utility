@@ -16,25 +16,37 @@ namespace ClipboardUtility.src.Views
         private readonly SettingsViewModel _vm;
         private readonly IAppRestartService _restartService;
         private readonly SettingsService _settingsService;
+        private readonly PresetService _presetService;
+        private readonly TextProcessingService _textProcessingService;
         private readonly string _initialCultureName;
 
         internal SettingsWindow(
-                    AppSettings currentSettings,
-                    IAppRestartService restartService,
-                    ICultureProvider provider,
-                    SettingsService settingsService)
+                        AppSettings currentSettings,
+                        IAppRestartService restartService,
+                        ICultureProvider provider,
+                        SettingsService settingsService,
+                        PresetService presetService,
+                        TextProcessingService textProcessingService)
         {
             if (currentSettings == null) throw new ArgumentNullException(nameof(currentSettings));
 
             InitializeComponent();
             _restartService = restartService;
             _settingsService = settingsService;
+            _presetService = presetService;
+            _textProcessingService = textProcessingService;
 
             var settingsToUse = currentSettings;
 
 
 
-            _vm = new SettingsViewModel(settingsToUse, provider, _settingsService);
+            _vm = new SettingsViewModel(
+                            settingsToUse,
+                            provider,
+                            _settingsService,
+                            _presetService,
+                            _textProcessingService);
+
             DataContext = _vm;
 
             // ウィンドウ作成時のカルチャ名を保存（null 安全）

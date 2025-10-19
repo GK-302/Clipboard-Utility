@@ -23,7 +23,12 @@ internal class SettingsViewModel : INotifyPropertyChanged
     // プリセット更新中フラグ（UI が一時的に SelectedItem を null にすることで設定を書き換えないようにする）
     private bool _isRefreshingPresets;
 
-    public SettingsViewModel(AppSettings settings, ICultureProvider cultureProvider, SettingsService settingsService)
+    public SettingsViewModel(
+            AppSettings settings,
+            ICultureProvider cultureProvider,
+            SettingsService settingsService,
+            PresetService presetService,
+            TextProcessingService textProcessingService)
     {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         // SettingsService の Current オブジェクトの参照を使う（コピーしない）
@@ -39,9 +44,8 @@ internal class SettingsViewModel : INotifyPropertyChanged
         // 利用可能なカルチャ一覧（必要に応じて追加）
         var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
         AvailableCultures = available.ToList();
-        
         // Preset manager を作成してプリセットを読み込む
-        _presetService = new PresetService(new TextProcessingService());
+        _presetService = presetService;
         _presetService.LoadPresets();
 
         // ObservableCollection に変更して動的更新を可能にする
