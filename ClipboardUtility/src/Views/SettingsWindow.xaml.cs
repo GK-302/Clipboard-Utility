@@ -4,7 +4,7 @@ using ClipboardUtility.src.Services;
 using ClipboardUtility.src.ViewModels;
 using System;
 using System.Diagnostics;
-using System.Reflection; // ’Ç‰Á
+using System.Reflection; // è¿½åŠ 
 using System.Windows;
 using MessageBox = System.Windows.MessageBox;
 
@@ -13,7 +13,7 @@ namespace ClipboardUtility.src.Views
     public partial class SettingsWindow : Window
     {
         private readonly SettingsViewModel _vm;
-        private readonly string _initialCultureName; // ’Ç‰Á: ƒEƒBƒ“ƒhƒEì¬‚ÌƒJƒ‹ƒ`ƒƒ•Û‘¶
+        private readonly string _initialCultureName; // è¿½åŠ : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½œæˆæ™‚ã®ã‚«ãƒ«ãƒãƒ£ä¿å­˜
 
         internal SettingsWindow(AppSettings settings)
         {
@@ -23,7 +23,7 @@ namespace ClipboardUtility.src.Views
 
             var settingsToUse = settings;
 
-            // ICultureProvider ‚ğƒAƒvƒŠƒRƒ“ƒeƒi‚©‚çæ“¾‚µ‚Ä ViewModel ‚É’“ü
+            // ICultureProvider ã‚’ã‚¢ãƒ—ãƒªã‚³ãƒ³ãƒ†ãƒŠã‹ã‚‰å–å¾—ã—ã¦ ViewModel ã«æ³¨å…¥
             ICultureProvider provider;
             try
             {
@@ -37,11 +37,11 @@ namespace ClipboardUtility.src.Views
             _vm = new SettingsViewModel(settingsToUse, provider);
             DataContext = _vm;
 
-            // ƒEƒBƒ“ƒhƒEì¬‚ÌƒJƒ‹ƒ`ƒƒ–¼‚ğ•Û‘¶inull ˆÀ‘Sj
+            // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½œæˆæ™‚ã®ã‚«ãƒ«ãƒãƒ£åã‚’ä¿å­˜ï¼ˆnull å®‰å…¨ï¼‰
             _initialCultureName = SettingsService.Instance.Current?.CultureName ?? System.Globalization.CultureInfo.CurrentUICulture.Name;
 
-            // ViewModel ‚ª‰Šú‰»‚µ‚½ SelectedPresetForTrayClick ‚ğ UI ‚É”½‰f
-            // Loaded ƒCƒxƒ“ƒg‚ÅŠmÀ‚Éİ’è‚³‚ê‚é‚æ‚¤‚É‚·‚é
+            // ViewModel ãŒåˆæœŸåŒ–ã—ãŸ SelectedPresetForTrayClick ã‚’ UI ã«åæ˜ 
+            // Loaded ã‚¤ãƒ™ãƒ³ãƒˆã§ç¢ºå®Ÿã«è¨­å®šã•ã‚Œã‚‹ã‚ˆã†ã«ã™ã‚‹
             Loaded += (s, e) =>
             {
                 Debug.WriteLine($"SettingsWindow.Loaded: AvailablePresets.Count = {_vm.AvailablePresets.Count}");
@@ -80,19 +80,20 @@ namespace ClipboardUtility.src.Views
             {   
                 Debug.WriteLine($"SettingsWindow.BtnSave_Click: invoking ViewModel.Save() {DataContext.ToString()}");
 
-                // •Û‘¶‘O‚ÉŒ»İ‘I‘ğƒJƒ‹ƒ`ƒƒ‚ğŠm”F
+                // ä¿å­˜å‰ã«ç¾åœ¨é¸æŠã‚«ãƒ«ãƒãƒ£ã‚’ç¢ºèª
                 var newCulture = vm.SelectedCulture?.Name ?? SettingsService.Instance.Current?.CultureName;
                 var cultureChanged = !string.Equals(_initialCultureName, newCulture, StringComparison.OrdinalIgnoreCase);
 
-                // ‚Ü‚¸İ’è‚ğ•Û‘¶
+                // ã¾ãšè¨­å®šã‚’ä¿å­˜
                 vm.Save();
 
-                // ƒJƒ‹ƒ`ƒƒ‚ª•Ï‚í‚Á‚Ä‚¢‚ê‚ÎÄ‹N“®Šm”Fƒ_ƒCƒAƒƒO‚ğ•\¦
+                // ã‚«ãƒ«ãƒãƒ£ãŒå¤‰ã‚ã£ã¦ã„ã‚Œã°å†èµ·å‹•ç¢ºèªãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’è¡¨ç¤º
                 if (cultureChanged)
                 {
                     var result = MessageBox.Show(
-                        "Œ¾Œê‚ğ•ÏX‚µ‚Ü‚µ‚½BƒAƒvƒŠ‚ğÄ‹N“®‚µ‚Ü‚·‚©H\niÄ‹N“®‚µ‚È‚¢‚Æˆê•”•\¦‚ª”½‰f‚³‚ê‚È‚¢ê‡‚ª‚ ‚è‚Ü‚·j",
-                        "Ä‹N“®‚ÌŠm”F",
+                        @"è¨€èªã‚’å¤‰æ›´ã—ã¾ã—ãŸã€‚ã‚¢ãƒ—ãƒªã‚’å†èµ·å‹•ã—ã¾ã™ã‹ï¼Ÿ
+                    ï¼ˆå†èµ·å‹•ã—ãªã„ã¨ä¸€éƒ¨è¡¨ç¤ºãŒåæ˜ ã•ã‚Œãªã„å ´åˆãŒã‚ã‚Šã¾ã™ï¼‰",
+                        "å†èµ·å‹•ã®ç¢ºèª",
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Question);
 
@@ -100,16 +101,16 @@ namespace ClipboardUtility.src.Views
                     {
                         try
                         {
-                            // •Û‘¶ŒãAŒ¾Œê‚ª•Ï‚í‚Á‚Ä‚¢‚Äƒ†[ƒU‚ªÄ‹N“®‚ğ“¯ˆÓ‚µ‚½‚Æ‚«:
+                            // ä¿å­˜å¾Œã€è¨€èªãŒå¤‰ã‚ã£ã¦ã„ã¦ãƒ¦ãƒ¼ã‚¶ãŒå†èµ·å‹•ã‚’åŒæ„ã—ãŸã¨ã:
                             var restartService = global::ClipboardUtility.App.Services.Get<IAppRestartService>();
-                            restartService.Restart(); // AppRestartService “à‚Å Shutdown ‚µ‚Ü‚·
-                            return; // Restart ‚ªƒAƒvƒŠ‚ğI—¹‚·‚é‚½‚ß‚±‚±‚Å–ß‚·
+                            restartService.Restart(); // AppRestartService å†…ã§ Shutdown ã—ã¾ã™
+                            return; // Restart ãŒã‚¢ãƒ—ãƒªã‚’çµ‚äº†ã™ã‚‹ãŸã‚ã“ã“ã§æˆ»ã™
                         }
                         catch (Exception ex)
                         {
                             FileLogger.LogException(ex, "SettingsWindow.BtnSave_Click: Restart failed");
-                            MessageBox.Show("ƒAƒvƒŠ‚ÌÄ‹N“®‚É¸”s‚µ‚Ü‚µ‚½Bè“®‚ÅÄ‹N“®‚µ‚Ä‚­‚¾‚³‚¢B", "Ä‹N“®¸”s", MessageBoxButton.OK, MessageBoxImage.Error);
-                            // Ä‹N“®¸”s‚Å‚àƒEƒBƒ“ƒhƒE‚Í•Â‚¶‚Ä‚æ‚¢iİ’è‚Í•Û‘¶Ï‚İj
+                            MessageBox.Show("ã‚¢ãƒ—ãƒªã®å†èµ·å‹•ã«å¤±æ•—ã—ã¾ã—ãŸã€‚æ‰‹å‹•ã§å†èµ·å‹•ã—ã¦ãã ã•ã„ã€‚", "å†èµ·å‹•å¤±æ•—", MessageBoxButton.OK, MessageBoxImage.Error);
+                            // å†èµ·å‹•å¤±æ•—ã§ã‚‚ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã¯é–‰ã˜ã¦ã‚ˆã„ï¼ˆè¨­å®šã¯ä¿å­˜æ¸ˆã¿ï¼‰
                         }
                     }
                 }
@@ -149,7 +150,7 @@ namespace ClipboardUtility.src.Views
                     if (edited != null)
                     {
                         vm.CreatePreset(edited.Name, edited.Description, edited.Steps);
-                        // ObservableCollection ‚È‚Ì‚Å©“®“I‚É UI ‚ªXV‚³‚ê‚é
+                        // ObservableCollection ãªã®ã§è‡ªå‹•çš„ã« UI ãŒæ›´æ–°ã•ã‚Œã‚‹
                     }
                 }
             }
@@ -182,7 +183,7 @@ namespace ClipboardUtility.src.Views
                         // preserve ID
                         edited.Id = selected.Id;
                         vm.UpdatePreset(edited);
-                        // ObservableCollection ‚È‚Ì‚Å©“®“I‚É UI ‚ªXV‚³‚ê‚é
+                        // ObservableCollection ãªã®ã§è‡ªå‹•çš„ã« UI ãŒæ›´æ–°ã•ã‚Œã‚‹
                     }
                 }
             }
@@ -214,7 +215,7 @@ namespace ClipboardUtility.src.Views
                 if (result == MessageBoxResult.Yes)
                 {
                     vm.DeletePreset(selected.Id);
-                    // ObservableCollection ‚È‚Ì‚Å©“®“I‚É UI ‚ªXV‚³‚ê‚é
+                    // ObservableCollection ãªã®ã§è‡ªå‹•çš„ã« UI ãŒæ›´æ–°ã•ã‚Œã‚‹
                 }
             }
         }
