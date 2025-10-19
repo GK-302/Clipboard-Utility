@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Reflection;
 
 namespace ClipboardUtility.src.Services;
 
@@ -12,49 +13,102 @@ internal sealed class SettingsService
     private static readonly Lazy<SettingsService> _instance = new(() => new SettingsService());
     internal static SettingsService Instance => _instance.Value;
 
-    private readonly string _path;
+    private readonly string _projectConfigPath;
+    private readonly string _appDataDirectory;
+    private readonly string _appDataConfigPath;
+
     public AppSettings Current { get; private set; } = new AppSettings();
 
     public event EventHandler<AppSettings>? SettingsChanged;
 
     private SettingsService()
     {
-        _path = Path.Combine(AppContext.BaseDirectory, "config", "appsettings.json");
+        _projectConfigPath = Path.Combine(AppContext.BaseDirectory, "config", "appsettings.json");
+
+        // アプリ毎にフォルダを作る（Assembly の Product/Name を利用）
+        var productFolder = GetProductFolderName();
+        _appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), productFolder);
+        _appDataConfigPath = Path.Combine(_appDataDirectory, "config/appsettings.json");
+
         Load();
     }
 
     public void Load()
     {
+        Debug.WriteLine("SettingsService.Load: start");
+
+        // 1) まず AppData を優先
+        if (TryLoadFromPath(_appDataConfigPath, out var loadedFromAppData))
+        {
+            Current = loadedFromAppData!;
+            Debug.WriteLine($"SettingsService.Load: loaded settings from AppData '{_appDataConfigPath}'");
+            NotifySettingsChanged();
+            return;
+        }
+
+        // 2) AppDataに無ければプロジェクト（exe 配下）のデフォルトを試す
+        if (TryLoadFromPath(_projectConfigPath, out var loadedFromProject))
+        {
+            Current = loadedFromProject!;
+            Debug.WriteLine($"SettingsService.Load: loaded settings from default '{_projectConfigPath}'");
+
+            // デフォルトが見つかったら AppData にコピーして以後は AppData を使う
+            try
+            {
+                Directory.CreateDirectory(_appDataDirectory);
+                var opts = new JsonSerializerOptions { WriteIndented = true };
+                opts.Converters.Add(new JsonStringEnumConverter());
+                var json = JsonSerializer.Serialize(Current, opts);
+                File.WriteAllText(_appDataConfigPath, json);
+                Debug.WriteLine($"SettingsService.Load: copied default config to AppData '{_appDataConfigPath}'");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SettingsService.Load: failed to copy default to AppData: {ex}");
+            }
+
+            NotifySettingsChanged();
+            return;
+        }
+
+        // 3) どこにも無ければ既定値を使い、AppData に書き出す（作成）
+        Current = new AppSettings();
+        Debug.WriteLine("SettingsService.Load: no config found, using defaults.");
         try
         {
-            if (File.Exists(_path))
-            {
-                var json = File.ReadAllText(_path);
-                Debug.WriteLine($"SettingsService.Load: raw JSON ({json.Length} bytes): {json}");
-
-                var opts = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
-                opts.Converters.Add(new JsonStringEnumConverter());
-
-                Current = JsonSerializer.Deserialize<AppSettings>(json, opts) ?? new AppSettings();
-                Debug.WriteLine($"SettingsService.Load: loaded settings from {_path}");
-            }
-            else
-            {
-                Current = new AppSettings();
-                Debug.WriteLine($"SettingsService.Load: settings file not found; using defaults.");
-            }
+            Directory.CreateDirectory(_appDataDirectory);
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            opts.Converters.Add(new JsonStringEnumConverter());
+            var json = JsonSerializer.Serialize(Current, opts);
+            File.WriteAllText(_appDataConfigPath, json);
+            Debug.WriteLine($"SettingsService.Load: wrote default config to AppData '{_appDataConfigPath}'");
         }
         catch (Exception ex)
         {
-            Current = new AppSettings();
-            Debug.WriteLine($"SettingsService.Load: failed: {ex}");
+            Debug.WriteLine($"SettingsService.Load: failed to write default config to AppData: {ex}");
         }
 
-        Debug.WriteLine("SettingsService.Load: calling NotifySettingsChanged()");
         NotifySettingsChanged();
+    }
+
+    private bool TryLoadFromPath(string path, out AppSettings? settings)
+    {
+        settings = null;
+        try
+        {
+            if (!File.Exists(path)) return false;
+            var json = File.ReadAllText(path);
+            Debug.WriteLine($"SettingsService.TryLoadFromPath: read {path} ({json?.Length ?? 0} bytes)");
+            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            opts.Converters.Add(new JsonStringEnumConverter());
+            settings = JsonSerializer.Deserialize<AppSettings>(json, opts) ?? new AppSettings();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"SettingsService.TryLoadFromPath: failed to read/deserialize '{path}': {ex}");
+            return false;
+        }
     }
 
     public void Save(AppSettings settings)
@@ -66,44 +120,20 @@ internal sealed class SettingsService
         // Current を受け取ったコピーで置き換える（呼び出し側は GetSettingsCopy() が渡される想定）
         Current = settings;
 
-        string json = string.Empty;
-
         try
         {
-            var dir = Path.GetDirectoryName(_path);
+            var dir = Path.GetDirectoryName(_appDataConfigPath);
             if (!string.IsNullOrEmpty(dir)) _ = Directory.CreateDirectory(dir);
 
             var opts = new JsonSerializerOptions { WriteIndented = true };
             opts.Converters.Add(new JsonStringEnumConverter());
-            json = JsonSerializer.Serialize(Current, opts);
-            File.WriteAllText(_path, json);
-            Debug.WriteLine($"SettingsService.Save: wrote settings to {_path}");
-            Debug.WriteLine($"SettingsService.Save: serialized JSON ({json.Length} bytes):\n{json}");
+            var json = JsonSerializer.Serialize(Current, opts);
+            File.WriteAllText(_appDataConfigPath, json);
+            Debug.WriteLine($"SettingsService.Save: wrote settings to '{_appDataConfigPath}'");
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"SettingsService.Save: failed to write runtime settings: {ex}");
-        }
-
-        // デバッグモードで実行時のみ、プロジェクト直下の ../../config/appsettings.json を更新する
-        if (Debugger.IsAttached)
-        {
-            try
-            {
-                var projectCopy = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "config", "appsettings.json"));
-                var projectDir = Path.GetDirectoryName(projectCopy);
-                if (!string.IsNullOrEmpty(projectDir)) _ = Directory.CreateDirectory(projectDir);
-                File.WriteAllText(projectCopy, json);
-                Debug.WriteLine($"SettingsService.Save: also wrote project copy to {projectCopy}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SettingsService.Save: failed to write project copy: {ex}");
-            }
-        }
-        else
-        {
-            Debug.WriteLine("SettingsService.Save: not in debug mode; skipping project copy.");
         }
 
         Debug.WriteLine("SettingsService.Save: calling NotifySettingsChanged()");
@@ -128,6 +158,21 @@ internal sealed class SettingsService
         else
         {
             handler(this, Current);
+        }
+    }
+
+    private static string GetProductFolderName()
+    {
+        try
+        {
+            var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly == null) return "ClipboardUtility";
+            var productAttribute = entryAssembly.GetCustomAttribute<AssemblyProductAttribute>();
+            return productAttribute?.Product ?? entryAssembly.GetName().Name ?? "ClipboardUtility";
+        }
+        catch
+        {
+            return "ClipboardUtility";
         }
     }
 }

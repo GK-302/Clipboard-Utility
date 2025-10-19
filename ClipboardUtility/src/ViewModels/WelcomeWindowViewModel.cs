@@ -14,30 +14,6 @@ namespace ClipboardUtility.src.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private bool _runAtStartup;
-
-        public bool RunAtStartup
-        {
-            get => _runAtStartup;
-            set
-            {
-                if (_runAtStartup != value)
-                {
-                    _runAtStartup = value;
-                    try
-                    {
-                        var settings = SettingsService.Instance.Current ?? new AppSettings();
-                        SettingsService.Instance.Save(settings);
-                    }
-                    catch (Exception ex)
-                    {
-                        FileLogger.LogException(ex, "WelcomeWindowViewModel: Save RunAtStartup failed");
-                    }
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         public WelcomeWindowViewModel()
         {
             // 利用可能なカルチャ一覧

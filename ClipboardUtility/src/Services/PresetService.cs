@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Reflection;
 
 namespace ClipboardUtility.src.Services;
 
@@ -17,6 +18,9 @@ namespace ClipboardUtility.src.Services;
 internal class PresetService
 {
     private readonly TextProcessingService _textProcessingService;
+    private readonly string _appDataDirectory;
+    private readonly string _appDataPresetPath;
+    private readonly string _projectPresetPath;
     private readonly string _presetFilePath;
     private readonly string _builtInPresetFilePath;
     private List<ProcessingPreset> _presets = [];
@@ -28,11 +32,16 @@ internal class PresetService
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public PresetService(TextProcessingService textProcessingService, string userPresetsPath = "config/user_presets.json", string builtInPresetsPath = "config/presets.json")
+    public PresetService(TextProcessingService textProcessingService)
     {
         _textProcessingService = textProcessingService ?? throw new ArgumentNullException(nameof(textProcessingService));
-        _presetFilePath = userPresetsPath;
-        _builtInPresetFilePath = builtInPresetsPath;
+
+        var productFolder = GetProductFolderName();
+        _appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), productFolder, "config");
+        _appDataPresetPath = Path.Combine(_appDataDirectory, "presets.json");
+        _projectPresetPath = Path.Combine(AppContext.BaseDirectory, "config", "presets.json");
+        _presetFilePath = _appDataPresetPath;
+        _builtInPresetFilePath = _projectPresetPath;
     }
 
     /// <summary>
@@ -57,24 +66,27 @@ internal class PresetService
     {
         _presets.Clear();
 
-        // 1. ビルトインプリセットを読み込み
-        Debug.WriteLine($"PresetService: Loading built-in presets from {_builtInPresetFilePath}");
-        var builtInPresets = LoadPresetsFromFile(_builtInPresetFilePath, isBuiltIn: true);
-        _presets.AddRange(builtInPresets);
-        Debug.WriteLine($"PresetService: Loaded {builtInPresets.Count} built-in presets.");
-
-        // 2. ユーザープリセットを読み込み
-        if (File.Exists(_presetFilePath))
+        // 1. AppData優先
+        if (!File.Exists(_appDataPresetPath) && File.Exists(_projectPresetPath))
         {
-            Debug.WriteLine($"PresetService: Loading user presets from {_presetFilePath}");
-            var userPresets = LoadPresetsFromFile(_presetFilePath, isBuiltIn: false);
+            // プロジェクト配下からAppDataにコピー
+            Directory.CreateDirectory(_appDataDirectory);
+            File.Copy(_projectPresetPath, _appDataPresetPath, overwrite: true);
+            Debug.WriteLine($"PresetService: Copied default presets to AppData '{_appDataPresetPath}'");
+        }
+
+        // 2. ビルトインプリセット（プロジェクト配下）を読み込み
+        var builtInPresets = LoadPresetsFromFile(_projectPresetPath, isBuiltIn: true);
+        _presets.AddRange(builtInPresets);
+
+        // 3. ユーザープリセット（AppData配下）を読み込み
+        if (File.Exists(_appDataPresetPath))
+        {
+            var userPresets = LoadPresetsFromFile(_appDataPresetPath, isBuiltIn: false);
             _presets.AddRange(userPresets);
         }
 
-        // 3. ビルトインプリセットのリソースキーから表示名を読み込み
-        Debug.WriteLine($"PresetService: Localizing built-in presets. Total presets after load: {_presets.Count}");
         LocalizeBuiltInPresets();
-        Debug.WriteLine($"PresetService: Localization complete. Preset names: {string.Join(", ", _presets.Select(p => p.Name))}");
     }
 
     /// <summary>
@@ -89,15 +101,10 @@ internal class PresetService
             presets = userPresets
         };
 
-        Debug.WriteLine($"PresetService: Saving {userPresets.Count} user presets to {_presetFilePath}");
         var jsonString = JsonSerializer.Serialize(json, _jsonOptions);
-        var directory = Path.GetDirectoryName(_presetFilePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-        File.WriteAllText(_presetFilePath, jsonString, Encoding.UTF8);
-        Debug.WriteLine($"PresetService: Save completed. Bytes written: {Encoding.UTF8.GetByteCount(jsonString)}");
+        Directory.CreateDirectory(_appDataDirectory);
+        File.WriteAllText(_appDataPresetPath, jsonString, Encoding.UTF8);
+        Debug.WriteLine($"PresetService: Saved user presets to '{_appDataPresetPath}'");
     }
 
     /// <summary>
@@ -304,6 +311,22 @@ internal class PresetService
         catch
         {
             return CultureInfo.CurrentCulture;
+        }
+    }
+
+    // 補助: 製品名取得
+    private static string GetProductFolderName()
+    {
+        try
+        {
+            var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly == null) return "ClipboardUtility";
+            var productAttribute = entryAssembly.GetCustomAttribute<AssemblyProductAttribute>();
+            return productAttribute?.Product ?? entryAssembly.GetName().Name ?? "ClipboardUtility";
+        }
+        catch
+        {
+            return "ClipboardUtility";
         }
     }
 }
