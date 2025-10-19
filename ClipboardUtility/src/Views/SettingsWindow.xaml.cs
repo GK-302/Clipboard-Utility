@@ -27,7 +27,7 @@ namespace ClipboardUtility.src.Views
             ICultureProvider provider;
             try
             {
-                provider =　App.Services.Get<ICultureProvider>();
+                provider = global::ClipboardUtility.App.Services.Get<ICultureProvider>();
             }
             catch
             {
@@ -101,7 +101,7 @@ namespace ClipboardUtility.src.Views
                         try
                         {
                             // 保存後、言語が変わっていてユーザが再起動を同意したとき:
-                            var restartService = App.Services.Get<IAppRestartService>();
+                            var restartService = global::ClipboardUtility.App.Services.Get<IAppRestartService>();
                             restartService.Restart(); // AppRestartService 内で Shutdown します
                             return; // Restart がアプリを終了するためここで戻す
                         }
