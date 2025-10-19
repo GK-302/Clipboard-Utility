@@ -17,7 +17,13 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly ClipboardService _clipboardService;
     private readonly ClipboardOperationService _clipboardOperationService;
     private readonly ClipboardEventCoordinator _clipboardEventCoordinator;
+    private readonly SettingsService _settingsService;
+    private readonly ICultureProvider _cultureProvider;
+    private readonly IAppRestartService _restartService;
     private bool _isInternalClipboardOperation = false;
+    private readonly TextProcessingService _textProcessingService;
+    private readonly NotificationsService _notificationsService;
+    private readonly TaskTrayService _taskTrayService;
 
     // デバッグ用: _isInternalClipboardOperation の変更を追跡
     private void SetInternalClipboardOperation(bool value)
@@ -31,38 +37,44 @@ public class MainViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler PropertyChanged;
 
-    public MainViewModel()
+    public MainViewModel(
+            ClipboardService clipboardService,
+            ClipboardOperationService clipboardOperationService,
+            SettingsService settingsService,
+            TaskTrayService taskTrayService,
+            IAppRestartService restartService,
+            ICultureProvider cultureProvider,
+            TextProcessingService textProcessingService,
+            NotificationsService notificationsService
+            )
     {
-        _clipboardService = new ClipboardService();
-        var textProcessingService = new TextProcessingService();
-        var notificationsService = new NotificationsService();
-        var presetService = new PresetService(textProcessingService);
-        
-        // プリセットを読み込み
-        presetService.LoadPresets();
-        Debug.WriteLine($"MainViewModel: Loaded {presetService.Presets.Count} presets");
-
-        // サービスの初期化（依存関係注入）
-        _clipboardOperationService = new ClipboardOperationService(
-            _clipboardService,
-            textProcessingService,
-            notificationsService,
-            presetService);
-
+        _clipboardService = clipboardService;
+        _clipboardOperationService = clipboardOperationService;
+        _settingsService = settingsService;
+        _restartService = restartService;
+        _cultureProvider = cultureProvider;
+        _taskTrayService = taskTrayService;
+        _textProcessingService = textProcessingService;
+        _notificationsService = notificationsService;
+        //　ClipboardEventCoordinator を手動で 'new' する
         _clipboardEventCoordinator = new ClipboardEventCoordinator(
-            textProcessingService,
-            notificationsService,
-            () => _isInternalClipboardOperation,
-            TaskTrayService.Instance);
+            _textProcessingService,
+            _notificationsService,
+            () => _isInternalClipboardOperation, // Func<bool> を渡す
+            _settingsService,
+            _taskTrayService
+        );
+        // 注入された SettingsService を使用
+        _settingsService.SettingsChanged += OnSettingsChanged;
 
-        // 設定変更通知を購読
-        SettingsService.Instance.SettingsChanged += OnSettingsChanged;
-
-        Debug.WriteLine($"MainViewModel: Initialized with ClipboardProcessingMode = {SettingsService.Instance.Current.ClipboardProcessingMode}");
+        Debug.WriteLine($"MainViewModel: Initialized with ClipboardProcessingMode = {_settingsService.Current.ClipboardProcessingMode}");
 
         // イベント購読（コーディネータに委譲）
         _clipboardService.ClipboardUpdated += _clipboardEventCoordinator.OnClipboardUpdated;
         _clipboardService.ClipboardError += _clipboardEventCoordinator.OnClipboardError;
+
+        // <--- 追加: 注入された TaskTrayService を使用 (App.xaml.cs からロジックを移動)
+        SubscribeToTaskTrayEvents(taskTrayService);
     }
 
     /// <summary>
@@ -145,9 +157,12 @@ public class MainViewModel : INotifyPropertyChanged
     {
         try
         {
-            var currentSettings = SettingsService.Instance.Current;
-            var settingsWindow = new SettingsWindow(currentSettings);
-
+            var currentSettings = _settingsService.Current;
+            var settingsWindow = new SettingsWindow(
+                        currentSettings,
+                        _restartService,
+                        _cultureProvider,
+                        _settingsService);
             bool? result = settingsWindow.ShowDialog();
 
             if (result == true)
@@ -173,7 +188,7 @@ public class MainViewModel : INotifyPropertyChanged
         try
         {
             // イベント購読を解除
-            SettingsService.Instance.SettingsChanged -= OnSettingsChanged;
+            _settingsService.SettingsChanged -= OnSettingsChanged;
             _clipboardService.ClipboardUpdated -= _clipboardEventCoordinator.OnClipboardUpdated;
             _clipboardService.ClipboardError -= _clipboardEventCoordinator.OnClipboardError;
             Debug.WriteLine("MainViewModel: Event subscriptions removed");

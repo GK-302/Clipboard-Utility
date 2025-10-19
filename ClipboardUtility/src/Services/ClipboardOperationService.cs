@@ -8,23 +8,26 @@ namespace ClipboardUtility.src.Services;
 /// クリップボード操作の実行を責務とするサービス。
 /// 読み取り → テキスト処理 → 書き戻し → 検証 → フォールバックの一連のフローを管理します。
 /// </summary>
-internal class ClipboardOperationService
+public class ClipboardOperationService
 {
     private readonly ClipboardService _clipboardService;
     private readonly TextProcessingService _textProcessingService;
     private readonly NotificationsService _notificationsService;
+    private readonly SettingsService _settingsService;
     private readonly PresetService _presetService;
 
     public ClipboardOperationService(
         ClipboardService clipboardService,
         TextProcessingService textProcessingService,
         NotificationsService notificationsService,
-        PresetService presetService)
+        PresetService presetService,
+        SettingsService settingsService)
     {
         _clipboardService = clipboardService ?? throw new ArgumentNullException(nameof(clipboardService));
         _textProcessingService = textProcessingService ?? throw new ArgumentNullException(nameof(textProcessingService));
         _notificationsService = notificationsService ?? throw new ArgumentNullException(nameof(notificationsService));
         _presetService = presetService ?? throw new ArgumentNullException(nameof(presetService));
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
     }
 
     /// <summary>
@@ -45,7 +48,7 @@ internal class ClipboardOperationService
 
         try
         {
-            var currentSettings = SettingsService.Instance.Current;
+            var currentSettings = _settingsService.Current;
 
             string processedText;
 

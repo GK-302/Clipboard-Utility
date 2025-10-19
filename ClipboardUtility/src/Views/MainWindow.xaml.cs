@@ -10,27 +10,14 @@ namespace ClipboardUtility;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
-    private readonly TaskTrayService _taskTrayService;
 
-    // デフォルトコンストラクタ（デザイン時用）
-    public MainWindow()
-    {
-        InitializeComponent();
-        // デザイン時のみ使用
-        if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
-        {
-            _viewModel = new MainViewModel();
-            this.DataContext = _viewModel;
-        }
-    }
 
     // 実行時用コンストラクタ
-    public MainWindow(MainViewModel viewModel, TaskTrayService taskTrayService)
+    public MainWindow(MainViewModel viewModel)
     {
         InitializeComponent();
 
         _viewModel = viewModel;
-        _taskTrayService = TaskTrayService.Instance; // Singletonインスタンスを使用
         this.DataContext = _viewModel;
 
         this.Loaded += MainWindow_Loaded;

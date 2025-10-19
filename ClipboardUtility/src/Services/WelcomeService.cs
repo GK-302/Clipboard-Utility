@@ -1,20 +1,30 @@
-﻿using System;
-using System.Windows;
-using ClipboardUtility.src.Helpers;
+﻿using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.Models;
+using ClipboardUtility.src.ViewModels;
 using ClipboardUtility.src.Views;
+using System;
+using System.Windows;
 
 namespace ClipboardUtility.src.Services;
 
 internal class WelcomeService
 {
     private AppSettings _settings;
-    public WelcomeService()
+    private readonly SettingsService _settingsService;
+    private readonly WelcomeWindowViewModel _welcomeViewModel;
+    private readonly IAppRestartService _restartService;
+    public WelcomeService(
+            SettingsService settingsService,
+            IAppRestartService restartService,
+            WelcomeWindowViewModel welcomeViewModel)
     {
+        _restartService = restartService;
+        _welcomeViewModel = welcomeViewModel;
+        _settingsService = settingsService;
         // ランタイム設定を取得（SettingsService を使用）
-        _settings = SettingsService.Instance.Current ?? new AppSettings();
+        _settings = _settingsService.Current ?? new AppSettings();
         // 設定変更を監視して _settings を更新
-        SettingsService.Instance.SettingsChanged += OnSettingsChanged;
+        _settingsService.SettingsChanged += OnSettingsChanged;
     }
     private void OnSettingsChanged(object? sender, AppSettings newSettings)
     {
@@ -42,9 +52,10 @@ internal class WelcomeService
             {
                 try
                 {
-                    var win = new WelcomeWindow();
-                    // 必要なら設定の値を渡して初期化する
-                    // e.g. win.DataContext = new WelcomeViewModel(_settings);
+                    var win = new WelcomeWindow(
+                                        _welcomeViewModel,
+                                        _restartService,
+                                        _settingsService);
                     win.Show();
                 }
                 catch (Exception ex)

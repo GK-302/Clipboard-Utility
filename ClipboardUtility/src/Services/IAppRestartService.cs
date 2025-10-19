@@ -2,7 +2,7 @@ using System;
 
 namespace ClipboardUtility.src.Services;
 
-internal interface IAppRestartService
+public interface IAppRestartService
 {
     /// <summary>
     /// アプリを再起動します。引数は必要に応じて渡せます。

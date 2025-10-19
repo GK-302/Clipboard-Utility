@@ -15,7 +15,7 @@ namespace ClipboardUtility.src.Services;
 /// <summary>
 /// プリセットの管理と実行を担当するサービス。
 /// </summary>
-internal class PresetService
+public class PresetService
 {
     private readonly TextProcessingService _textProcessingService;
     private readonly string _appDataDirectory;
