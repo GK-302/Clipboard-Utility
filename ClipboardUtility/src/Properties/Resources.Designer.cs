@@ -912,7 +912,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Some setting items will be reflected to reopen setting. に類似しているローカライズされた文字列を検索します。
+        ///   Some setting items will be reflected to reopen settings or restart app. に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SettingInfomationText {
             get {

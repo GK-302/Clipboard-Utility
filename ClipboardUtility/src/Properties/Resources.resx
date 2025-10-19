@@ -390,7 +390,7 @@
     <value>Language</value>
   </data>
   <data name="SettingInfomationText" xml:space="preserve">
-    <value>Some setting items will be reflected to reopen setting.</value>
+    <value>Some setting items will be reflected to reopen settings or restart app.</value>
   </data>
   <data name="LicenseDescription" xml:space="preserve">
     <value>This software uses the following third-party software and fonts. Below are their required licenses and copyright notices.</value>

@@ -388,7 +388,7 @@
     <value>言語</value>
   </data>
   <data name="SettingInfomationText" xml:space="preserve">
-    <value>一部の項目は設定を開き直すことで反映されます。</value>
+    <value>一部の項目は設定を開き直すかアプリを再起動することで反映されます。</value>
   </data>
   <data name="LicenseDescription" xml:space="preserve">
     <value>本ソフトウェアは、以下のサードパーティ製ソフトウェアおよびフォントを使用しています。それらの必須ライセンスおよび著作権表示は以下の通りです。</value>

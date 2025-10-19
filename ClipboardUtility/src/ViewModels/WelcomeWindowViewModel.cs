@@ -14,34 +14,10 @@ namespace ClipboardUtility.src.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private bool _runAtStartup;
-
-        public bool RunAtStartup
+        public WelcomeWindowViewModel(ICultureProvider cultureProvider)
         {
-            get => _runAtStartup;
-            set
-            {
-                if (_runAtStartup != value)
-                {
-                    _runAtStartup = value;
-                    try
-                    {
-                        var settings = SettingsService.Instance.Current ?? new AppSettings();
-                        SettingsService.Instance.Save(settings);
-                    }
-                    catch (Exception ex)
-                    {
-                        FileLogger.LogException(ex, "WelcomeWindowViewModel: Save RunAtStartup failed");
-                    }
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public WelcomeWindowViewModel()
-        {
-            // 利用可能なカルチャ一覧
-            AvailableCultures = new List<CultureInfo> { new("en-US"), new("ja-JP") };
+            var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
+            AvailableCultures = available.ToList();
 
             // 現在の設定からカルチャを取得
             var settings = SettingsService.Instance.Current;

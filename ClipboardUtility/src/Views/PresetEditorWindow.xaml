@@ -46,7 +46,7 @@
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
 
-            <ListBox Grid.Column="0" ItemsSource="{Binding Steps}" SelectedItem="{Binding SelectedStep}" DisplayMemberPath="Mode">
+            <ListBox Grid.Column="0" ItemsSource="{Binding Steps}" SelectedItem="{Binding SelectedStep}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
