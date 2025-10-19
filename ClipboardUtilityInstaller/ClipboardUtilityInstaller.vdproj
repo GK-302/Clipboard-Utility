@@ -203,15 +203,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Clipboard Utility"
-        "ProductCode" = "8:{1FA09357-F6DE-4220-BAD5-BD750680D5B3}"
-        "PackageCode" = "8:{574C5DCC-FC67-4B36-8F8C-682E158488CE}"
+        "ProductCode" = "8:{0640016A-D999-4708-AFD9-92FE6D60409C}"
+        "PackageCode" = "8:{9351D37A-5184-4D2C-91CB-FDC491BE8CDE}"
         "UpgradeCode" = "8:{DBF77C92-B594-4443-B59A-065B5B5DDD9C}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:0.5.3"
+        "ProductVersion" = "8:0.5.4"
         "Manufacturer" = "8:GK-302"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -1101,7 +1101,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BE0F15CD0B3448D488B25BEEB719015F"
             {
-            "SourcePath" = "8:..\\ClipboardUtility\\obj\\Release\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\ClipboardUtility\\obj\\Debug\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_11D7C0EA47E049EBB5B6B970DEC27C4B"
