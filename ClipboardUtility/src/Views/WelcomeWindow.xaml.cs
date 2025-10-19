@@ -1,4 +1,5 @@
-﻿using ClipboardUtility.src.ViewModels;  // この行を追加
+﻿using ClipboardUtility.src.Services;
+using ClipboardUtility.src.ViewModels;  // この行を追加
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -13,9 +14,10 @@ namespace ClipboardUtility.src.Views
         public WelcomeWindow()
         {
             InitializeComponent();
-            
+            // CultureProvider を作成して ViewModel に注入
+            var cultureProvider = new CultureProvider();
             // ViewModelを設定（これらの行を追加）
-            _vm = new WelcomeWindowViewModel();
+            _vm = new WelcomeWindowViewModel(cultureProvider);
             DataContext = _vm;
 
             SourceInitialized += WelcomeWindow_SourceInitialized;

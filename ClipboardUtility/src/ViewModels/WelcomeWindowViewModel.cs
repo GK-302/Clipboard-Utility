@@ -14,10 +14,10 @@ namespace ClipboardUtility.src.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public WelcomeWindowViewModel()
+        public WelcomeWindowViewModel(ICultureProvider cultureProvider)
         {
-            // 利用可能なカルチャ一覧
-            AvailableCultures = new List<CultureInfo> { new("en-US"), new("ja-JP") };
+            var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
+            AvailableCultures = available.ToList();
 
             // 現在の設定からカルチャを取得
             var settings = SettingsService.Instance.Current;

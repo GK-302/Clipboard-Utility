@@ -1,4 +1,5 @@
 using ClipboardUtility.src.Models;
+using ClipboardUtility.src.Services;
 using ClipboardUtility.src.ViewModels;
 using System.Diagnostics;
 using System.Windows;
@@ -17,7 +18,9 @@ namespace ClipboardUtility.src.Views
             InitializeComponent();
 
             var settingsToUse = settings;
-            _vm = new SettingsViewModel(settingsToUse);
+            // CultureProvider ‚ğì¬‚µ‚Ä ViewModel ‚É’“ü
+            var cultureProvider = new CultureProvider();
+            _vm = new SettingsViewModel(settingsToUse, cultureProvider);
             DataContext = _vm;
             
             // ViewModel ‚ª‰Šú‰»‚µ‚½ SelectedPresetForTrayClick ‚ğ UI ‚É”½‰f

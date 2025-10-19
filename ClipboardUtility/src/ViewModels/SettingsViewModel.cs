@@ -18,7 +18,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
     // Preset manager
     private readonly PresetService _presetService;
 
-    public SettingsViewModel(AppSettings settings)
+    public SettingsViewModel(AppSettings settings, ICultureProvider cultureProvider)
     {
         // SettingsService の Current オブジェクトの参照を使う（コピーしない）
         _settings = SettingsService.Instance.Current;
@@ -27,7 +27,8 @@ internal class SettingsViewModel : INotifyPropertyChanged
         SelectedProcessingMode = _settings.ClipboardProcessingMode;
 
         // 利用可能なカルチャ一覧（必要に応じて追加）
-        AvailableCultures = new List<CultureInfo> { new("en-US"), new("ja-JP") };
+        var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
+        AvailableCultures = available.ToList();
         
         // Preset manager を作成してプリセットを読み込む
         _presetService = new PresetService(new TextProcessingService());
