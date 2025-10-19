@@ -69,17 +69,17 @@ internal class PresetService
         Debug.WriteLine($"PresetService.LoadPresets: start. projectPresetExists={File.Exists(_projectPresetPath)}, appDataUserPresetExists={File.Exists(_appDataPresetPath)}");
 
         // 1) ビルトイン（配布）を常に読み込む（読み取り専用）
-        Debug.WriteLine($"PresetService.LoadPresets: Loading built-in presets from '{_projectPresetPath}'");
+        //Debug.WriteLine($"PresetService.LoadPresets: Loading built-in presets from '{_projectPresetPath}'");
         var builtInPresets = LoadPresetsFromFile(_projectPresetPath, isBuiltIn: true) ?? new List<ProcessingPreset>();
-        Debug.WriteLine($"PresetService.LoadPresets: Loaded {builtInPresets.Count} built-in presets from project file.");
-        LogPresetList("built-in (from project)", builtInPresets);
+        //Debug.WriteLine($"PresetService.LoadPresets: Loaded {builtInPresets.Count} built-in presets from project file.");
+        //LogPresetList("built-in (from project)", builtInPresets);
         _presets.AddRange(builtInPresets);
-        Debug.WriteLine($"PresetService.LoadPresets: _presets.Count after adding built-ins = {_presets.Count}");
+        //Debug.WriteLine($"PresetService.LoadPresets: _presets.Count after adding built-ins = {_presets.Count}");
 
         // 2) ユーザープリセット（AppData）を読み込み（存在しなければ空で作成）
         if (!File.Exists(_appDataPresetPath))
         {
-            Debug.WriteLine($"PresetService.LoadPresets: No user preset file in AppData; creating empty user preset at '{_appDataPresetPath}'");
+            //Debug.WriteLine($"PresetService.LoadPresets: No user preset file in AppData; creating empty user preset at '{_appDataPresetPath}'");
             try
             {
                 Directory.CreateDirectory(_appDataDirectory);
@@ -95,18 +95,18 @@ internal class PresetService
 
         if (File.Exists(_appDataPresetPath))
         {
-            Debug.WriteLine($"PresetService.LoadPresets: Loading user presets from '{_appDataPresetPath}'");
+            //Debug.WriteLine($"PresetService.LoadPresets: Loading user presets from '{_appDataPresetPath}'");
             var userPresets = LoadPresetsFromFile(_appDataPresetPath, isBuiltIn: false) ?? new List<ProcessingPreset>();
-            Debug.WriteLine($"PresetService.LoadPresets: Loaded {userPresets.Count} user presets from AppData.");
-            LogPresetList("user (from AppData)", userPresets);
+            //Debug.WriteLine($"PresetService.LoadPresets: Loaded {userPresets.Count} user presets from AppData.");
+            //LogPresetList("user (from AppData)", userPresets);
             _presets.AddRange(userPresets);
-            Debug.WriteLine($"PresetService.LoadPresets: _presets.Count after adding users = {_presets.Count}");
+            //Debug.WriteLine($"PresetService.LoadPresets: _presets.Count after adding users = {_presets.Count}");
         }
 
         // 3) ローカライズ
-        Debug.WriteLine($"PresetService.LoadPresets: Starting localization. total presets = {_presets.Count}");
+        //Debug.WriteLine($"PresetService.LoadPresets: Starting localization. total presets = {_presets.Count}");
         LocalizeBuiltInPresets();
-        Debug.WriteLine($"PresetService.LoadPresets: Finished loading presets. final total = {_presets.Count}");
+        //Debug.WriteLine($"PresetService.LoadPresets: Finished loading presets. final total = {_presets.Count}");
     }
 
     /// <summary>
@@ -226,13 +226,13 @@ internal class PresetService
     private List<ProcessingPreset> LoadPresetsFromFile(string filePath, bool isBuiltIn)
     {
         if (!File.Exists(filePath)) {
-            Debug.WriteLine($"PresetService.LoadPresetsFromFile: Preset file '{filePath}' does not exist.");
+            //Debug.WriteLine($"PresetService.LoadPresetsFromFile: Preset file '{filePath}' does not exist.");
             return [];
         };
 
         try
         {
-            Debug.WriteLine($"PresetService.LoadPresetsFromFile: Reading presets file '{filePath}' (isBuiltIn={isBuiltIn})");
+            //Debug.WriteLine($"PresetService.LoadPresetsFromFile: Reading presets file '{filePath}' (isBuiltIn={isBuiltIn})");
             var json = File.ReadAllText(filePath, Encoding.UTF8);
             var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
@@ -247,12 +247,12 @@ internal class PresetService
                     preset.IsBuiltIn = isBuiltIn;
                 }
 
-                Debug.WriteLine($"PresetService.LoadPresetsFromFile: Loaded {presets.Count} presets from '{filePath}' (isBuiltIn={isBuiltIn})");
+                //Debug.WriteLine($"PresetService.LoadPresetsFromFile: Loaded {presets.Count} presets from '{filePath}' (isBuiltIn={isBuiltIn})");
                 // 詳細ログ（ID/Name/ResourceKey）を出す
                 for (int i = 0; i < presets.Count; i++)
                 {
                     var p = presets[i];
-                    Debug.WriteLine($"  [{i}] {(isBuiltIn ? "BUILTIN" : "USER")} Id={p.Id}, Name='{p.Name}', NameResourceKey='{p.NameResourceKey}', IsBuiltIn={p.IsBuiltIn}");
+                    //Debug.WriteLine($"  [{i}] {(isBuiltIn ? "BUILTIN" : "USER")} Id={p.Id}, Name='{p.Name}', NameResourceKey='{p.NameResourceKey}', IsBuiltIn={p.IsBuiltIn}");
                 }
 
                 return presets;
@@ -270,18 +270,18 @@ internal class PresetService
     {
         foreach (var preset in GetBuiltInPresets())
         {
-            Debug.WriteLine($"PresetService: Localizing built-in preset Id={preset.Id}, ResourceName={preset.NameResourceKey}");
+            //Debug.WriteLine($"PresetService: Localizing built-in preset Id={preset.Id}, ResourceName={preset.NameResourceKey}");
             if (!string.IsNullOrEmpty(preset.NameResourceKey))
             {
                 var res = GetResourceString(preset.NameResourceKey);
-                Debug.WriteLine($"PresetService: Resource lookup for {preset.NameResourceKey} => {(res ?? "(null)")} ");
+                //Debug.WriteLine($"PresetService: Resource lookup for {preset.NameResourceKey} => {(res ?? "(null)")} ");
                 preset.Name = res ?? preset.Name;
             }
 
             if (!string.IsNullOrEmpty(preset.DescriptionResourceKey))
             {
                 var res = GetResourceString(preset.DescriptionResourceKey);
-                Debug.WriteLine($"PresetService: Resource lookup for {preset.DescriptionResourceKey} => {(res ?? "(null)")} ");
+                //Debug.WriteLine($"PresetService: Resource lookup for {preset.DescriptionResourceKey} => {(res ?? "(null)")} ");
                 preset.Description = res ?? preset.Description;
             }
         }

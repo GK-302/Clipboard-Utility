@@ -20,23 +20,8 @@ internal class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsViewModel(AppSettings settings)
     {
-        _settings = new AppSettings
-        {
-            ClipboardProcessingMode = settings.ClipboardProcessingMode,
-            NotificationOffsetX = settings.NotificationOffsetX,
-            NotificationOffsetY = settings.NotificationOffsetY,
-            NotificationMargin = settings.NotificationMargin,
-            NotificationMinWidth = settings.NotificationMinWidth,
-            NotificationMaxWidth = settings.NotificationMaxWidth,
-            NotificationMinHeight = settings.NotificationMinHeight,
-            NotificationMaxHeight = settings.NotificationMaxHeight,
-            NotificationDelay = settings.NotificationDelay,
-            ShowCopyNotification = settings.ShowCopyNotification,
-            ShowOperationNotification = settings.ShowOperationNotification,
-            CultureName = settings.CultureName,
-            SelectedPresetId = settings.SelectedPresetId,
-            UsePresets = settings.UsePresets,
-        };
+        // SettingsService の Current オブジェクトの参照を使う（コピーしない）
+        _settings = SettingsService.Instance.Current;
 
         _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
         SelectedProcessingMode = _settings.ClipboardProcessingMode;
@@ -76,7 +61,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
         else
         {
             Debug.WriteLine("SettingsViewModel: No preset ID in settings, using first preset");
-            // Default to first loaded preset and persist in the runtime copy of settings so UI and internal state match
+            // Default to first loaded preset and persist in the runtime Current so UI and internal state match
             SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault();
             _settings.SelectedPresetId = SelectedPresetForTrayClick?.Id;
         }
@@ -348,27 +333,10 @@ internal class SettingsViewModel : INotifyPropertyChanged
     // Called by the view to persist changes
     public void Save()
     {
-        SettingsService.Instance.Save(GetSettingsCopy());
+        // Current の参照をそのまま保存する
+        SettingsService.Instance.Save(_settings);
+        Debug.WriteLine($"SettingsViewModel.Save: settings saved via SettingsService{System.Environment.NewLine}{_settings}");
     }
-
-    public AppSettings GetSettingsCopy() => new()
-    {
-        ClipboardProcessingMode = _settings.ClipboardProcessingMode,
-        NotificationOffsetX = _settings.NotificationOffsetX,
-        NotificationOffsetY = _settings.NotificationOffsetY,
-        NotificationMargin = _settings.NotificationMargin,
-        NotificationMinWidth = _settings.NotificationMinWidth,
-        NotificationMaxWidth = _settings.NotificationMaxWidth,
-        NotificationMinHeight = _settings.NotificationMinHeight,
-        NotificationMaxHeight = _settings.NotificationMaxHeight,
-        NotificationDelay = _settings.NotificationDelay,
-        ShowCopyNotification = _settings.ShowCopyNotification,
-        ShowOperationNotification = _settings.ShowOperationNotification,
-        CultureName = _settings.CultureName,
-        SelectedPresetId = _settings.SelectedPresetId,
-        UsePresets = _settings.UsePresets,
-    };
-
 
     protected void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

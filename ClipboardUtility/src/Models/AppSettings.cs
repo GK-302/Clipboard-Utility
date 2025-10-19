@@ -4,6 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text;
+using System.Reflection;
+using System.Linq;
 
 namespace ClipboardUtility.src.Models
 {
@@ -13,8 +16,6 @@ namespace ClipboardUtility.src.Models
     /// </summary>
     internal sealed class AppSettings
     {
-        private static readonly string SettingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config/appsettings.json");
-
         // 既存の設定
         public ProcessingMode ClipboardProcessingMode { get; set; } = ProcessingMode.NormalizeWhitespace;
 
@@ -44,73 +45,30 @@ namespace ClipboardUtility.src.Models
 
         // タスクトレイアイコン左クリック時に実行するプリセット ID
         public Guid? SelectedPresetId { get; set; } = null;
-
-        // 将来の拡張用
-        public static AppSettings Load()
+        public override string ToString()
         {
-            try
+            var sb = new StringBuilder();
+            sb.AppendLine("AppSettings {");
+            foreach (var prop in typeof(AppSettings)
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.CanRead)
+                .OrderBy(p => p.Name))
             {
-                Debug.WriteLine($"AppSettings: Load() called. Searching for settings file at: '{SettingsFilePath}'");
-
-                if (File.Exists(SettingsFilePath))
-                {
-                    var json = File.ReadAllText(SettingsFilePath);
-                    Debug.WriteLine($"AppSettings: Found settings file. Length={json?.Length ?? 0} bytes");
-
-                    var opts = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
-                    // enum を文字列として扱うコンバータ
-                    opts.Converters.Add(new JsonStringEnumConverter());
-
-                    var settings = JsonSerializer.Deserialize<AppSettings>(json, opts);
-
-                    if (settings != null)
-                    {
-                        Debug.WriteLine($"AppSettings: Successfully deserialized settings from '{SettingsFilePath}'");
-                        Debug.WriteLine($"AppSettings: ClipboardProcessingMode={settings.ClipboardProcessingMode}, NotificationOffsetX={settings.NotificationOffsetX}, NotificationOffsetY={settings.NotificationOffsetY}, NotificationMargin={settings.NotificationMargin}, MinW={settings.NotificationMinWidth}, MaxW={settings.NotificationMaxWidth}, MinH={settings.NotificationMinHeight}, MaxH={settings.NotificationMaxHeight}");
-                        return settings;
-                    }
-                    else
-                    {
-                        Debug.WriteLine("AppSettings: Deserialization returned null; falling back to defaults.");
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine($"AppSettings: Settings file not found at '{SettingsFilePath}'. Using defaults.");
-                }
+                var value = prop.GetValue(this);
+                sb.AppendLine($"  {prop.Name}: {FormatValue(value)}");
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"AppSettings: failed to load settings from '{SettingsFilePath}': {ex}");
-            }
-
-            // フォールバック：既定値を返す
-            Debug.WriteLine("AppSettings: Returning default settings instance.");
-            return new AppSettings();
+            sb.Append("}");
+            return sb.ToString();
         }
 
-        public void Save()
+        private static string FormatValue(object? v)
         {
-            try
-            {
-                var opts = new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                };
-                // 保存時も enum を文字列として出力
-                opts.Converters.Add(new JsonStringEnumConverter());
-
-                var json = JsonSerializer.Serialize(this, opts);
-                File.WriteAllText(SettingsFilePath, json);
-                Debug.WriteLine($"AppSettings: Saved settings to '{SettingsFilePath}'");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"AppSettings: failed to save settings: {ex.Message}");
-            }
+            if (v == null) return "<null>";
+            if (v is string s) return $"\"{s}\"";
+            if (v is double d) return d.ToString("G", CultureInfo.InvariantCulture);
+            if (v is float f) return f.ToString("G", CultureInfo.InvariantCulture);
+            if (v is IFormattable fmt) return fmt.ToString(null, CultureInfo.InvariantCulture);
+            return v.ToString() ?? "<null>";
         }
     }
 }
