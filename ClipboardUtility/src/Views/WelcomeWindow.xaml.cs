@@ -4,12 +4,16 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using MessageBox = System.Windows.MessageBox;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace ClipboardUtility.src.Views
 {
-    public partial class WelcomeWindow : Window
+    public partial class WelcomeWindow   : Window
     {
         private readonly WelcomeWindowViewModel _vm;  // この行を追加
+        private string _initialCultureName;
 
         public WelcomeWindow()
         {
@@ -20,8 +24,72 @@ namespace ClipboardUtility.src.Views
             _vm = new WelcomeWindowViewModel(cultureProvider);
             DataContext = _vm;
 
+            // ウィンドウ作成時のカルチャ名を保存（null 安全）
+            _initialCultureName = _vm.SelectedCulture?.Name ?? CultureInfo.CurrentUICulture.Name;
+
+            // 閉じるときに確認ダイアログを出すハンドラを登録
+            this.Closing += WelcomeWindow_Closing;
+
             SourceInitialized += WelcomeWindow_SourceInitialized;
             this.SizeToContent = SizeToContent.WidthAndHeight;
+        }
+
+        // 閉じる前の処理: 言語変更があれば確認ダイアログを出す
+        private void WelcomeWindow_Closing(object? sender, CancelEventArgs e)
+        {
+            try
+            {
+                var currentCulture = _vm.SelectedCulture?.Name ?? CultureInfo.CurrentUICulture.Name;
+                if (!string.Equals(_initialCultureName, currentCulture, StringComparison.OrdinalIgnoreCase))
+                {
+                    var result = MessageBox.Show(
+                        "言語を変更しました。アプリを再起動しますか？\n（再起動しないと一部表示が反映されない場合があります）",
+                        "再起動の確認",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        try
+                        {
+                            // DI コンテナ経由で再起動サービスを取得して再起動
+                            IAppRestartService restartService;
+                            try
+                            {
+                                restartService = App.Services.Get<IAppRestartService>();
+                            }
+                            catch
+                            {
+                                // フォールバック
+                                restartService = new AppRestartService();
+                            }
+
+                            restartService.Restart();
+                            // Restart() が Application.Shutdown() を行う想定なのでここでは閉じる許可
+                        }
+                        catch (Exception ex)
+                        {
+                            ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow_Closing: Restart failed");
+                            MessageBox.Show("アプリの再起動に失敗しました。手動で再起動してください。", "再起動失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                            // 再起動失敗でも閉じる動作は続行（必要なら Cancel にする）
+                        }
+                    }
+                    else if (result == MessageBoxResult.No)
+                    {
+                        // 再起動しないを選択 => そのまま閉じる。初期値を更新して次回確認しないようにする。
+                        _initialCultureName = currentCulture;
+                    }
+                    else // Cancel
+                    {
+                        // 閉じるを中止
+                        e.Cancel = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow_Closing: error");
+            }
         }
 
         private void WelcomeWindow_SourceInitialized(object? sender, EventArgs e)
