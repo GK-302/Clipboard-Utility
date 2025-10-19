@@ -19,10 +19,12 @@ public class NotificationsService
     // 連続した通知リクエストを制御するためのキャンセル機構
     private CancellationTokenSource _cts;
 
-    public NotificationsService(SettingsService settingsService)
+    public NotificationsService(
+            SettingsService settingsService,
+            NotificationViewModel viewModel)
     {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-        _viewModel = new NotificationViewModel();
+        _viewModel = viewModel;
         _lazyWindow = new Lazy<NotificationWindow>(InitializeWindow);
 
         try
@@ -97,10 +99,7 @@ public class NotificationsService
             {
                 try
                 {
-                    var window = new NotificationWindow
-                    {
-                        DataContext = _viewModel
-                    };
+                    var window = new NotificationWindow(_viewModel);
 
                     // Apply sizing from settings
                     window.MinWidth = _appSettings.NotificationMinWidth;
@@ -126,20 +125,20 @@ public class NotificationsService
 
                     return window;
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"NotificationsService.InitializeWindow: failed to create window: {ex}");
-                    // フォールバック：最小限の NotificationWindow を返す（例外で失敗する可能性は低い）
-                    var fallback = new NotificationWindow { DataContext = _viewModel };
-                    return fallback;
-                }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"NotificationsService.InitializeWindow: failed to create window: {ex}");
+                        // フォールバック：コンストラクタで ViewModel を渡して作成
+                        var fallback = new NotificationWindow(_viewModel);
+                        return fallback;
+                    }
             });
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"NotificationsService.InitializeWindow: dispatcher invoke failed: {ex}");
             // 最後の手段：UI スレッドでない場合は例外を再スローしないで新しいインスタンスを返す（呼び出し側で追加の保護がある想定）
-            var fallbackWindow = new NotificationWindow { DataContext = _viewModel };
+            var fallbackWindow = new NotificationWindow(_viewModel);
             return fallbackWindow;
         }
     }

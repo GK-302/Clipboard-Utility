@@ -59,6 +59,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<WelcomeWindowViewModel>();
         services.AddTransient<ClipboardManagerViewModel>();
         // ※SettingsViewModelはSettingsWindowが内部でnewしているため、ここでは不要
+        // App.xaml.cs の ConfigureServices に追加
+        services.AddTransient<NotificationViewModel>();
 
         // View (Window)
         services.AddTransient<MainWindow>();
