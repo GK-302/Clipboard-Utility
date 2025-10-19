@@ -4,7 +4,7 @@
 
 # Clipboard Utility
 <div align="center">
-  <img "width="320" height="320" alt="337_20251015182315" src="https://github.com/user-attachments/assets/25a956a8-ae64-49e5-a72d-a38216c43803" /> 
+  <img "width="320" height="320" alt="icon" src="https://github.com/user-attachments/assets/25a956a8-ae64-49e5-a72d-a38216c43803" /> 
 </div>
 Clipboard Utilityは、クリップボードのユーティリティツールです。
 開発の初期段階にあり、今後さらに機能を追加していく予定です。
@@ -13,6 +13,10 @@ Clipboard Utilityは、クリップボードのユーティリティツールで
 
 * クリップボードのテキストが変更されると、文字数をマウスカーソルの近くに表示します。
 * タスクトレイのアイコンから、クリップボード内のテキストを操作できます。
+
+## スクリーンショット
+<img height="400" alt="クリップボードマネージャー" src="https://github.com/user-attachments/assets/bee9debf-9b1a-4555-bfb7-e2a83db28ef4" />
+
 
 ## インストール
 
