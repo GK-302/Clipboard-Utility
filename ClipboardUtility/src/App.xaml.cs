@@ -8,21 +8,19 @@ using System.Windows;
 
 namespace ClipboardUtility
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : System.Windows.Application
     {
         private TaskTrayService _taskTrayService;
         private MainViewModel _mainViewModel;
         private WelcomeService _welcomeService;
         private Mutex? _instanceMutex;
-        // 固有のミューテックス名（アプリケーションごとに変更してください）
         private const string MutexName = "ClipboardUtility_{6F1A9C2E-3A4B-4D5E-9F12-ABCDEF123456}";
+
+        // 追加: アプリ共通の軽量サービスコンテナ
+        public static SimpleContainer Services { get; private set; } = new SimpleContainer();
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            // 二重起動防止のためミューテックスを作成
             bool createdNew = false;
             try
             {
@@ -31,19 +29,37 @@ namespace ClipboardUtility
             catch (UnauthorizedAccessException ex)
             {
                 Debug.WriteLine($"Failed to create/open mutex: {ex}");
-                // アクセス権限の問題があっても続行は試みる
             }
 
             if (!createdNew)
             {
                 Debug.WriteLine("Another instance is already running. Exiting.");
-                // 既に起動しているため即座に終了
                 Shutdown();
                 return;
             }
 
             base.OnStartup(e);
-            // 設定に保存されているカルチャを適用してからウィンドウを生成する
+
+            // --- サービス登録（アプリ起動時に一度だけ） ---
+            try
+            {
+                // SettingsService は既にシングルトンなのでそのインスタンスを登録
+                Services.RegisterSingleton<SettingsService>(SettingsService.Instance);
+
+                // カルチャプロバイダーを登録
+                var cultureProvider = new CultureProvider();
+                Services.RegisterSingleton<ICultureProvider>(cultureProvider);
+
+                // アプリ再起動サービスを登録
+                Services.RegisterSingleton<IAppRestartService>(new AppRestartService());
+
+                Debug.WriteLine("App.OnStartup: core services registered in Services container.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"App.OnStartup: service registration failed: {ex}");
+            }
+
             try
             {
                 var cultureName = SettingsService.Instance.Current?.CultureName;
@@ -60,14 +76,12 @@ namespace ClipboardUtility
                 Debug.WriteLine($"Failed to apply saved culture: {ex}");
             }
 
-            // 既存の初期化処理を続ける...
             var tray = TaskTrayService.Instance;
             tray.Initialize();
-            // WelcomeService を生成・表示（UI スレッドで実行）
+
             try
             {
                 _welcomeService = new WelcomeService();
-                // 非同期に表示したければ BeginInvoke を使う
                 System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _welcomeService.ShowWelcomeIfAppropriate();
@@ -77,27 +91,26 @@ namespace ClipboardUtility
             {
                 Debug.WriteLine($"Failed to initialize WelcomeService: {ex}");
             }
+
             _mainViewModel = new MainViewModel();
             _mainViewModel.SubscribeToTaskTrayEvents(TaskTrayService.Instance);
 
             var mainWindow = new MainWindow(_mainViewModel, TaskTrayService.Instance);
             this.MainWindow = mainWindow;
 
-            // テスト用に一時的に表示（完成したら Show() を削除して隠す）
             mainWindow.Show();
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             _mainViewModel?.Cleanup();
-            TaskTrayService.Instance?.Dispose(); // Singletonインスタンスを取得してDispose
+            TaskTrayService.Instance?.Dispose();
             try
             {
                 _instanceMutex?.ReleaseMutex();
             }
             catch (ApplicationException)
             {
-                // ミューテックスが現在所有されていない場合は無視
             }
             finally
             {
@@ -108,5 +121,4 @@ namespace ClipboardUtility
             base.OnExit(e);
         }
     }
-
 }

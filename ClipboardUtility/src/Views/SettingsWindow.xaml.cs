@@ -1,6 +1,10 @@
+using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.Models;
+using ClipboardUtility.src.Services;
 using ClipboardUtility.src.ViewModels;
+using System;
 using System.Diagnostics;
+using System.Reflection; // 追加
 using System.Windows;
 using MessageBox = System.Windows.MessageBox;
 
@@ -9,6 +13,7 @@ namespace ClipboardUtility.src.Views
     public partial class SettingsWindow : Window
     {
         private readonly SettingsViewModel _vm;
+        private readonly string _initialCultureName; // 追加: ウィンドウ作成時のカルチャ保存
 
         internal SettingsWindow(AppSettings settings)
         {
@@ -17,11 +22,26 @@ namespace ClipboardUtility.src.Views
             InitializeComponent();
 
             var settingsToUse = settings;
-            _vm = new SettingsViewModel(settingsToUse);
+
+            // ICultureProvider をアプリコンテナから取得して ViewModel に注入
+            ICultureProvider provider;
+            try
+            {
+                provider = global::ClipboardUtility.App.Services.Get<ICultureProvider>();
+            }
+            catch
+            {
+                provider = new CultureProvider();
+            }
+
+            _vm = new SettingsViewModel(settingsToUse, provider);
             DataContext = _vm;
-            
-            // ViewModel ������������ SelectedPresetForTrayClick �� UI �ɔ��f
-            // Loaded �C�x���g�Ŋm���ɐݒ肳���悤�ɂ���
+
+            // ウィンドウ作成時のカルチャ名を保存（null 安全）
+            _initialCultureName = SettingsService.Instance.Current?.CultureName ?? System.Globalization.CultureInfo.CurrentUICulture.Name;
+
+            // ViewModel が初期化した SelectedPresetForTrayClick を UI に反映
+            // Loaded イベントで確実に設定されるようにする
             Loaded += (s, e) =>
             {
                 Debug.WriteLine($"SettingsWindow.Loaded: AvailablePresets.Count = {_vm.AvailablePresets.Count}");
@@ -57,9 +77,43 @@ namespace ClipboardUtility.src.Views
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is SettingsViewModel vm)
-            {
-                Debug.WriteLine("SettingsWindow.BtnSave_Click: invoking ViewModel.Save()");
+            {   
+                Debug.WriteLine($"SettingsWindow.BtnSave_Click: invoking ViewModel.Save() {DataContext.ToString()}");
+
+                // 保存前に現在選択カルチャを確認
+                var newCulture = vm.SelectedCulture?.Name ?? SettingsService.Instance.Current?.CultureName;
+                var cultureChanged = !string.Equals(_initialCultureName, newCulture, StringComparison.OrdinalIgnoreCase);
+
+                // まず設定を保存
                 vm.Save();
+
+                // カルチャが変わっていれば再起動確認ダイアログを表示
+                if (cultureChanged)
+                {
+                    var result = MessageBox.Show(
+                        @"言語を変更しました。アプリを再起動しますか？
+                    （再起動しないと一部表示が反映されない場合があります）",
+                        "再起動の確認",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        try
+                        {
+                            // 保存後、言語が変わっていてユーザが再起動を同意したとき:
+                            var restartService = global::ClipboardUtility.App.Services.Get<IAppRestartService>();
+                            restartService.Restart(); // AppRestartService 内で Shutdown します
+                            return; // Restart がアプリを終了するためここで戻す
+                        }
+                        catch (Exception ex)
+                        {
+                            FileLogger.LogException(ex, "SettingsWindow.BtnSave_Click: Restart failed");
+                            MessageBox.Show("アプリの再起動に失敗しました。手動で再起動してください。", "再起動失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                            // 再起動失敗でもウィンドウは閉じてよい（設定は保存済み）
+                        }
+                    }
+                }
             }
             else
             {
@@ -96,7 +150,7 @@ namespace ClipboardUtility.src.Views
                     if (edited != null)
                     {
                         vm.CreatePreset(edited.Name, edited.Description, edited.Steps);
-                        // ObservableCollection �Ȃ̂Ŏ����I�� UI ���X�V�����
+                        // ObservableCollection なので自動的に UI が更新される
                     }
                 }
             }
@@ -129,7 +183,7 @@ namespace ClipboardUtility.src.Views
                         // preserve ID
                         edited.Id = selected.Id;
                         vm.UpdatePreset(edited);
-                        // ObservableCollection �Ȃ̂Ŏ����I�� UI ���X�V�����
+                        // ObservableCollection なので自動的に UI が更新される
                     }
                 }
             }
@@ -161,7 +215,7 @@ namespace ClipboardUtility.src.Views
                 if (result == MessageBoxResult.Yes)
                 {
                     vm.DeletePreset(selected.Id);
-                    // ObservableCollection �Ȃ̂Ŏ����I�� UI ���X�V�����
+                    // ObservableCollection なので自動的に UI が更新される
                 }
             }
         }

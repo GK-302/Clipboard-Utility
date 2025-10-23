@@ -18,31 +18,24 @@ internal class SettingsViewModel : INotifyPropertyChanged
     // Preset manager
     private readonly PresetService _presetService;
 
-    public SettingsViewModel(AppSettings settings)
+    // プリセット更新中フラグ（UI が一時的に SelectedItem を null にすることで設定を書き換えないようにする）
+    private bool _isRefreshingPresets;
+
+    public SettingsViewModel(AppSettings settings, ICultureProvider cultureProvider)
     {
-        _settings = new AppSettings
-        {
-            ClipboardProcessingMode = settings.ClipboardProcessingMode,
-            NotificationOffsetX = settings.NotificationOffsetX,
-            NotificationOffsetY = settings.NotificationOffsetY,
-            NotificationMargin = settings.NotificationMargin,
-            NotificationMinWidth = settings.NotificationMinWidth,
-            NotificationMaxWidth = settings.NotificationMaxWidth,
-            NotificationMinHeight = settings.NotificationMinHeight,
-            NotificationMaxHeight = settings.NotificationMaxHeight,
-            NotificationDelay = settings.NotificationDelay,
-            ShowCopyNotification = settings.ShowCopyNotification,
-            ShowOperationNotification = settings.ShowOperationNotification,
-            CultureName = settings.CultureName,
-            SelectedPresetId = settings.SelectedPresetId,
-            UsePresets = settings.UsePresets
-        };
+        // SettingsService の Current オブジェクトの参照を使う（コピーしない）
+        _settings = SettingsService.Instance.Current;
+
+        // Subscribe to SettingsService changes so we update our _settings reference
+        SettingsService.Instance.SettingsChanged += OnSettingsServiceChanged;
+        Debug.WriteLine($"SettingsViewModel: Subscribed to SettingsService.SettingsChanged. Initial Current hash={_settings?.GetHashCode()} SelectedPresetId={_settings?.SelectedPresetId}");
 
         _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
         SelectedProcessingMode = _settings.ClipboardProcessingMode;
 
         // 利用可能なカルチャ一覧（必要に応じて追加）
-        AvailableCultures = new List<CultureInfo> { new("en-US"), new("ja-JP") };
+        var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
+        AvailableCultures = available.ToList();
         
         // Preset manager を作成してプリセットを読み込む
         _presetService = new PresetService(new TextProcessingService());
@@ -76,9 +69,10 @@ internal class SettingsViewModel : INotifyPropertyChanged
         else
         {
             Debug.WriteLine("SettingsViewModel: No preset ID in settings, using first preset");
-            // Default to first loaded preset and persist in the runtime copy of settings so UI and internal state match
+            // Default to first loaded preset and persist in the runtime Current so UI and internal state match
             SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault();
             _settings.SelectedPresetId = SelectedPresetForTrayClick?.Id;
+            Debug.WriteLine($"SettingsViewModel: Assigned settings.SelectedPresetId = {_settings.SelectedPresetId} (during ctor fallback)");
         }
         
         Debug.WriteLine($"SettingsViewModel: Final SelectedPresetForTrayClick = {SelectedPresetForTrayClick?.Name ?? "null"}");
@@ -92,6 +86,21 @@ internal class SettingsViewModel : INotifyPropertyChanged
         // カルチャの初期選択（AvailablePresets 初期化後に行う）
         SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name))
                           ?? CultureInfo.CurrentUICulture;
+    }
+
+    private void OnSettingsServiceChanged(object sender, AppSettings newSettings)
+    {
+        try
+        {
+            Debug.WriteLine($"SettingsViewModel.OnSettingsServiceChanged: invoked. old _settings hash={( _settings?.GetHashCode() ?? 0 )}, newSettings hash={( newSettings?.GetHashCode() ?? 0 )}");
+            Debug.WriteLine($"  old SelectedPresetId={_settings?.SelectedPresetId}, new SelectedPresetId={newSettings?.SelectedPresetId}");
+            // Update local reference to the canonical runtime settings
+            _settings = newSettings ?? new AppSettings();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"SettingsViewModel.OnSettingsServiceChanged: error: {ex}");
+        }
     }
 
     private IList<ProcessingMode> _processingModes;
@@ -142,10 +151,24 @@ internal class SettingsViewModel : INotifyPropertyChanged
         get => _selectedPresetForTrayClick;
         set
         {
-            if (_selectedPresetForTrayClick?.Id != value?.Id)
+            var oldId = _selectedPresetForTrayClick?.Id;
+            var newId = value?.Id;
+            if (oldId != newId)
             {
+                Debug.WriteLine($"SelectedPresetForTrayClick: changing from {oldId?.ToString() ?? "null"} -> {newId?.ToString() ?? "null"}");
                 _selectedPresetForTrayClick = value;
-                _settings.SelectedPresetId = value?.Id;
+
+                // リスト更新中は settings の書き換えを抑止する
+                if (!_isRefreshingPresets)
+                {
+                    _settings.SelectedPresetId = value?.Id;
+                    Debug.WriteLine($"SelectedPresetForTrayClick: assigned settings.SelectedPresetId = {_settings.SelectedPresetId} (settings hash={_settings?.GetHashCode()})");
+                }
+                else
+                {
+                    Debug.WriteLine("SelectedPresetForTrayClick: suppressed settings.SelectedPresetId write because presets are being refreshed.");
+                }
+
                 OnPropertyChanged();
             }
         }
@@ -175,11 +198,13 @@ internal class SettingsViewModel : INotifyPropertyChanged
             if (value == null) return;
             if (_selectedCulture?.Name != value.Name)
             {
+                Debug.WriteLine($"SelectedCulture: changing from {_selectedCulture?.Name ?? "null"} -> {value.Name}");
                 _selectedCulture = value;
                 // 即時にカルチャを切り替える（UI更新用）
                 ApplyCulture(value);
                 // ViewModel 内の設定に反映
                 _settings.CultureName = value.Name;
+                Debug.WriteLine($"SelectedCulture: updated settings.CultureName = {_settings.CultureName} (settings hash={_settings?.GetHashCode()})");
                 OnPropertyChanged();
             }
         }
@@ -189,29 +214,39 @@ internal class SettingsViewModel : INotifyPropertyChanged
     {
         if (ci == null) return;
         
-        // 現在選択されているモードを保存
-        var currentMode = SelectedProcessingMode;
-        
-        // プロセス/スレッド全体の既定カルチャを設定
-        CultureInfo.DefaultThreadCurrentCulture = ci;
-        CultureInfo.DefaultThreadCurrentUICulture = ci;
-        CultureInfo.CurrentCulture = ci;
-        CultureInfo.CurrentUICulture = ci;
-
-        // LocalizedStrings に通知してバインド済みのラベルを更新
-        LocalizedStrings.Instance.ChangeCulture(ci);
-
-        // ProcessingModesリストを再作成して、ComboBoxを強制的に更新
-        _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
-        OnPropertyChanged(nameof(ProcessingModes));
-        
-        // 選択を復元
-        SelectedProcessingMode = currentMode;
-
-        // プリセットのローカライゼーションを更新（AvailablePresets が null でない場合のみ）
-        if (AvailablePresets != null)
+        try
         {
-            RefreshPresetLocalization();
+            Debug.WriteLine($"ApplyCulture: start. current SelectedPresetForTrayClick.Id={SelectedPresetForTrayClick?.Id.ToString() ?? "null"}, settings.SelectedPresetId={_settings.SelectedPresetId?.ToString() ?? "null"}");
+            // 現在選択されているモードを保存
+            var currentMode = SelectedProcessingMode;
+            
+            // プロセス/スレッド全体の既定カルチャを設定
+            CultureInfo.DefaultThreadCurrentCulture = ci;
+            CultureInfo.DefaultThreadCurrentUICulture = ci;
+            CultureInfo.CurrentCulture = ci;
+            CultureInfo.CurrentUICulture = ci;
+
+            // LocalizedStrings に通知してバインド済みのラベルを更新
+            LocalizedStrings.Instance.ChangeCulture(ci);
+
+            // ProcessingModesリストを再作成して、ComboBoxを強制的に更新
+            _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
+            OnPropertyChanged(nameof(ProcessingModes));
+            
+            // 選択を復元
+            SelectedProcessingMode = currentMode;
+
+            // プリセットのローカライゼーションを更新（AvailablePresets が null でない場合のみ）
+            if (AvailablePresets != null)
+            {
+                RefreshPresetLocalization();
+            }
+
+            Debug.WriteLine($"ApplyCulture: end. after RefreshPresetLocalization settings.SelectedPresetId={_settings.SelectedPresetId?.ToString() ?? "null"}, SelectedPresetForTrayClick.Id={SelectedPresetForTrayClick?.Id.ToString() ?? "null"}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"ApplyCulture: error: {ex}");
         }
     }
 
@@ -220,29 +255,68 @@ internal class SettingsViewModel : INotifyPropertyChanged
     /// </summary>
     private void RefreshPresetLocalization()
     {
-        // Null チェックを追加
         if (_presetService == null || AvailablePresets == null) return;
 
-        _presetService.LoadPresets();
-        
-        // 現在の選択を保存
-        var selectedId = _selectedPreset?.Id;
+        // 更新中フラグを立てる（UI からの一時的 null 書き込みを抑止）
+        _isRefreshingPresets = true;
 
-        // 既存の ObservableCollection を更新（UI が自動的に反映される）
-        AvailablePresets.Clear();
-        foreach (var preset in _presetService.Presets)
+        try
         {
-            AvailablePresets.Add(preset);
-        }
+            Debug.WriteLine($"RefreshPresetLocalization: start. saved selectedPreset.Id = {_selectedPreset?.Id.ToString() ?? "null"}, settings.SelectedPresetId = {_settings.SelectedPresetId?.ToString() ?? "null"}");
 
-        // 選択を復元（ID で検索）
-        if (selectedId.HasValue)
-        {
-            SelectedPreset = AvailablePresets.FirstOrDefault(p => p.Id == selectedId.Value);
+            // 退避：トレイ用プリセット ID（UI の一時的クリアがあっても復元できるように）
+            var savedTrayPresetId = _settings.SelectedPresetId ?? _selectedPreset?.Id;
+
+            _presetService.LoadPresets();
+            
+            // 現在の選択を保存
+            var selectedId = _selectedPreset?.Id;
+
+            // 既存の ObservableCollection を更新（UI が自動的に反映される）
+            AvailablePresets.Clear();
+            foreach (var preset in _presetService.Presets)
+            {
+                AvailablePresets.Add(preset);
+            }
+
+            Debug.WriteLine($"RefreshPresetLocalization: loaded presets count={AvailablePresets.Count}. ids = {string.Join(',', AvailablePresets.Select(p => p.Id.ToString()))}");
+
+            // 選択を復元（ID で検索）
+            if (selectedId.HasValue)
+            {
+                SelectedPreset = AvailablePresets.FirstOrDefault(p => p.Id == selectedId.Value);    
+                Debug.WriteLine($"RefreshPresetLocalization: attempted to restore SelectedPreset by saved selectedId={selectedId}. result SelectedPreset.Id={SelectedPreset?.Id.ToString() ?? "null"}");
+            }
+            else
+            {
+                SelectedPreset = AvailablePresets.FirstOrDefault();
+                Debug.WriteLine($"RefreshPresetLocalization: no saved selectedId, fallback SelectedPreset.Id={SelectedPreset?.Id.ToString() ?? "null"}");
+            }
+
+            // トレイ用プリセットを復元（保存されている ID 優先）
+            if (savedTrayPresetId.HasValue)
+            {
+                var tray = AvailablePresets.FirstOrDefault(p => p.Id == savedTrayPresetId.Value);
+                if (tray != null)
+                {
+                    SelectedPresetForTrayClick = tray;
+                    Debug.WriteLine($"RefreshPresetLocalization: restored SelectedPresetForTrayClick to id={tray.Id}");
+                }
+                else
+                {
+                    SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault();
+                    Debug.WriteLine($"RefreshPresetLocalization: could not find saved tray id={savedTrayPresetId}, fallback to {SelectedPresetForTrayClick?.Id.ToString() ?? "null"}");
+                }
+
+                // この直後は _isRefreshingPresets=true のため settings.SelectedPresetId 書き込みは抑止される。
+                // 明示的に settings.SelectedPresetId を保存しておく：
+                _settings.SelectedPresetId = tray?.Id ?? SelectedPresetForTrayClick?.Id;
+                Debug.WriteLine($"RefreshPresetLocalization: explicitly set settings.SelectedPresetId = {_settings.SelectedPresetId?.ToString() ?? "null"}");
+            }
         }
-        else
+        finally
         {
-            SelectedPreset = AvailablePresets.FirstOrDefault();
+            _isRefreshingPresets = false;
         }
     }
 
@@ -348,26 +422,18 @@ internal class SettingsViewModel : INotifyPropertyChanged
     // Called by the view to persist changes
     public void Save()
     {
-        SettingsService.Instance.Save(GetSettingsCopy());
+        try
+        {
+            Debug.WriteLine($"{nameof(SettingsViewModel)}.{nameof(Save)}: start. _settings hash={_settings?.GetHashCode()} settings.SelectedPresetId={_settings?.SelectedPresetId?.ToString() ?? "null"}");
+            // Current の参照をそのまま保存する
+            SettingsService.Instance.Save(_settings);
+            Debug.WriteLine($"{nameof(SettingsViewModel)}.{nameof(Save)}: after SettingsService.Save. settings.SelectedPresetId={_settings?.SelectedPresetId?.ToString() ?? "null"}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"{nameof(SettingsViewModel)}.{nameof(Save)}: error: {ex}");
+        }
     }
-
-    public AppSettings GetSettingsCopy() => new()
-    {
-        ClipboardProcessingMode = _settings.ClipboardProcessingMode,
-        NotificationOffsetX = _settings.NotificationOffsetX,
-        NotificationOffsetY = _settings.NotificationOffsetY,
-        NotificationMargin = _settings.NotificationMargin,
-        NotificationMinWidth = _settings.NotificationMinWidth,
-        NotificationMaxWidth = _settings.NotificationMaxWidth,
-        NotificationMinHeight = _settings.NotificationMinHeight,
-        NotificationMaxHeight = _settings.NotificationMaxHeight,
-        NotificationDelay = _settings.NotificationDelay,
-        ShowCopyNotification = _settings.ShowCopyNotification,
-        ShowOperationNotification = _settings.ShowOperationNotification,
-        CultureName = _settings.CultureName,
-        SelectedPresetId = _settings.SelectedPresetId,
-        UsePresets = _settings.UsePresets
-    };
 
     protected void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

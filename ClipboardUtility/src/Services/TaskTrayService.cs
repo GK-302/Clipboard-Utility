@@ -78,7 +78,7 @@ public class TaskTrayService : ITaskTrayService, IDisposable
         System.IO.Stream iconStream;
         try
         {
-            var iconURI = new Uri("pack://application:,,,/src/Assets/drawing_1.ico");
+            var iconURI = new Uri("pack://application:,,,/src/Assets/Icons/small_icon.ico");
             iconStream = System.Windows.Application.GetResourceStream(iconURI).Stream;
         }
         catch (Exception ex)

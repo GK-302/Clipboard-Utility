@@ -71,6 +71,7 @@
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=UsePresetsText}" Style="{StaticResource FormLabel}" />
                                 <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding UsePresets, Mode=TwoWay}" Style="{StaticResource FormInput}" />
 
+
                                 <!-- Processing Mode -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ProcessingModeTitle}" Style="{StaticResource FormLabel}" />
                                 <ComboBox Grid.Row="1" Grid.Column="1" Width="260" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}"

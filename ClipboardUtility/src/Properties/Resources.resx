@@ -297,6 +297,10 @@
     <value>Collapse Whitespace</value>
     <comment>Display name for ProcessingMode.CollapseWhitespace in settings ComboBox</comment>
   </data>
+  <data name="ProcessingModeDisplay_CollapseWhitespaceAll" xml:space="preserve">
+    <value>All whitespace removed</value>
+    <comment>Display name for ProcessingMode.CollapseWhitespaceAll in settings ComboBox</comment>
+  </data>
   <data name="SettingTitle" xml:space="preserve">
     <value>Setting</value>
     <comment>Setting Title</comment>
@@ -370,7 +374,7 @@
     <comment>App title</comment>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>v0.1</value>
+    <value>v0.5.1</value>
     <comment>App version</comment>
   </data>
   <data name="AppDescription" xml:space="preserve">
@@ -390,7 +394,7 @@
     <value>Language</value>
   </data>
   <data name="SettingInfomationText" xml:space="preserve">
-    <value>Some setting items will be reflected to reopen setting.</value>
+    <value>Some setting items will be reflected to reopen settings or restart app.</value>
   </data>
   <data name="LicenseDescription" xml:space="preserve">
     <value>This software uses the following third-party software and fonts. Below are their required licenses and copyright notices.</value>
@@ -471,9 +475,6 @@
   <data name="Preset_RemoveLineBreaks_Description" xml:space="preserve">
     <value>Removes all line breaks and replaces them with spaces</value>
   </data>
-  <data name="Preset_NormalizeWhitespace_Name" xml:space="preserve">
-    <value>Normalize Whitespace (All)(Built-in)</value>
-  </data>
   <data name="Preset_NormalizeWhitespace_Description" xml:space="preserve">
     <value>Normalizes all whitespace including full-width and half-width spaces</value>
   </data>
@@ -506,5 +507,14 @@
   </data>
   <data name="TaskTrayClickOperationText" xml:space="preserve">
     <value>TaskTray Action</value>
+  </data>
+  <data name="RunAtStartupText" xml:space="preserve">
+    <value>Run at startup</value>
+  </data>
+  <data name="NotificationFormat_CollapseWhitespaceAll" xml:space="preserve">
+    <value>All whiteSpace removed</value>
+  </data>
+  <data name="Preset_RemoveLineBreaksAndNormalizeWhitespace_Name" xml:space="preserve">
+    <value>Remove Line Breaks and Normalize Whitespace(Built-in)</value>
   </data>
 </root>

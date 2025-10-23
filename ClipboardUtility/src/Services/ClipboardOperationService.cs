@@ -77,6 +77,8 @@ internal class ClipboardOperationService
 
             if (success)
             {
+                Debug.WriteLine($"ClipboardOperationService: usepresets is valid {currentSettings.UsePresets}");
+                Debug.WriteLine($"ClipboardOperationService: selected presetid is valid {currentSettings.SelectedPresetId.HasValue}");
                 // UsePresetsが有効な場合は専用の通知を表示
                 if (currentSettings.UsePresets && currentSettings.SelectedPresetId.HasValue)
                 {

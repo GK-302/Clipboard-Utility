@@ -297,6 +297,10 @@
     <value>空白を圧縮</value>
     <comment>設定コンボボックスでのProcessingMode.CollapseWhitespaceの表示名</comment>
   </data>
+  <data name="ProcessingModeDisplay_CollapseWhitespaceAll" xml:space="preserve">
+    <value>すべての空白を削除</value>
+    <comment>設定コンボボックスでのProcessingMode.CollapseWhitespaceAllの表示名</comment>
+  </data>
   <data name="SettingTitle" xml:space="preserve">
     <value>設定</value>
     <comment>設定画面のタイトル</comment>
@@ -367,8 +371,9 @@
   <data name="AppTitle" xml:space="preserve">
     <value>Clipboard Utility</value>
   </data>
-  <data name="AppVersion" xml:space="preserve">
-    <value>v0.1</value>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="AppVersion" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
   </data>
   <data name="AppDescription" xml:space="preserve">
     <value>このアプリはクリップボードツールです。文字数をカウントしたり、文字列処理を行ったりします。</value>
@@ -387,7 +392,7 @@
     <value>言語</value>
   </data>
   <data name="SettingInfomationText" xml:space="preserve">
-    <value>一部の項目は設定を開き直すことで反映されます。</value>
+    <value>一部の項目は設定を開き直すかアプリを再起動することで反映されます。</value>
   </data>
   <data name="LicenseDescription" xml:space="preserve">
     <value>本ソフトウェアは、以下のサードパーティ製ソフトウェアおよびフォントを使用しています。それらの必須ライセンスおよび著作権表示は以下の通りです。</value>
@@ -467,9 +472,6 @@
   <data name="Preset_RemoveLineBreaks_Description" xml:space="preserve">
     <value>すべての改行を削除してスペースに置き換えます</value>
   </data>
-  <data name="Preset_NormalizeWhitespace_Name" xml:space="preserve">
-    <value>空白正規化（全角半角）（ビルトイン）</value>
-  </data>
   <data name="Preset_NormalizeWhitespace_Description" xml:space="preserve">
     <value>全角・半角を含むすべての空白文字を正規化します</value>
   </data>
@@ -502,5 +504,14 @@
   </data>
   <data name="TaskTrayClickOperationText" xml:space="preserve">
     <value>タスクトレイアクション</value>
+  </data>
+  <data name="RunAtStartupText" xml:space="preserve">
+    <value>コンピュータの起動時に自動的に起動する</value>
+  </data>
+  <data name="NotificationFormat_CollapseWhitespaceAll" xml:space="preserve">
+    <value>すべての空白を削除しました</value>
+  </data>
+  <data name="Preset_RemoveLineBreaksAndNormalizeWhitespace_Name" xml:space="preserve">
+    <value>改行を削除し、単語の間に半角スペース（ビルトイン）</value>
   </data>
 </root>

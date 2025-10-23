@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace ClipboardUtility.src.ViewModels
 {
@@ -14,10 +16,10 @@ namespace ClipboardUtility.src.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public WelcomeWindowViewModel()
+        public WelcomeWindowViewModel(ICultureProvider cultureProvider)
         {
-            // 利用可能なカルチャ一覧
-            AvailableCultures = new List<CultureInfo> { new("en-US"), new("ja-JP") };
+            var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
+            AvailableCultures = available.ToList();
 
             // 現在の設定からカルチャを取得
             var settings = SettingsService.Instance.Current;
@@ -26,8 +28,27 @@ namespace ClipboardUtility.src.ViewModels
             // 初期選択
             _selectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == cultureName)
                               ?? CultureInfo.CurrentUICulture;
+
+            LoadAppVersion();
+            // 設定変更の監視
         }
 
+        private string _appVersion;
+        /// <summary>
+        /// アプリケーションのバージョン情報（Viewにバインドされます）
+        /// </summary>
+        public string AppVersion
+        {
+            get => _appVersion;
+            set
+            {
+                if (_appVersion != value)
+                {
+                    _appVersion = value;
+                    OnPropertyChanged(); // 既存の OnPropertyChanged を呼び出します
+                }
+            }
+        }
         public IList<CultureInfo> AvailableCultures { get; }
 
         // 選択中のカルチャ（UIのComboBoxにバインド）
@@ -63,7 +84,43 @@ namespace ClipboardUtility.src.ViewModels
             // LocalizedStrings に通知してバインド済みのラベルを更新
             LocalizedStrings.Instance.ChangeCulture(ci);
         }
+        /// <summary>
+        /// アセンブリからバージョン情報を取得し、AppVersionプロパティにセットします。
+        /// </summary>
+        private void LoadAppVersion()
+        {
+            try
+            {
+                // 現在実行中のアセンブリ（EXE）を取得
+                var assembly = Assembly.GetExecutingAssembly();
 
+                // ファイルバージョン情報を取得
+                var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+                string productVersion = fvi.ProductVersion;
+                // $(VersionPrefix) の値が反映されやすい ProductVersion を使用します
+                int plusIndex = productVersion.IndexOf('+');
+                if (plusIndex > 0) // '+' が見つかり、かつ文字列の先頭ではない場合
+                {
+                    // "1.0.0" の部分だけを抽出
+                    AppVersion = productVersion.Substring(0, plusIndex);
+                }
+                else
+                {
+                    // "+" が含まれていない場合はそのまま使用
+                    AppVersion = productVersion;
+                }
+
+
+                // (もし "Version: 1.2.3" のようにしたい場合は以下を使用)
+                // AppVersion = $"Version: {fvi.ProductVersion}";
+            }
+            catch (Exception ex)
+            {
+                // 既存のロガーを利用してエラーを記録
+                FileLogger.LogException(ex, "WelcomeWindowViewModel.LoadAppVersion");
+                AppVersion = "N/A"; // 取得失敗時のフォールバック
+            }
+        }
         private void SaveCultureSetting(CultureInfo ci)
         {
             try

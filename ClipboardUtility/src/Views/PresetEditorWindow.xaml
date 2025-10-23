@@ -46,7 +46,7 @@
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
 
-            <ListBox Grid.Column="0" ItemsSource="{Binding Steps}" SelectedItem="{Binding SelectedStep}" DisplayMemberPath="Mode">
+            <ListBox Grid.Column="0" ItemsSource="{Binding Steps}" SelectedItem="{Binding SelectedStep}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -58,10 +58,10 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Stretch" Margin="6,0,0,0">
-                <Button Content="Remove" Command="{Binding RemoveStepCommand}" Margin="0,0,0,6" />
-                <Button IsEnabled="False" Content="Move Up" Command="{Binding MoveUpCommand}" Margin="0,0,0,6" />
-                <Button IsEnabled="False" Content="Move Down" Command="{Binding MoveDownCommand}" Margin="0,0,0,6" />
+            <StackPanel Visibility="Collapsed" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Stretch" Margin="6,0,0,0">
+                <Button Command="{Binding RemoveStepCommand}" Margin="0,0,0,6" />
+                <Button Content="Move Up" Command="{Binding MoveUpCommand}" Margin="0,0,0,6" />
+                <Button Content="Move Down" Command="{Binding MoveDownCommand}" Margin="0,0,0,6" />
             </StackPanel>
         </Grid>
 

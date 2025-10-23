@@ -18,20 +18,19 @@
         <StackPanel Grid.Row="0">
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AppTitle}" FontSize="20" Margin="10" FontWeight="Bold"/>
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AppDescription}" FontSize="14" Margin="10"/>
-            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AppVersion}" FontSize="14" Margin="10"/>
+            <TextBlock Text="{Binding AppVersion, StringFormat='Version: {0}'}" FontSize="14" Margin="10"/>
             <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=OperationGuidanceText}" FontSize="14" Margin="10"/>
-            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AddStartUpGuidanceManuallyTitle}" FontSize="18" Margin="10"/>
-            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AddStartUpGuidanceManuallyText}" FontSize="14" Margin="10"/>
         </StackPanel>
 
         <Grid Grid.Row="1" Margin="10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="272"/>
+                <ColumnDefinition Width="108"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Grid.ColumnSpan="2">
                 <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
                 <ComboBox Width="200"
                   ItemsSource="{Binding AvailableCultures}"
@@ -39,18 +38,22 @@
                   DisplayMemberPath="NativeName" />
             </StackPanel>
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Grid.ColumnSpan="2" Margin="215,0,0,0">
                 <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NeverShowAgainText}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Margin="0"
                    Foreground="Gray"/>
                 <CheckBox Name="IsShowAgain" Margin="10,0,10,0" VerticalAlignment="Center"/>
+
+
                 <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WelcomeNotificationCloseText}"
                 HorizontalAlignment="Center"
                 Click="Button_Click"
                 Padding="10,5"/>
             </StackPanel>
+
+
         </Grid>
     </Grid>
 </Window>

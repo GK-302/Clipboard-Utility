@@ -37,17 +37,17 @@ namespace ClipboardUtility.src.Converters
                     // デバッグ出力: 現在のカルチャを確認
                     // culture パラメータは null の可能性があるので、CurrentUICulture を優先使用
                     var currentCulture = CultureInfo.CurrentUICulture;
-                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Converting mode={mode}");
-                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: culture parameter={culture?.Name ?? "(null)"}");
-                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: CurrentUICulture={currentCulture.Name}");
+                    //System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Converting mode={mode}");
+                    //System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: culture parameter={culture?.Name ?? "(null)"}");
+                    //System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: CurrentUICulture={currentCulture.Name}");
 
                     // まずコンボ表示用のリソースキーを優先（ProcessingModeDisplay_{mode}）
                     string displayKey = $"ProcessingModeDisplay_{mode}";
-                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Looking for resource key: {displayKey}");
+                    //System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Looking for resource key: {displayKey}");
                     
                     // CurrentUICulture を使用してリソースを取得
                     string? display = Resources.ResourceManager.GetString(displayKey, currentCulture);
-                    System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Resource value: {display ?? "(null)"}");
+                    //System.Diagnostics.Debug.WriteLine($"ProcessingModeToDisplayConverter: Resource value: {display ?? "(null)"}");
 
                     if (!string.IsNullOrEmpty(display))
                     {
@@ -103,6 +103,7 @@ namespace ClipboardUtility.src.Converters
                 ProcessingMode.JoinLinesWithSpace => "Join Lines with Space",
                 ProcessingMode.RemoveDuplicateLines => "Remove Duplicate Lines",
                 ProcessingMode.CollapseWhitespace => "Collapse Whitespace",
+                ProcessingMode.CollapseWhitespaceAll => "Collapse All Whitespace",
                 _ => mode.ToString()
             };
         }

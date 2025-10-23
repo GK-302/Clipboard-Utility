@@ -119,7 +119,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   v0.1 に類似しているローカライズされた文字列を検索します。
+        ///   v0.5.1 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string AppVersion {
             get {
@@ -313,6 +313,15 @@ namespace ClipboardUtility.src.Properties {
         public static string NotificationFormat_CollapseWhitespace {
             get {
                 return ResourceManager.GetString("NotificationFormat_CollapseWhitespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   All whiteSpace removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotificationFormat_CollapseWhitespaceAll {
+            get {
+                return ResourceManager.GetString("NotificationFormat_CollapseWhitespaceAll", resourceCulture);
             }
         }
         
@@ -606,15 +615,6 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Normalize Whitespace (All)(Built-in) に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Preset_NormalizeWhitespace_Name {
-            get {
-                return ResourceManager.GetString("Preset_NormalizeWhitespace_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Removes all line breaks and replaces them with spaces に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Preset_RemoveLineBreaks_Description {
@@ -629,6 +629,15 @@ namespace ClipboardUtility.src.Properties {
         public static string Preset_RemoveLineBreaks_Name {
             get {
                 return ResourceManager.GetString("Preset_RemoveLineBreaks_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Line Breaks and Normalize Whitespace(Built-in) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_RemoveLineBreaksAndNormalizeWhitespace_Name {
+            get {
+                return ResourceManager.GetString("Preset_RemoveLineBreaksAndNormalizeWhitespace_Name", resourceCulture);
             }
         }
         
@@ -674,6 +683,15 @@ namespace ClipboardUtility.src.Properties {
         public static string ProcessingModeDisplay_CollapseWhitespace {
             get {
                 return ResourceManager.GetString("ProcessingModeDisplay_CollapseWhitespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   All whitespace removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_CollapseWhitespaceAll {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_CollapseWhitespaceAll", resourceCulture);
             }
         }
         
@@ -876,6 +894,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   Run at startup に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RunAtStartupText {
+            get {
+                return ResourceManager.GetString("RunAtStartupText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Save に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SaveText {
@@ -894,7 +921,7 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Some setting items will be reflected to reopen setting. に類似しているローカライズされた文字列を検索します。
+        ///   Some setting items will be reflected to reopen settings or restart app. に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SettingInfomationText {
             get {

@@ -7,7 +7,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>src\Assets\Icons\big_icon.ico</ApplicationIcon>
+	<Version>0.0.0.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ClipboardUtility.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="src\Assets\drawing_1.ico" />
@@ -18,6 +24,7 @@
     <None Remove="src\Assets\Fonts\Roboto\OFL.txt" />
     <None Remove="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
     <None Remove="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
+    <None Remove="src\Assets\Icons\small_icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +47,7 @@
       <Link>licences\NotoSansJP\OFL.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="src\Assets\Icons\big_icon.ico" />
     <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
     <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Regular.ttf" />
     <Content Include="src\Assets\Fonts\Roboto\OFL.txt">
@@ -48,6 +56,7 @@
     </Content>
     <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
     <Resource Include="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
+    <Resource Include="src\Assets\Icons\small_icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
