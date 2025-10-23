@@ -51,65 +51,8 @@ jobs:
           Write-Host "Extracted version: $VERSION_NUMBER"
           # 抽出したバージョン番号を、後のステップで使えるように 'outputs' にセット
           echo "VERSION_NUMBER=$VERSION_NUMBER" >> $env:GITHUB_OUTPUT
-      # 4b. .resx ファイル内のバージョンを置換
-      - name: Update version in .resx file
-        run: |
-          $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
-          $RESX_PATH = "ClipboardUtility/src/Properties/Resources.resx"
-          $RESOURCE_KEY = "AppVersion"
 
-          Write-Host "Debug: Attempting to update .resx file..."
-          Write-Host "Debug:   VERSION_NUMBER: '$VERSION_NUMBER'"
-          Write-Host "Debug:   RESX_PATH: '$RESX_PATH'"
-          Write-Host "Debug:   RESOURCE_KEY: '$RESOURCE_KEY'"
-
-          if (-not (Test-Path $RESX_PATH)) {
-            Write-Error "Debug: File not found at $RESX_PATH"
-            # 実行中のディレクトリ構造を表示して、パスが正しいか確認する
-            Get-ChildItem -Recurse | Select-Object FullName -First 20
-            exit 1
-          }
-          Write-Host "Debug: File found at $RESX_PATH."
-
-          Write-Host "Updating $RESX_PATH ($RESOURCE_KEY) with version: $VERSION_NUMBER"
-
-          # Get-Content に -Raw を追加すると、1つの文字列として読み込めて確実な場合があります
-          $xml = [xml](Get-Content $RESX_PATH -Raw -Encoding UTF8) 
-          $node = $xml.SelectSingleNode("//data[@name='$RESOURCE_KEY']/value")
-
-          if ($node) {
-            Write-Host "Debug: Node found. Current value: '$($node.'#text')'"
-
-            $node.'#text' = $VERSION_NUMBER
-            
-            Write-Host "Debug: Node updated. New value set to: '$($node.'#text')'"
-
-            $xml.Save($RESX_PATH)
-            Write-Host "Successfully updated $RESX_PATH"
-
-            Write-Host "Debug: Verifying content after save..."
-            $verifyXml = [xml](Get-Content $RESX_PATH -Raw -Encoding UTF8)
-            $verifyNode = $verifyXml.SelectSingleNode("//data[@name='$RESOURCE_KEY']/value")
-            Write-Host "Debug: Value in file after save: '$($verifyNode.'#text')'"
-            if ($verifyNode.'#text' -eq $VERSION_NUMBER) {
-              Write-Host "Debug: Verification successful."
-            } else {
-              Write-Warning "Debug: Verification FAILED. Value mismatch after save."
-            }
-
-          } else {
-            Write-Error "Resource key '$RESOURCE_KEY' not found in $RESX_PATH"
-            
-            Write-Host "Debug: Node NOT found. Dumping available data nodes (name attributes) to check spelling:"
-            $allDataNodes = $xml.SelectNodes("//data")
-            foreach ($dataNode in $allDataNodes) {
-              Write-Host "Debug:   Found data node with name: '$($dataNode.name)'"
-            }
-
-            exit 1
-          }
-
-      # 4a. タグとインストーラーのバージョンを比較
+      # 4b. タグとインストーラーのバージョンを比較
       - name: Compare Tag Version with Installer Version
         run: |
           # タグ名 (v1.0.1 や v1.0.1-beta) から 'v' と '-beta' などを除去
