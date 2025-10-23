@@ -103,6 +103,7 @@ namespace ClipboardUtility.src.Converters
                 ProcessingMode.JoinLinesWithSpace => "Join Lines with Space",
                 ProcessingMode.RemoveDuplicateLines => "Remove Duplicate Lines",
                 ProcessingMode.CollapseWhitespace => "Collapse Whitespace",
+                ProcessingMode.CollapseWhitespaceAll => "Collapse All Whitespace",
                 _ => mode.ToString()
             };
         }

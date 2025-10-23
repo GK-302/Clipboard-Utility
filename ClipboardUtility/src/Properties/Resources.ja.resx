@@ -297,6 +297,10 @@
     <value>空白を圧縮</value>
     <comment>設定コンボボックスでのProcessingMode.CollapseWhitespaceの表示名</comment>
   </data>
+  <data name="ProcessingModeDisplay_CollapseWhitespaceAll" xml:space="preserve">
+    <value>すべての空白を削除</value>
+    <comment>設定コンボボックスでのProcessingMode.CollapseWhitespaceAllの表示名</comment>
+  </data>
   <data name="SettingTitle" xml:space="preserve">
     <value>設定</value>
     <comment>設定画面のタイトル</comment>
