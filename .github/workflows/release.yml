@@ -82,7 +82,7 @@ jobs:
 
           Write-Host "Versions match. Proceeding with build."
 
-      # 4c. .csproj の <Version> タグを更新
+      # 4c. .csproj の <Version> タグを更新 
       - name: Update .csproj Version Tag
         run: |
           $CSPROJ_PATH = "ClipboardUtility/ClipboardUtility.csproj"
@@ -91,11 +91,25 @@ jobs:
           
           # .csproj に書き込むために 4桁 (例: 1.0.1.0) にする
           $VERSION_4_DIGITS = "$TAG_VERSION.0"
-          Write-Host "Updating $CSPROJ_PATH <Version> tag to $VERSION_4_DIGITS"
+          Write-Host "Updating $CSPROJ_PATH <Version> tag to $VERSION_4_DIGITS using XML parser"
 
-          # 正規表現で <Version>0.0.0.0</Version> のような行を置換
-          # (<Version>) グループ1 (.*?) グループ2 (</Version>) グループ3
-          (Get-Content $CSPROJ_PATH) -replace '(<Version>)(.*)(</Version>)', ('$1' + $VERSION_4_DIGITS + '$3') | Set-Content $CSPROJ_PATH
+          # 1. XMLファイルとして読み込む
+          [xml]$csproj = Get-Content -Path $CSPROJ_PATH
+
+          # 2. <Version> タグを探す
+          #    XPath を使って PropertyGroup の中の Version タグを正確に指定
+          $versionNode = $csproj.SelectSingleNode("//PropertyGroup/Version")
+          
+          if ($versionNode -eq $null) {
+            Write-Error "<Version> tag not found in $CSPROJ_PATH"
+            exit 1
+          }
+
+          # 3. ノードの値を更新
+          $versionNode.InnerText = $VERSION_4_DIGITS
+          
+          # 4. ファイルに保存
+          $csproj.Save($CSPROJ_PATH)
 
           Write-Host "Successfully updated $CSPROJ_PATH"
 
@@ -205,3 +219,5 @@ jobs:
           asset_path: ./ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
           asset_name: ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
           asset_content_type: application/zip
+
+
