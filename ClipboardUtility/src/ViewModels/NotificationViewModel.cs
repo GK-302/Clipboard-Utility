@@ -11,7 +11,7 @@ namespace ClipboardUtility.src.ViewModels;
 /// 通知用のViewModel。通知メッセージを保持し、変更をUIに通知します。
 /// 透明ウィンドウで実際の画面背景色に基づいて最適なテキスト色を自動調整する機能を含みます。
 /// </summary>
-internal class NotificationViewModel : INotifyPropertyChanged
+public class NotificationViewModel : INotifyPropertyChanged
 {
     private string _notificationMessage;
     private string _notificationsimultaneousMessage;

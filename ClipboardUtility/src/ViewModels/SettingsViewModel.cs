@@ -15,19 +15,27 @@ internal class SettingsViewModel : INotifyPropertyChanged
     private AppSettings _settings;
     public event PropertyChangedEventHandler PropertyChanged;
 
+    private readonly SettingsService _settingsService;
+
     // Preset manager
     private readonly PresetService _presetService;
 
     // プリセット更新中フラグ（UI が一時的に SelectedItem を null にすることで設定を書き換えないようにする）
     private bool _isRefreshingPresets;
 
-    public SettingsViewModel(AppSettings settings, ICultureProvider cultureProvider)
+    public SettingsViewModel(
+            AppSettings settings,
+            ICultureProvider cultureProvider,
+            SettingsService settingsService,
+            PresetService presetService,
+            TextProcessingService textProcessingService)
     {
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         // SettingsService の Current オブジェクトの参照を使う（コピーしない）
-        _settings = SettingsService.Instance.Current;
+        _settings = _settingsService.Current;
 
         // Subscribe to SettingsService changes so we update our _settings reference
-        SettingsService.Instance.SettingsChanged += OnSettingsServiceChanged;
+        _settingsService.SettingsChanged += OnSettingsServiceChanged;
         Debug.WriteLine($"SettingsViewModel: Subscribed to SettingsService.SettingsChanged. Initial Current hash={_settings?.GetHashCode()} SelectedPresetId={_settings?.SelectedPresetId}");
 
         _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
@@ -36,9 +44,8 @@ internal class SettingsViewModel : INotifyPropertyChanged
         // 利用可能なカルチャ一覧（必要に応じて追加）
         var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
         AvailableCultures = available.ToList();
-        
         // Preset manager を作成してプリセットを読み込む
-        _presetService = new PresetService(new TextProcessingService());
+        _presetService = presetService;
         _presetService.LoadPresets();
 
         // ObservableCollection に変更して動的更新を可能にする
@@ -426,7 +433,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
         {
             Debug.WriteLine($"{nameof(SettingsViewModel)}.{nameof(Save)}: start. _settings hash={_settings?.GetHashCode()} settings.SelectedPresetId={_settings?.SelectedPresetId?.ToString() ?? "null"}");
             // Current の参照をそのまま保存する
-            SettingsService.Instance.Save(_settings);
+            _settingsService.Save(_settings);
             Debug.WriteLine($"{nameof(SettingsViewModel)}.{nameof(Save)}: after SettingsService.Save. settings.SelectedPresetId={_settings?.SelectedPresetId?.ToString() ?? "null"}");
         }
         catch (Exception ex)

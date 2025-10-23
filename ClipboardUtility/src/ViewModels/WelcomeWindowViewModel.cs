@@ -10,137 +10,139 @@ using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Diagnostics;
 
-namespace ClipboardUtility.src.ViewModels
+namespace ClipboardUtility.src.ViewModels;
+
+public class WelcomeWindowViewModel : INotifyPropertyChanged
 {
-    internal class WelcomeWindowViewModel : INotifyPropertyChanged
+    public event PropertyChangedEventHandler PropertyChanged;
+    private readonly SettingsService _settingsService;
+
+    public WelcomeWindowViewModel(ICultureProvider cultureProvider, SettingsService settingsService)
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
+        AvailableCultures = available.ToList();
 
-        public WelcomeWindowViewModel(ICultureProvider cultureProvider)
-        {
-            var available = cultureProvider?.AvailableCultures ?? new List<CultureInfo> { CultureInfo.CurrentUICulture };
-            AvailableCultures = available.ToList();
+        // ç¾åœ¨ã®è¨­å®šã‹ã‚‰ã‚«ãƒ«ãƒãƒ£ã‚’å–å¾—
+        var settings = _settingsService.Current;
+        var cultureName = settings?.CultureName ?? CultureInfo.CurrentUICulture.Name;
 
-            // Œ»İ‚Ìİ’è‚©‚çƒJƒ‹ƒ`ƒƒ‚ğæ“¾
-            var settings = SettingsService.Instance.Current;
-            var cultureName = settings?.CultureName ?? CultureInfo.CurrentUICulture.Name;
-            
-            // ‰Šú‘I‘ğ
-            _selectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == cultureName)
-                              ?? CultureInfo.CurrentUICulture;
+        // åˆæœŸé¸æŠ
+        _selectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == cultureName)
+                          ?? CultureInfo.CurrentUICulture;
 
-            LoadAppVersion();
-            // İ’è•ÏX‚ÌŠÄ‹
-        }
-
-        private string _appVersion;
-        /// <summary>
-        /// ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Ìƒo[ƒWƒ‡ƒ“î•ñiView‚ÉƒoƒCƒ“ƒh‚³‚ê‚Ü‚·j
-        /// </summary>
-        public string AppVersion
-        {
-            get => _appVersion;
-            set
-            {
-                if (_appVersion != value)
-                {
-                    _appVersion = value;
-                    OnPropertyChanged(); // Šù‘¶‚Ì OnPropertyChanged ‚ğŒÄ‚Ño‚µ‚Ü‚·
-                }
-            }
-        }
-        public IList<CultureInfo> AvailableCultures { get; }
-
-        // ‘I‘ğ’†‚ÌƒJƒ‹ƒ`ƒƒiUI‚ÌComboBox‚ÉƒoƒCƒ“ƒhj
-        private CultureInfo _selectedCulture;
-        public CultureInfo SelectedCulture
-        {
-            get => _selectedCulture;
-            set
-            {
-                if (value == null) return;
-                if (_selectedCulture?.Name != value.Name)
-                {
-                    _selectedCulture = value;
-                    // ‘¦‚ÉƒJƒ‹ƒ`ƒƒ‚ğØ‚è‘Ö‚¦‚éiUIXV—pj
-                    ApplyCulture(value);
-                    // İ’è‚É•Û‘¶
-                    SaveCultureSetting(value);
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private void ApplyCulture(CultureInfo ci)
-        {
-            if (ci == null) return;
-
-            // ƒvƒƒZƒX/ƒXƒŒƒbƒh‘S‘Ì‚ÌŠù’èƒJƒ‹ƒ`ƒƒ‚ğİ’è
-            CultureInfo.DefaultThreadCurrentCulture = ci;
-            CultureInfo.DefaultThreadCurrentUICulture = ci;
-            CultureInfo.CurrentCulture = ci;
-            CultureInfo.CurrentUICulture = ci;
-
-            // LocalizedStrings ‚É’Ê’m‚µ‚ÄƒoƒCƒ“ƒhÏ‚İ‚Ìƒ‰ƒxƒ‹‚ğXV
-            LocalizedStrings.Instance.ChangeCulture(ci);
-        }
-        /// <summary>
-        /// ƒAƒZƒ“ƒuƒŠ‚©‚çƒo[ƒWƒ‡ƒ“î•ñ‚ğæ“¾‚µAAppVersionƒvƒƒpƒeƒB‚ÉƒZƒbƒg‚µ‚Ü‚·B
-        /// </summary>
-        private void LoadAppVersion()
-        {
-            try
-            {
-                // Œ»İÀs’†‚ÌƒAƒZƒ“ƒuƒŠiEXEj‚ğæ“¾
-                var assembly = Assembly.GetExecutingAssembly();
-
-                // ƒtƒ@ƒCƒ‹ƒo[ƒWƒ‡ƒ“î•ñ‚ğæ“¾
-                var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-                string productVersion = fvi.ProductVersion;
-                // $(VersionPrefix) ‚Ì’l‚ª”½‰f‚³‚ê‚â‚·‚¢ ProductVersion ‚ğg—p‚µ‚Ü‚·
-                int plusIndex = productVersion.IndexOf('+');
-                if (plusIndex > 0) // '+' ‚ªŒ©‚Â‚©‚èA‚©‚Â•¶š—ñ‚Ìæ“ª‚Å‚Í‚È‚¢ê‡
-                {
-                    // "1.0.0" ‚Ì•”•ª‚¾‚¯‚ğ’Šo
-                    AppVersion = productVersion.Substring(0, plusIndex);
-                }
-                else
-                {
-                    // "+" ‚ªŠÜ‚Ü‚ê‚Ä‚¢‚È‚¢ê‡‚Í‚»‚Ì‚Ü‚Üg—p
-                    AppVersion = productVersion;
-                }
-
-
-                // (‚à‚µ "Version: 1.2.3" ‚Ì‚æ‚¤‚É‚µ‚½‚¢ê‡‚ÍˆÈ‰º‚ğg—p)
-                // AppVersion = $"Version: {fvi.ProductVersion}";
-            }
-            catch (Exception ex)
-            {
-                // Šù‘¶‚ÌƒƒK[‚ğ—˜—p‚µ‚ÄƒGƒ‰[‚ğ‹L˜^
-                FileLogger.LogException(ex, "WelcomeWindowViewModel.LoadAppVersion");
-                AppVersion = "N/A"; // æ“¾¸”s‚ÌƒtƒH[ƒ‹ƒoƒbƒN
-            }
-        }
-        private void SaveCultureSetting(CultureInfo ci)
-        {
-            try
-            {
-                // Œ»İ‚Ìİ’è‚ğæ“¾
-                var settings = SettingsService.Instance.Current ?? new AppSettings();
-                
-                // ƒJƒ‹ƒ`ƒƒ–¼‚ğXV
-                settings.CultureName = ci.Name;
-                
-                // İ’è‚ğ•Û‘¶
-                SettingsService.Instance.Save(settings);
-            }
-            catch (Exception ex)
-            {
-                FileLogger.LogException(ex, "WelcomeWindowViewModel.SaveCultureSetting");
-            }
-        }
-
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        LoadAppVersion();
+        // è¨­å®šå¤‰æ›´ã®ç›£è¦–
     }
+
+    private string _appVersion;
+    /// <summary>
+    /// ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±ï¼ˆViewã«ãƒã‚¤ãƒ³ãƒ‰ã•ã‚Œã¾ã™ï¼‰
+    /// </summary>
+    public string AppVersion
+    {
+        get => _appVersion;
+        set
+        {
+            if (_appVersion != value)
+            {
+                _appVersion = value;
+                OnPropertyChanged(); // æ—¢å­˜ã® OnPropertyChanged ã‚’å‘¼ã³å‡ºã—ã¾ã™
+            }
+        }
+    }
+    public IList<CultureInfo> AvailableCultures { get; }
+
+    // é¸æŠä¸­ã®ã‚«ãƒ«ãƒãƒ£ï¼ˆUIã®ComboBoxã«ãƒã‚¤ãƒ³ãƒ‰ï¼‰
+    private CultureInfo _selectedCulture;
+    public CultureInfo SelectedCulture
+    {
+        get => _selectedCulture;
+        set
+        {
+            if (value == null) return;
+            if (_selectedCulture?.Name != value.Name)
+            {
+                _selectedCulture = value;
+                // å³æ™‚ã«ã‚«ãƒ«ãƒãƒ£ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹ï¼ˆUIæ›´æ–°ç”¨ï¼‰
+                ApplyCulture(value);
+                // è¨­å®šã«ä¿å­˜
+                SaveCultureSetting(value);
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private void ApplyCulture(CultureInfo ci)
+    {
+        if (ci == null) return;
+
+        // ãƒ—ãƒ­ã‚»ã‚¹/ã‚¹ãƒ¬ãƒƒãƒ‰å…¨ä½“ã®æ—¢å®šã‚«ãƒ«ãƒãƒ£ã‚’è¨­å®š
+        CultureInfo.DefaultThreadCurrentCulture = ci;
+        CultureInfo.DefaultThreadCurrentUICulture = ci;
+        CultureInfo.CurrentCulture = ci;
+        CultureInfo.CurrentUICulture = ci;
+
+        // LocalizedStrings ã«é€šçŸ¥ã—ã¦ãƒã‚¤ãƒ³ãƒ‰æ¸ˆã¿ã®ãƒ©ãƒ™ãƒ«ã‚’æ›´æ–°
+        LocalizedStrings.Instance.ChangeCulture(ci);
+    }
+    /// <summary>
+    /// ã‚¢ã‚»ãƒ³ãƒ–ãƒªã‹ã‚‰ãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±ã‚’å–å¾—ã—ã€AppVersionãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã«ã‚»ãƒƒãƒˆã—ã¾ã™ã€‚
+    /// </summary>
+    private void LoadAppVersion()
+    {
+        try
+        {
+            // ç¾åœ¨å®Ÿè¡Œä¸­ã®ã‚¢ã‚»ãƒ³ãƒ–ãƒªï¼ˆEXEï¼‰ã‚’å–å¾—
+            var assembly = Assembly.GetExecutingAssembly();
+
+            // ãƒ•ã‚¡ã‚¤ãƒ«ãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±ã‚’å–å¾—
+            var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+            string productVersion = fvi.ProductVersion;
+            // $(VersionPrefix) ã®å€¤ãŒåæ˜ ã•ã‚Œã‚„ã™ã„ ProductVersion ã‚’ä½¿ç”¨ã—ã¾ã™
+            int plusIndex = productVersion.IndexOf('+');
+            if (plusIndex > 0) // '+' ãŒè¦‹ã¤ã‹ã‚Šã€ã‹ã¤æ–‡å­—åˆ—ã®å…ˆé ­ã§ã¯ãªã„å ´åˆ
+            {
+                // "1.0.0" ã®éƒ¨åˆ†ã ã‘ã‚’æŠ½å‡º
+                AppVersion = productVersion.Substring(0, plusIndex);
+            }
+            else
+            {
+                // "+" ãŒå«ã¾ã‚Œã¦ã„ãªã„å ´åˆã¯ãã®ã¾ã¾ä½¿ç”¨
+                AppVersion = productVersion;
+            }
+
+
+            // (ã‚‚ã— "Version: 1.2.3" ã®ã‚ˆã†ã«ã—ãŸã„å ´åˆã¯ä»¥ä¸‹ã‚’ä½¿ç”¨)
+            // AppVersion = $"Version: {fvi.ProductVersion}";
+        }
+        catch (Exception ex)
+        {
+            // æ—¢å­˜ã®ãƒ­ã‚¬ãƒ¼ã‚’åˆ©ç”¨ã—ã¦ã‚¨ãƒ©ãƒ¼ã‚’è¨˜éŒ²
+            FileLogger.LogException(ex, "WelcomeWindowViewModel.LoadAppVersion");
+            AppVersion = "N/A"; // å–å¾—å¤±æ•—æ™‚ã®ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯
+        }
+    }
+    private void SaveCultureSetting(CultureInfo ci)
+    {
+        try
+        {
+
+            // ç¾åœ¨ã®è¨­å®šã‚’å–å¾—
+            var settings = _settingsService.Current ?? new AppSettings();
+
+            // ã‚«ãƒ«ãƒãƒ£åã‚’æ›´æ–°
+            settings.CultureName = ci.Name;
+
+            // è¨­å®šã‚’ä¿å­˜
+            _settingsService.Save(settings);
+        }
+        catch (Exception ex)
+        {
+            FileLogger.LogException(ex, "WelcomeWindowViewModel.SaveCultureSetting");
+        }
+    }
+
+    protected void OnPropertyChanged([CallerMemberName] string name = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

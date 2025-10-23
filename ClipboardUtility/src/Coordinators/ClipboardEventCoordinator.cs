@@ -10,22 +10,25 @@ namespace ClipboardUtility.src.Coordinators;
 /// <summary>
 /// クリップボードイベントを受け取り、適切な処理（通知表示・エラーハンドリング）に振り分ける調整役。
 /// </summary>
-internal class ClipboardEventCoordinator
+public class ClipboardEventCoordinator
 {
     private readonly TextProcessingService _textProcessingService;
     private readonly NotificationsService _notificationsService;
     private readonly Func<bool> _isInternalOperationGetter;
     private readonly TaskTrayService? _taskTrayService;
+    private readonly SettingsService _settingsService;
 
     public ClipboardEventCoordinator(
         TextProcessingService textProcessingService,
         NotificationsService notificationsService,
         Func<bool> isInternalOperationGetter,
+        SettingsService settingsService,
         TaskTrayService? taskTrayService = null)
     {
         _textProcessingService = textProcessingService ?? throw new ArgumentNullException(nameof(textProcessingService));
         _notificationsService = notificationsService ?? throw new ArgumentNullException(nameof(notificationsService));
         _isInternalOperationGetter = isInternalOperationGetter ?? throw new ArgumentNullException(nameof(isInternalOperationGetter));
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService)); // <--- 3. フィールドに代入
         _taskTrayService = taskTrayService;
     }
 
@@ -84,11 +87,11 @@ internal class ClipboardEventCoordinator
             try
             {
                 // 設定で通知が抑止されていないか確認
-                if (SettingsService.Instance.Current.ShowOperationNotification)
+                if (_settingsService.Current.ShowOperationNotification)
                 {
                     _ = _notificationsService.ShowNotification(
-                        LocalizedStrings.Instance.ClipboardAccessDeniedMessage,
-                        NotificationType.Operation);
+                                            LocalizedStrings.Instance.ClipboardAccessDeniedMessage,
+                                            NotificationType.Operation);
                 }
                 else
                 {

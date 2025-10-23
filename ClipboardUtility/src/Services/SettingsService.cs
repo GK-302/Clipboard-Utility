@@ -8,10 +8,8 @@ using System.Reflection;
 namespace ClipboardUtility.src.Services;
 
 // シンプルなアプリ設定読み書きと変更通知のシングルトンサービス
-internal sealed class SettingsService
+public sealed class SettingsService
 {
-    private static readonly Lazy<SettingsService> _instance = new(() => new SettingsService());
-    internal static SettingsService Instance => _instance.Value;
 
     private readonly string _projectConfigPath;
     private readonly string _appDataDirectory;
@@ -21,7 +19,7 @@ internal sealed class SettingsService
 
     public event EventHandler<AppSettings>? SettingsChanged;
 
-    private SettingsService()
+    public SettingsService()
     {
         _projectConfigPath = Path.Combine(AppContext.BaseDirectory, "config", "appsettings.json");
 

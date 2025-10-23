@@ -4,41 +4,53 @@ using ClipboardUtility.src.Services;
 using ClipboardUtility.src.ViewModels;
 using System;
 using System.Diagnostics;
-using System.Reflection; // 追加
+using System.Reflection;
 using System.Windows;
 using MessageBox = System.Windows.MessageBox;
+using System.Linq;
 
 namespace ClipboardUtility.src.Views
 {
     public partial class SettingsWindow : Window
     {
         private readonly SettingsViewModel _vm;
-        private readonly string _initialCultureName; // 追加: ウィンドウ作成時のカルチャ保存
+        private readonly IAppRestartService _restartService;
+        private readonly SettingsService _settingsService;
+        private readonly PresetService _presetService;
+        private readonly TextProcessingService _textProcessingService;
+        private readonly string _initialCultureName;
 
-        internal SettingsWindow(AppSettings settings)
+        internal SettingsWindow(
+                        AppSettings currentSettings,
+                        IAppRestartService restartService,
+                        ICultureProvider provider,
+                        SettingsService settingsService,
+                        PresetService presetService,
+                        TextProcessingService textProcessingService)
         {
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            if (currentSettings == null) throw new ArgumentNullException(nameof(currentSettings));
 
             InitializeComponent();
+            _restartService = restartService;
+            _settingsService = settingsService;
+            _presetService = presetService;
+            _textProcessingService = textProcessingService;
 
-            var settingsToUse = settings;
+            var settingsToUse = currentSettings;
 
-            // ICultureProvider をアプリコンテナから取得して ViewModel に注入
-            ICultureProvider provider;
-            try
-            {
-                provider = global::ClipboardUtility.App.Services.Get<ICultureProvider>();
-            }
-            catch
-            {
-                provider = new CultureProvider();
-            }
 
-            _vm = new SettingsViewModel(settingsToUse, provider);
+
+            _vm = new SettingsViewModel(
+                            settingsToUse,
+                            provider,
+                            _settingsService,
+                            _presetService,
+                            _textProcessingService);
+
             DataContext = _vm;
 
             // ウィンドウ作成時のカルチャ名を保存（null 安全）
-            _initialCultureName = SettingsService.Instance.Current?.CultureName ?? System.Globalization.CultureInfo.CurrentUICulture.Name;
+            _initialCultureName = _settingsService.Current?.CultureName ?? System.Globalization.CultureInfo.CurrentUICulture.Name;
 
             // ViewModel が初期化した SelectedPresetForTrayClick を UI に反映
             // Loaded イベントで確実に設定されるようにする
@@ -81,7 +93,7 @@ namespace ClipboardUtility.src.Views
                 Debug.WriteLine($"SettingsWindow.BtnSave_Click: invoking ViewModel.Save() {DataContext.ToString()}");
 
                 // 保存前に現在選択カルチャを確認
-                var newCulture = vm.SelectedCulture?.Name ?? SettingsService.Instance.Current?.CultureName;
+                var newCulture = vm.SelectedCulture?.Name ?? _settingsService.Current?.CultureName;
                 var cultureChanged = !string.Equals(_initialCultureName, newCulture, StringComparison.OrdinalIgnoreCase);
 
                 // まず設定を保存
@@ -102,8 +114,7 @@ namespace ClipboardUtility.src.Views
                         try
                         {
                             // 保存後、言語が変わっていてユーザが再起動を同意したとき:
-                            var restartService = global::ClipboardUtility.App.Services.Get<IAppRestartService>();
-                            restartService.Restart(); // AppRestartService 内で Shutdown します
+                            _restartService.Restart(); // AppRestartService 内で Shutdown します
                             return; // Restart がアプリを終了するためここで戻す
                         }
                         catch (Exception ex)
@@ -215,7 +226,6 @@ namespace ClipboardUtility.src.Views
                 if (result == MessageBoxResult.Yes)
                 {
                     vm.DeletePreset(selected.Id);
-                    // ObservableCollection なので自動的に UI が更新される
                 }
             }
         }
