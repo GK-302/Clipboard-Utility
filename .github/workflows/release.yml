@@ -51,32 +51,12 @@ jobs:
           Write-Host "Extracted version: $VERSION_NUMBER"
           # 抽出したバージョン番号を、後のステップで使えるように 'outputs' にセット
           echo "VERSION_NUMBER=$VERSION_NUMBER" >> $env:GITHUB_OUTPUT
-      # 4b. .resx ファイル内のバージョンを置換
-      - name: Update version in .resx file
-        run: |
-          $VERSION_NUMBER = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
-          $RESX_PATH = "ClipboardUtility/src/Properties/Resources.resx" 
-          $RESOURCE_KEY = "AppVersion"  
 
-          Write-Host "Updating $RESX_PATH ($RESOURCE_KEY) with version: $VERSION_NUMBER"
-
-          $xml = [xml](Get-Content $RESX_PATH)
-          $node = $xml.SelectSingleNode("//data[@name='$RESOURCE_KEY']/value")
-
-          if ($node) {
-            $node.'#text' = $VERSION_NUMBER
-            $xml.Save($RESX_PATH)
-            Write-Host "Successfully updated $RESX_PATH"
-          } else {
-            Write-Error "Resource key '$RESOURCE_KEY' not found in $RESX_PATH"
-            exit 1
-          }
-
-      # 4a. タグとインストーラーのバージョンを比較
+      # 4b. タグとインストーラーのバージョンを比較
       - name: Compare Tag Version with Installer Version
         run: |
           # タグ名 (v1.0.1 や v1.0.1-beta) から 'v' と '-beta' などを除去
-          $TAG_VERSION = "${{ github.ref_name }}" -replace '^v', '' -replace '-.*', ''
+          $TAG_VERSION = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
           Write-Host "Checking Tag Version: $TAG_VERSION"
 
           $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj"
@@ -101,6 +81,38 @@ jobs:
           }
 
           Write-Host "Versions match. Proceeding with build."
+
+      # 4c. .csproj の <Version> タグを更新 
+      - name: Update .csproj Version Tag
+        run: |
+          $CSPROJ_PATH = "ClipboardUtility/ClipboardUtility.csproj"
+          # ステップ 4a から3桁のバージョン (例: 1.0.1) を取得
+          $TAG_VERSION = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
+          
+          # .csproj に書き込むために 4桁 (例: 1.0.1.0) にする
+          $VERSION_4_DIGITS = "$TAG_VERSION.0"
+          Write-Host "Updating $CSPROJ_PATH <Version> tag to $VERSION_4_DIGITS using XML parser"
+
+          # 1. XMLファイルとして読み込む
+          [xml]$csproj = Get-Content -Path $CSPROJ_PATH
+
+          # 2. <Version> タグを探す
+          #    XPath を使って PropertyGroup の中の Version タグを正確に指定
+          $versionNode = $csproj.SelectSingleNode("//PropertyGroup/Version")
+          
+          if ($versionNode -eq $null) {
+            Write-Error "<Version> tag not found in $CSPROJ_PATH"
+            exit 1
+          }
+
+          # 3. ノードの値を更新
+          $versionNode.InnerText = $VERSION_4_DIGITS
+          
+          # 4. ファイルに保存
+          $csproj.Save($CSPROJ_PATH)
+
+          Write-Host "Successfully updated $CSPROJ_PATH"
+
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
@@ -207,3 +219,5 @@ jobs:
           asset_path: ./ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
           asset_name: ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
           asset_content_type: application/zip
+
+

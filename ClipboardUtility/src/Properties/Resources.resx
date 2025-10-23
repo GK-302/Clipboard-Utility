@@ -297,6 +297,10 @@
     <value>Collapse Whitespace</value>
     <comment>Display name for ProcessingMode.CollapseWhitespace in settings ComboBox</comment>
   </data>
+  <data name="ProcessingModeDisplay_CollapseWhitespaceAll" xml:space="preserve">
+    <value>All whitespace removed</value>
+    <comment>Display name for ProcessingMode.CollapseWhitespaceAll in settings ComboBox</comment>
+  </data>
   <data name="SettingTitle" xml:space="preserve">
     <value>Setting</value>
     <comment>Setting Title</comment>
