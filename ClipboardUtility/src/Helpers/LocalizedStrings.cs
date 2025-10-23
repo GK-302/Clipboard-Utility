@@ -38,6 +38,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string NotificationFormat_JoinLinesWithSpace => Resources.NotificationFormat_JoinLinesWithSpace;
     public string NotificationFormat_RemoveDuplicateLines => Resources.NotificationFormat_RemoveDuplicateLines;
     public string NotificationFormat_CollapseWhitespace => Resources.NotificationFormat_CollapseWhitespace;
+    public string NotificationFormat_CollapseWhitespaceAll => Resources.NotificationFormat_CollapseWhitespaceAll;
     public string SaveText => Resources.SaveText;
     public string CancelText => Resources.CancelText;
     public string ShowCopyNotificationTitle => Resources.ShowCopyNotification;
@@ -124,6 +125,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(NotificationFormat_JoinLinesWithSpace));
         OnPropertyChanged(nameof(NotificationFormat_RemoveDuplicateLines));
         OnPropertyChanged(nameof(NotificationFormat_CollapseWhitespace));
+        OnPropertyChanged(nameof(NotificationFormat_CollapseWhitespaceAll));
         OnPropertyChanged(nameof(SaveText));
         OnPropertyChanged(nameof(CancelText));
         OnPropertyChanged(nameof(ShowCopyNotificationTitle));

@@ -53,7 +53,8 @@ namespace ClipboardUtility.src.Services
                     { ProcessingMode.Truncate, "NotificationFormat_Truncate" },
                     { ProcessingMode.JoinLinesWithSpace, "NotificationFormat_JoinLinesWithSpace" },
                     { ProcessingMode.RemoveDuplicateLines, "NotificationFormat_RemoveDuplicateLines" },
-                    { ProcessingMode.CollapseWhitespace, "NotificationFormat_CollapseWhitespace" }
+                    { ProcessingMode.CollapseWhitespace, "NotificationFormat_CollapseWhitespace" },
+                    { ProcessingMode.CollapseWhitespaceAll, "NotificationFormat_CollapseWhitespaceAll" }
                 };
 
                 // フォールバックキーで再取得
@@ -89,6 +90,7 @@ namespace ClipboardUtility.src.Services
                         ProcessingMode.JoinLinesWithSpace => "Lines joined with spaces",
                         ProcessingMode.RemoveDuplicateLines => "Duplicate lines removed",
                         ProcessingMode.CollapseWhitespace => "Whitespace collapsed",
+                        ProcessingMode.CollapseWhitespaceAll => "All Whitespace collapsed",
                         _ => "Clipboard operation completed"
                     };
                 }

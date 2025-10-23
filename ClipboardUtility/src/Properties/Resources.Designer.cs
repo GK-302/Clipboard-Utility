@@ -687,6 +687,15 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   All whitespace removed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProcessingModeDisplay_CollapseWhitespaceAll {
+            get {
+                return ResourceManager.GetString("ProcessingModeDisplay_CollapseWhitespaceAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Convert Tabs to Spaces に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ProcessingModeDisplay_ConvertTabsToSpaces {
