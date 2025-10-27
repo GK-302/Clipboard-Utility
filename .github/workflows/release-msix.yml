@@ -53,11 +53,9 @@ jobs:
           echo "RELEASE_TAG=$rawTag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
-      # --- 修正点 1: msbuild /t:Restore から dotnet restore -r win-x86 に変更 ---
       - name: Restore solution with dotnet
         run: dotnet restore ClipboardUtility.sln -r win-x86
 
-      # --- 修正点 2: /p:Restore=false を削除 ---
       - name: Build MSIX Package
         run: |
           $outputPath = "${{ github.workspace }}\output"
@@ -76,8 +74,12 @@ jobs:
             /p:AppxBundle=Always `
             /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}"
         shell: pwsh
-      # --- 修正ここまで ---
-
+      - name: Check Output Directory Contents
+        run: |
+          $outputPath = "${{ github.workspace }}\output"
+          Write-Host "Checking contents of $outputPath"
+          Get-ChildItem -Path $outputPath -Recurse
+        shell: pwsh
       - name: Get Artifact Names
         run: |
           $msixBundle = Get-ChildItem -Path "${{ github.workspace }}\output" -Filter "*.msixbundle" | Select-Object -First 1
