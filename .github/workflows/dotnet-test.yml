@@ -31,13 +31,13 @@ jobs:
     - name: Build projects
     # メインプロジェクトとテストプロジェクトの .csproj を個別に build します
       run: |
-          dotnet build ClipboardUtility/ClipboardUtility.csproj --configuration Release --no-restore
-          dotnet build ClipboardUtility.Tests/ClipboardUtility.Tests.csproj --configuration Release --no-restore
+        dotnet restore ClipboardUtility/ClipboardUtility.csproj
+        dotnet restore ClipboardUtility.Tests/ClipboardUtility.Tests.csproj
     - name: Restore dependencies
     # メインプロジェクトとテストプロジェクトの .csproj を個別に restore します
       run: |
-          dotnet restore ClipboardUtility/ClipboardUtility.csproj
-          dotnet restore ClipboardUtility.Tests/ClipboardUtility.Tests.csproj
+        dotnet build ClipboardUtility/ClipboardUtility.csproj --configuration Release --no-restore
+        dotnet build ClipboardUtility.Tests/ClipboardUtility.Tests.csproj --configuration Release --no-restore
           
     - name: Run tests
      # テストプロジェクトの .csproj を指定して実行します
