@@ -26,7 +26,8 @@ namespace ClipboardUtility.src.Views
                         ICultureProvider provider,
                         SettingsService settingsService,
                         PresetService presetService,
-                        TextProcessingService textProcessingService)
+                        TextProcessingService textProcessingService,
+                        UpdateCheckService updateCheckService)
         {
             if (currentSettings == null) throw new ArgumentNullException(nameof(currentSettings));
 
@@ -45,7 +46,8 @@ namespace ClipboardUtility.src.Views
                             provider,
                             _settingsService,
                             _presetService,
-                            _textProcessingService);
+                            _textProcessingService,
+                            updateCheckService);
 
             DataContext = _vm;
 

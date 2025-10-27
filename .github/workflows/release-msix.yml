@@ -1,0 +1,124 @@
+name: Release MSIX (Auto-Update)
+
+on:
+  push:
+    tags:
+      - "v*.*.*" 
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-release-msix:
+    runs-on: windows-latest
+    
+    env:
+      
+      # 1. パッケージプロジェクトのパス
+      PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj' 
+      
+      # 2. .appinstaller のファイル名
+      APPINSTALLER_FILENAME: 'ClipboardUtility.appinstaller'
+      
+      # 3. GitHub PagesのURL
+      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility/ClipboardUtility.appinstaller'
+      
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Decode PFX Certificate
+        run: |
+          $pfxPath = Join-Path $env:RUNNER_TEMP "signing_cert.pfx"
+          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}"))
+          echo "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+      - name: Set Version from Tag
+        run: |
+          $rawTag = "${{ github.ref_name }}"
+          $version = $rawTag.Substring(1) -replace '-.*', ''
+          $version = "$version.0"
+          echo "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "RELEASE_TAG=$rawTag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+      - name: Build MSIX Package
+        run: |
+          $outputPath = "${{ github.workspace }}\output"
+          msbuild ${{ env.PACKAGE_PROJECT }} /p:Configuration=Release `
+            /p:AppxPackageDir="$outputPath\" `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" `
+            /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}" `
+            /p:GenerateAppInstallerFile=true `
+            /p:AppInstallerUri="${{ env.APPINSTALLER_URL }}" `
+            /p:AppInstallerUpdateFrequency=0 `
+            /p:AppInstallerShowPrompt=true `
+            /p:ApplicationVersion="${{ env.PACKAGE_VERSION }}" `
+            /p:PackageVersion="${{ env.PACKAGE_VERSION }}" `
+            /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxBundle=Always `
+            /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}"
+        shell: pwsh
+      - name: Get Artifact Names
+        run: |
+          $msixBundle = Get-ChildItem -Path "${{ github.workspace }}\output" -Filter "*.msixbundle" | Select-Object -First 1
+          echo "MSIX_BUNDLE_NAME=$($msixBundle.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "MSIX_BUNDLE_PATH=$($msixBundle.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "APPINSTALLER_PATH=${{ github.workspace }}\output\${{ env.APPINSTALLER_FILENAME }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+      - name: Update AppInstaller with Release URL
+        run: |
+          [xml]$appInstallerXml = Get-Content "${{ env.APPINSTALLER_PATH }}"
+          $releaseUrl = "https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/${{ env.MSIX_BUNDLE_NAME }}"
+          if ($appInstallerXml.AppInstaller.MainBundle) { $appInstallerXml.AppInstaller.MainBundle.Uri = $releaseUrl }
+          if ($appInstallerXml.AppInstaller.MainPackage) { $appInstallerXml.AppInstaller.MainPackage.Uri = $releaseUrl }
+          $appInstallerXml.Save("${{ env.APPINSTALLER_PATH }}")
+        shell: pwsh
+      - name: Upload MSIX to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Release ${{ env.RELEASE_TAG }}
+          prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
+          files: |
+            ${{ env.MSIX_BUNDLE_PATH }}
+            ${{ env.APPINSTALLER_PATH }}
+
+      # 7. GitHub Pages (main /docs) に .appinstaller をデプロイ
+      - name: Deploy .appinstaller to GitHub Pages
+        # プレリリース (ハイフン付きタグ) の場合は実行しない
+        if: ${{ !contains(github.ref_name, '-') }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ github.workspace }}\output
+          
+          # あなたの index.html や _config.yml があるブランチ
+          publish_branch: main           
+          
+          # デプロイ先を '/docs' フォルダ (Jekyllのソース元) に指定
+          destination_dir: docs 
+          
+          # _config.yml や index.html 等を削除しない
+          keep_files: true             
+          
+          exclude_assets: '*.msixbundle,index.html' # MSIX本体は除外
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: Deploy ${{ env.APPINSTALLER_FILENAME }} for ${{ env.RELEASE_TAG }}
+
+      # 8. 証明書クリーンアップ
+      - name: Cleanup Certificate
+        if: always()
+        run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force
+        shell: pwsh

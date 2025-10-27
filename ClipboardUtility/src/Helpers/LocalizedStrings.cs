@@ -94,6 +94,15 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string NotificationText => Resources.ResourceManager.GetString("NotificationText", CultureInfo.CurrentUICulture) ?? "Notification";
     public string LicenseText => Resources.ResourceManager.GetString("LicenseText", CultureInfo.CurrentUICulture) ?? "LICENSE";
     public string TaskTrayClickOperationText => Resources.TaskTrayClickOperationText;
+    public string CheckForUpdatesText => Resources.ResourceManager.GetString("CheckForUpdatesText", CultureInfo.CurrentUICulture) ?? "Check for Updates";
+    public string UpdateCheckInProgressText => Resources.ResourceManager.GetString("UpdateCheckInProgressText", CultureInfo.CurrentUICulture) ?? "Checking for updates...";
+    public string UpdateAvailableText => Resources.ResourceManager.GetString("UpdateAvailableText", CultureInfo.CurrentUICulture) ?? "Update Available!";
+    public string UpdateAvailableMessageText => Resources.ResourceManager.GetString("UpdateAvailableMessageText", CultureInfo.CurrentUICulture) ?? "A new version ({0}) is available. Current version: {1}\n\nWould you like to visit the download page?";
+    public string NoUpdateAvailableText => Resources.ResourceManager.GetString("NoUpdateAvailableText", CultureInfo.CurrentUICulture) ?? "No Update Available";
+    public string NoUpdateAvailableMessageText => Resources.ResourceManager.GetString("NoUpdateAvailableMessageText", CultureInfo.CurrentUICulture) ?? "You are using the latest version ({0}).";
+    public string UpdateCheckFailedText => Resources.ResourceManager.GetString("UpdateCheckFailedText", CultureInfo.CurrentUICulture) ?? "Update Check Failed";
+    public string UpdateCheckFailedMessageText => Resources.ResourceManager.GetString("UpdateCheckFailedMessageText", CultureInfo.CurrentUICulture) ?? "Failed to check for updates. Please check your internet connection and try again.";
+    public string CurrentVersionText => Resources.ResourceManager.GetString("CurrentVersionText", CultureInfo.CurrentUICulture) ?? "Current Version:";
 
 
     public void ChangeCulture(CultureInfo culture)
@@ -175,6 +184,15 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(GeneralText));
         OnPropertyChanged(nameof(PresetsText));
         OnPropertyChanged(nameof(TaskTrayClickOperationText));
+        OnPropertyChanged(nameof(CheckForUpdatesText));
+        OnPropertyChanged(nameof(UpdateCheckInProgressText));
+        OnPropertyChanged(nameof(UpdateAvailableText));
+        OnPropertyChanged(nameof(UpdateAvailableMessageText));
+        OnPropertyChanged(nameof(NoUpdateAvailableText));
+        OnPropertyChanged(nameof(NoUpdateAvailableMessageText));
+        OnPropertyChanged(nameof(UpdateCheckFailedText));
+        OnPropertyChanged(nameof(UpdateCheckFailedMessageText));
+        OnPropertyChanged(nameof(CurrentVersionText));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

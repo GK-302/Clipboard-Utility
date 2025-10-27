@@ -49,13 +49,47 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="200" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <GroupBox Grid.ColumnSpan="2" Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=TaskTrayClickOperationText}" Margin="0,0,0,8">
+
+                        <!-- Version Info Section -->
+                        <GroupBox Grid.Row="0" Grid.ColumnSpan="2" Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=AppTitle}" Margin="0,0,0,8">
+                            <Grid Margin="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Current Version -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" 
+                                           Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CurrentVersionText}" 
+                                           Style="{StaticResource FormLabel}" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" 
+                                           Text="{Binding CurrentVersion}" 
+                                           Style="{StaticResource FormInput}" 
+                                           VerticalAlignment="Center" />
+                                
+                                <!-- Check for Updates Button -->
+                                <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                        Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CheckForUpdatesText}"
+                                        Command="{Binding CheckForUpdatesCommand}"
+                                        IsEnabled="{Binding CanCheckForUpdates}"
+                                        Width="200"
+                                        Margin="0,8,0,0"
+                                        HorizontalAlignment="Left" />
+                            </Grid>
+                        </GroupBox>
+                        
+                        <GroupBox Grid.Row="1" Grid.ColumnSpan="2" Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=TaskTrayClickOperationText}" Margin="0,0,0,8">
                             <Grid Margin="8">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />

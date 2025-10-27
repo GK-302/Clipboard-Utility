@@ -25,6 +25,7 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly NotificationsService _notificationsService;
     private readonly TaskTrayService _taskTrayService;
     private readonly PresetService _presetService;
+    private readonly UpdateCheckService _updateCheckService;
 
     // デバッグ用: _isInternalClipboardOperation の変更を追跡
     private void SetInternalClipboardOperation(bool value)
@@ -47,7 +48,8 @@ public class MainViewModel : INotifyPropertyChanged
             ICultureProvider cultureProvider,
             TextProcessingService textProcessingService,
             NotificationsService notificationsService,
-            PresetService presetService)
+            PresetService presetService,
+            UpdateCheckService updateCheckService)
     {
         _clipboardService = clipboardService;
         _clipboardOperationService = clipboardOperationService;
@@ -58,6 +60,7 @@ public class MainViewModel : INotifyPropertyChanged
         _textProcessingService = textProcessingService;
         _notificationsService = notificationsService;
         _presetService = presetService;
+        _updateCheckService = updateCheckService;
         //　ClipboardEventCoordinator を手動で 'new' する
         _clipboardEventCoordinator = new ClipboardEventCoordinator(
             _textProcessingService,
@@ -165,8 +168,9 @@ public class MainViewModel : INotifyPropertyChanged
                                         _restartService,
                                         _cultureProvider,
                                         _settingsService,
-                                        _presetService, // <--- 追加
-                                        _textProcessingService);
+                                        _presetService,
+                                        _textProcessingService,
+                                        _updateCheckService);
             bool? result = settingsWindow.ShowDialog();
 
             if (result == true)

@@ -16,38 +16,59 @@ jobs:
   test:
     name: Run Tests
     runs-on: windows-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-        
+        # .NET 8 WPF プロジェクトの復元に必要なワークロード
+        workloads: microsoft-net-sdk-windowsdesktop
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj','**/*.sln') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
     - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Build solution
-      run: dotnet build --configuration Release --no-restore
-      
+      run: |
+        dotnet restore ClipboardUtility/ClipboardUtility.csproj
+        dotnet restore ClipboardUtility.Tests/ClipboardUtility.Tests.csproj
+
+    - name: Build projects
+      run: |
+        dotnet build ClipboardUtility/ClipboardUtility.csproj --configuration Release --no-restore
+        dotnet build ClipboardUtility.Tests/ClipboardUtility.Tests.csproj --configuration Release --no-restore
+
     - name: Run tests
-      run: dotnet test --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
-      
+      # run: | (リテラル) から run: > (折り畳み) に変更
+      # これにより、バックスラッシュ(\)なしで PowerShell がコマンドを1行として解釈します
+      run: >
+        dotnet test ClipboardUtility.Tests/ClipboardUtility.Tests.csproj
+        --configuration Release
+        --no-build
+        --logger "trx;LogFileName=test-results.trx"
+        --results-directory ./test-results
+
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results
-        path: '**/test-results.trx'
+        path: test-results/*.trx
         retention-days: 30
-        
+
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always()
       with:
         name: Test Results
-        path: '**/test-results.trx'
+        path: test-results/*.trx
         reporter: dotnet-trx
         fail-on-error: true
