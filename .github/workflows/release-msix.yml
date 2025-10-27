@@ -1,4 +1,5 @@
 name: Release MSIX (Auto-Update)
+
 on:
   push:
     tags:
