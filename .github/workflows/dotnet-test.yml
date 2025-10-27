@@ -16,47 +16,55 @@ jobs:
   test:
     name: Run Tests
     runs-on: windows-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-    - name: Install .NET Windows Desktop Workload
-      run: dotnet workload install windowsdesktop
+        workloads: microsoft-net-sdk-windowsdesktop
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj','**/*.sln') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
 
-    - name: Build projects
-    # メインプロジェクトとテストプロジェクトの .csproj を個別に build します
+    - name: Restore dependencies
       run: |
         dotnet restore ClipboardUtility/ClipboardUtility.csproj
         dotnet restore ClipboardUtility.Tests/ClipboardUtility.Tests.csproj
-    - name: Restore dependencies
-    # メインプロジェクトとテストプロジェクトの .csproj を個別に restore します
+
+    - name: Build projects
       run: |
         dotnet build ClipboardUtility/ClipboardUtility.csproj --configuration Release --no-restore
         dotnet build ClipboardUtility.Tests/ClipboardUtility.Tests.csproj --configuration Release --no-restore
-          
+
     - name: Run tests
-     # テストプロジェクトの .csproj を指定して実行します
-     # これでテストが実行され、必要な .trx ファイルが生成されます
-      run: dotnet test ClipboardUtility.Tests/ClipboardUtility.Tests.csproj --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
-      
+      run: |
+        dotnet test ClipboardUtility.Tests/ClipboardUtility.Tests.csproj \
+          --configuration Release \
+          --no-build \
+          --logger "trx;LogFileName=test-results.trx" \
+          --results-directory ./test-results
+
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results
-        path: '**/test-results.trx'
+        path: test-results/*.trx # '**/test-results.trx' から変更
         retention-days: 30
-        
+
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always()
       with:
         name: Test Results
-        path: '**/test-results.trx'
+        path: test-results/*.trx # '**/test-results.trx' から変更
         reporter: dotnet-trx
         fail-on-error: true
