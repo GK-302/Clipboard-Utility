@@ -32,6 +32,8 @@ jobs:
         with:
           # プロジェクトで使用している.NETのバージョンを指定
           dotnet-version: "8.0.x"
+          # dotnet restore がWPFプロジェクトを処理できるようにワークロードを追加
+          workloads: microsoft-net-sdk-windowsdesktop
 
       # 3. MSBuildをセットアップする (インストーラーのビルドに必要)
       - name: Setup MSBuild
@@ -39,7 +41,7 @@ jobs:
 
       # 4. ソリューション全体のNuGetパッケージを復元する
       - name: Restore NuGet packages
-        # ソリューションファイル名を指定してください
+        # workloads を追加したため、ソリューション全体の restore が安全に実行できる
         run: dotnet restore ClipboardUtility.sln
 
       # 4a. タグ名からバージョン番号を抽出
@@ -116,11 +118,6 @@ jobs:
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
-        # --configuration Release: リリースモードでビルド
-        # --runtime win-x64: 64bitのWindows向けにビルド
-        # --self-contained true: .NETがインストールされていなくても動くように自己完結型でビルド
-        # -p:PublishSingleFile=true: 関連ファイルを含んだ単一の.exeファイルとして出力
-        # -o ./publish: 'publish'という名前のフォルダに出力
 
       # 6. MSIインストーラーをビルドする
       - name: Build MSI Installer
@@ -175,14 +172,13 @@ jobs:
         run: Compress-Archive -Path ./ClipboardUtilityInstaller/Release-NoAdmin/* -DestinationPath ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
 
       # 12. GitHubリリースを作成 または 更新 (MSI/EXEアセットのアップロード)
-      #    (古い create-release / upload-release-asset から変更)
       - name: Create or Update Release with MSI/EXE assets
         uses: softprops/action-gh-release@v1
         with:
           # ワークフローのトリガーとなったタグ名
           tag_name: ${{ github.ref_name }}
           # リリース名
-          name: Release ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }} # (release_name から name に修正済み)
           # タグ名にハイフンが含まれていればプレリリースに設定
           prerelease: ${{ contains(github.ref_name, '-') }}
           # 3つのZIPファイルをアップロード
@@ -190,36 +186,3 @@ jobs:
             ./ClipboardUtility-Standalone-${{ github.ref_name }}.zip
             ./ClipboardUtility-Installer-${{ github.ref_name }}.zip
             ./ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
-
-      # # 13. 単一exe版(ZIP)をリリースにアップロードする
-      # - name: Upload Standalone Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./ClipboardUtility-Standalone-${{ github.ref_name }}.zip
-      #     asset_name: ClipboardUtility-Standalone-${{ github.ref_name }}.zip
-      #     asset_content_type: application/zip
-
-      # # 14. 通常版インストーラー(ZIP)をリリースにアップロードする
-      # - name: Upload Normal Installer Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./ClipboardUtility-Installer-${{ github.ref_name }}.zip
-      #     asset_name: ClipboardUtility-Installer-${{ github.ref_name }}.zip
-      #     asset_content_type: application/zip
-
-      # # 15. noadmin版インストーラー(ZIP)をリリースにアップロードする
-      # - name: Upload NoAdmin Installer Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
-      #     asset_name: ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
-      #     asset_content_type: application/zip
