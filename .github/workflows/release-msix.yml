@@ -55,7 +55,20 @@ jobs:
 
       - name: Restore solution with dotnet
         run: dotnet restore ClipboardUtility.sln -r win-x86
-
+      - name: Update App Manifest Version
+        run: |
+          $manifestPath = "${{ github.workspace }}\ClipboardUtilityMSIXInstaller\Package.appxmanifest"
+          $version = "${{ env.PACKAGE_VERSION }}"
+          
+          Write-Host "Updating $manifestPath <Identity Version> to $version"
+          
+          $xml = [xml](Get-Content $manifestPath)
+          # Identity タグの Version 属性を更新
+          $xml.Package.Identity.Version = $version
+          $xml.Save($manifestPath)
+          
+          Write-Host "Manifest updated successfully."
+        shell: pwsh
       - name: Build MSIX Package
         run: |
           $outputPath = "${{ github.workspace }}\output"
@@ -82,10 +95,25 @@ jobs:
         shell: pwsh
       - name: Get Artifact Names
         run: |
-          $msixBundle = Get-ChildItem -Path "${{ github.workspace }}\output" -Filter "*.msixbundle" | Select-Object -First 1
+          $searchPath = "${{ github.workspace }}\output"
+          Write-Host "Searching for *.msixbundle in $searchPath (recursive)..."
+          
+          # サブフォルダも含めて検索 (-Recurse を追加)
+          $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
+          
+          if ($null -eq $msixBundle) {
+            Write-Error "MSIX Bundle (*.msixbundle) not found in $searchPath or its subdirectories."
+            exit 1
+          }
+
+          Write-Host "Found MSIX Bundle: $($msixBundle.FullName)"
+          
           echo "MSIX_BUNDLE_NAME=$($msixBundle.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "MSIX_BUNDLE_PATH=$($msixBundle.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "APPINSTALLER_PATH=${{ github.workspace }}\output\${{ env.APPINSTALLER_FILENAME }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
+          # appinstaller は output 直下に生成されるため、パスは変更しない
+          $appInstallerFile = "${{ github.workspace }}\output\${{ env.APPINSTALLER_FILENAME }}"
+          echo "APPINSTALLER_PATH=$appInstallerFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
       - name: Update AppInstaller with Release URL
