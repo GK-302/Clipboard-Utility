@@ -19,9 +19,9 @@ jobs:
       # 1. パッケージプロジェクトのパス
       PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
       # 2. .appinstaller のファイル名
-      APPINSTALLER_FILENAME: 'ClipboardUtility.appinstaller'
+      APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
       # 3. GitHub PagesのURL
-      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility/ClipboardUtility.appinstaller'
+      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility/ClipboardUtilityMSIXInstaller.appinstaller'
 
     steps:
       - name: Checkout code
