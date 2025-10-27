@@ -18,6 +18,7 @@ public class ClipboardManagerViewModel : INotifyPropertyChanged
     private readonly SettingsService _settingsService;
     private readonly IAppRestartService _restartService;
     private readonly ICultureProvider _cultureProvider;
+    private readonly UpdateCheckService _updateCheckService;
     private string _clipboardText = string.Empty;
     private ProcessingMode _selectedProcessingMode;
 
@@ -32,7 +33,8 @@ public class ClipboardManagerViewModel : INotifyPropertyChanged
             PresetService presetService,
             SettingsService settingsService,
             IAppRestartService restartService,
-            ICultureProvider cultureProvider)
+            ICultureProvider cultureProvider,
+            UpdateCheckService updateCheckService)
     {
         //_clipboardService = new ClipboardService();
         //_textProcessingService = new TextProcessingService();
@@ -46,6 +48,8 @@ public class ClipboardManagerViewModel : INotifyPropertyChanged
         _settingsService = settingsService;
         _restartService = restartService;
         _cultureProvider = cultureProvider;
+        _updateCheckService = updateCheckService;
+
         Presets = new ObservableCollection<ProcessingPreset>(_presetService.Presets);
         SelectedPreset = Presets.FirstOrDefault();
 
@@ -224,8 +228,9 @@ public class ClipboardManagerViewModel : INotifyPropertyChanged
                                                         _restartService,
                                                         _cultureProvider,
                                                         _settingsService,
-                                                        _presetService, // <--- 追加
-                                                        _textProcessingService);
+                                                        _presetService,
+                                                        _textProcessingService,
+                                                        _updateCheckService);
 
                 // 親ウィンドウを設定してモーダルダイアログとして表示
                 if (OwnerWindow != null)

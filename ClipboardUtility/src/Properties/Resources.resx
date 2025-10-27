@@ -517,4 +517,42 @@
   <data name="Preset_RemoveLineBreaksAndNormalizeWhitespace_Name" xml:space="preserve">
     <value>Remove Line Breaks and Normalize Whitespace(Built-in)</value>
   </data>
+  <data name="CheckForUpdatesText" xml:space="preserve">
+    <value>Check for Updates</value>
+    <comment>Button text to check for application updates</comment>
+  </data>
+  <data name="UpdateCheckInProgressText" xml:space="preserve">
+    <value>Checking for updates...</value>
+    <comment>Message shown while checking for updates</comment>
+  </data>
+  <data name="UpdateAvailableText" xml:space="preserve">
+    <value>Update Available!</value>
+    <comment>Title shown when an update is available</comment>
+  </data>
+  <data name="UpdateAvailableMessageText" xml:space="preserve">
+    <value>A new version ({0}) is available. Current version: {1}
+
+Would you like to visit the download page?</value>
+    <comment>Message shown when an update is available. {0} is the new version, {1} is the current version</comment>
+  </data>
+  <data name="NoUpdateAvailableText" xml:space="preserve">
+    <value>No Update Available</value>
+  <comment>Title shown when no update is available</comment>
+  </data>
+  <data name="NoUpdateAvailableMessageText" xml:space="preserve">
+    <value>You are using the latest version ({0}).</value>
+    <comment>Message shown when no update is available. {0} is the current version</comment>
+  </data>
+  <data name="UpdateCheckFailedText" xml:space="preserve">
+<value>Update Check Failed</value>
+    <comment>Title shown when update check fails</comment>
+  </data>
+  <data name="UpdateCheckFailedMessageText" xml:space="preserve">
+    <value>Failed to check for updates. Please check your internet connection and try again.</value>
+    <comment>Message shown when update check fails</comment>
+  </data>
+  <data name="CurrentVersionText" xml:space="preserve">
+    <value>Current Version:</value>
+  <comment>Label for current version in settings</comment>
+  </data>
 </root>

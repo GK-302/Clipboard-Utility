@@ -41,6 +41,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<ClipboardService>();
         services.AddSingleton<TextProcessingService>();
         services.AddSingleton<PresetService>();
+        services.AddSingleton<UpdateCheckService>();
 
         // インターフェース指定のシングルトン
         services.AddSingleton<ICultureProvider, CultureProvider>();

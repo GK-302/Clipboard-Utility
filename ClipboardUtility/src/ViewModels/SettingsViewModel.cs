@@ -1,12 +1,14 @@
 ﻿using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.Models;
 using ClipboardUtility.src.Services;
+using ClipboardUtility.src.Common;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace ClipboardUtility.src.ViewModels;
 
@@ -20,17 +22,46 @@ internal class SettingsViewModel : INotifyPropertyChanged
     // Preset manager
     private readonly PresetService _presetService;
 
+    // 更新チェックサービス
+    private readonly UpdateCheckService _updateCheckService;
+
     // プリセット更新中フラグ（UI が一時的に SelectedItem を null にすることで設定を書き換えないようにする）
     private bool _isRefreshingPresets;
+
+    // 更新チェック中フラグ
+    private bool _isCheckingForUpdates;
+    public bool IsCheckingForUpdates
+    {
+        get => _isCheckingForUpdates;
+        set
+        {
+            if (_isCheckingForUpdates != value)
+            {
+                _isCheckingForUpdates = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanCheckForUpdates));
+            }
+        }
+    }
+
+    public bool CanCheckForUpdates => !IsCheckingForUpdates;
+
+    // 現在のバージョン
+    public string CurrentVersion => UpdateCheckService.GetCurrentVersion().ToString();
+
+    // コマンド
+    public ICommand CheckForUpdatesCommand { get; }
 
     public SettingsViewModel(
             AppSettings settings,
             ICultureProvider cultureProvider,
             SettingsService settingsService,
             PresetService presetService,
-            TextProcessingService textProcessingService)
+            TextProcessingService textProcessingService,
+            UpdateCheckService updateCheckService)
     {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _updateCheckService = updateCheckService ?? throw new ArgumentNullException(nameof(updateCheckService));
         // SettingsService の Current オブジェクトの参照を使う（コピーしない）
         _settings = _settingsService.Current;
 
@@ -93,6 +124,9 @@ internal class SettingsViewModel : INotifyPropertyChanged
         // カルチャの初期選択（AvailablePresets 初期化後に行う）
         SelectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == (_settings.CultureName ?? CultureInfo.CurrentUICulture.Name))
                           ?? CultureInfo.CurrentUICulture;
+
+        // コマンドの初期化
+      CheckForUpdatesCommand = new RelayCommand(async _ => await CheckForUpdatesAsync(), _ => CanCheckForUpdates);
     }
 
     private void OnSettingsServiceChanged(object sender, AppSettings newSettings)
@@ -439,6 +473,84 @@ internal class SettingsViewModel : INotifyPropertyChanged
         catch (Exception ex)
         {
             Debug.WriteLine($"{nameof(SettingsViewModel)}.{nameof(Save)}: error: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// 更新をチェックします
+    /// </summary>
+    private async Task CheckForUpdatesAsync()
+    {
+        if (IsCheckingForUpdates)
+        {
+     return;
+        }
+
+        IsCheckingForUpdates = true;
+
+        try
+    {
+     Debug.WriteLine("SettingsViewModel: Checking for updates...");
+            var updateInfo = await _updateCheckService.CheckForUpdatesAsync();
+
+  if (updateInfo == null)
+            {
+    // 更新確認失敗
+     System.Windows.MessageBox.Show(
+         LocalizedStrings.Instance.UpdateCheckFailedMessageText,
+      LocalizedStrings.Instance.UpdateCheckFailedText,
+           System.Windows.MessageBoxButton.OK,
+          System.Windows.MessageBoxImage.Warning);
+      return;
+            }
+
+   if (updateInfo.IsUpdateAvailable)
+ {
+          // 更新が利用可能
+        var message = string.Format(
+          LocalizedStrings.Instance.UpdateAvailableMessageText,
+              updateInfo.LatestVersion,
+   updateInfo.CurrentVersion);
+
+   var result = System.Windows.MessageBox.Show(
+      message,
+      LocalizedStrings.Instance.UpdateAvailableText,
+  System.Windows.MessageBoxButton.YesNo,
+           System.Windows.MessageBoxImage.Information);
+
+    if (result == System.Windows.MessageBoxResult.Yes)
+    {
+      _updateCheckService.OpenReleasePage(updateInfo.ReleaseUrl);
+          }
+     }
+        else
+       {
+           // 更新なし
+ var message = string.Format(
+          LocalizedStrings.Instance.NoUpdateAvailableMessageText,
+        updateInfo.CurrentVersion);
+
+                System.Windows.MessageBox.Show(
+   message,
+   LocalizedStrings.Instance.NoUpdateAvailableText,
+      System.Windows.MessageBoxButton.OK,
+             System.Windows.MessageBoxImage.Information);
+    }
+        }
+        catch (Exception ex)
+        {
+Debug.WriteLine($"SettingsViewModel.CheckForUpdatesAsync: error: {ex}");
+       FileLogger.LogException(ex, "SettingsViewModel.CheckForUpdatesAsync");
+
+            System.Windows.MessageBox.Show(
+     LocalizedStrings.Instance.UpdateCheckFailedMessageText,
+     LocalizedStrings.Instance.UpdateCheckFailedText,
+System.Windows.MessageBoxButton.OK,
+             System.Windows.MessageBoxImage.Error);
+  }
+        finally
+        {
+  IsCheckingForUpdates = false;
         }
     }
 
