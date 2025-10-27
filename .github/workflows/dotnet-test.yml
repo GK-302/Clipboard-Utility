@@ -25,6 +25,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
+    - name: Install .NET Windows Desktop Workload
+      run: dotnet workload install windowsdesktop
 
     - name: Build projects
     # メインプロジェクトとテストプロジェクトの .csproj を個別に build します
