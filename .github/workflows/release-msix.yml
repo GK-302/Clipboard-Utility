@@ -87,12 +87,7 @@ jobs:
             /p:AppxBundle=Always `
             /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}"
         shell: pwsh
-      - name: Check Output Directory Contents
-        run: |
-          $outputPath = "${{ github.workspace }}\output"
-          Write-Host "Checking contents of $outputPath"
-          Get-ChildItem -Path $outputPath -Recurse
-        shell: pwsh
+
       - name: Get Artifact Names
         run: |
           $searchPath = "${{ github.workspace }}\output"
