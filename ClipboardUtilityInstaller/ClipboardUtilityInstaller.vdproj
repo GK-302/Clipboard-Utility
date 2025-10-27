@@ -27,7 +27,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_E4BEBF2B9484429DA04A12F87F017FA5"
+        "MsmKey" = "8:_C938EA8857344BB2BACB3B0E61CD7D5C"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -153,9 +153,9 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E4BEBF2B9484429DA04A12F87F017FA5"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C938EA8857344BB2BACB3B0E61CD7D5C"
             {
-            "SourcePath" = "8:..\\LICENSE.rtf"
+            "SourcePath" = "8:LICENSE.rtf"
             "TargetName" = "8:LICENSE.rtf"
             "Tag" = "8:"
             "Folder" = "8:_11D7C0EA47E049EBB5B6B970DEC27C4B"
@@ -619,7 +619,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:_E4BEBF2B9484429DA04A12F87F017FA5"
+                            "Value" = "8:_C938EA8857344BB2BACB3B0E61CD7D5C"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "Sunken"
@@ -1055,7 +1055,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:_E4BEBF2B9484429DA04A12F87F017FA5"
+                            "Value" = "8:"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "Sunken"
@@ -1221,7 +1221,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BE0F15CD0B3448D488B25BEEB719015F"
             {
-            "SourcePath" = "8:..\\ClipboardUtility\\obj\\Release\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\ClipboardUtility\\obj\\Debug\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_11D7C0EA47E049EBB5B6B970DEC27C4B"
