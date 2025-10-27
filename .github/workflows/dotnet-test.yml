@@ -31,9 +31,6 @@ jobs:
           dotnet restore ClipboardUtility/ClipboardUtility.csproj
           dotnet restore ClipboardUtility.Tests/ClipboardUtility.Tests.csproj
           
-    - name: Build main project
-     # テスト対象のメインプロジェクトのみをビルドします
-      run: dotnet build ClipboardUtility/ClipboardUtility.csproj --configuration Release --no-restore
     - name: Run tests
      # テストプロジェクトの .csproj を指定して実行します
      # これでテストが実行され、必要な .trx ファイルが生成されます
