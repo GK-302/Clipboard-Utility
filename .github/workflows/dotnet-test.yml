@@ -25,15 +25,19 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-
     - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Build solution
-      run: dotnet build --configuration Release --no-restore
-      
+    # メインプロジェクトとテストプロジェクトの .csproj を個別に restore します
+      run: |
+          dotnet restore ClipboardUtility/ClipboardUtility.csproj
+          dotnet restore ClipboardUtility.Tests/ClipboardUtility.Tests.csproj
+          
+    - name: Build main project
+     # テスト対象のメインプロジェクトのみをビルドします
+      run: dotnet build ClipboardUtility/ClipboardUtility.csproj --configuration Release --no-restore
     - name: Run tests
-      run: dotnet test --configuration Release --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
+     # テストプロジェクトの .csproj を指定して実行します
+     # これでテストが実行され、必要な .trx ファイルが生成されます
+      run: dotnet test ClipboardUtility.Tests/ClipboardUtility.Tests.csproj --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
       
     - name: Upload test results
       uses: actions/upload-artifact@v4
