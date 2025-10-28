@@ -12,7 +12,7 @@
         <conv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <!-- Simple styles for consistent spacing and alignment -->
         <Style x:Key="FormLabel" TargetType="TextBlock">
-            <Setter Property="Width" Value="180" />
+            <Setter Property="Width" Value="200" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,4,8,4" />
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
@@ -154,59 +154,60 @@
                 <ScrollViewer>
                     <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="6">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowCopyNotificationTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowCopyNotificationTitle}" />
                             <CheckBox IsChecked="{Binding ShowCopyNotification, Mode=TwoWay}" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowOperationNotificationTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ShowOperationNotificationTitle}" />
                             <CheckBox IsChecked="{Binding ShowOperationNotification, Mode=TwoWay}" VerticalAlignment="Center" />
                         </StackPanel>
 
 
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetXTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetXTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationOffsetX, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetYTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationOffsetYTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationOffsetY, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMarginTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMarginTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationMargin, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">px</TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinWidthTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinWidthTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationMinWidth, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxWidthTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxWidthTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationMaxWidth, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinHeightTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMinHeightTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationMinHeight, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxHeightTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationMaxHeightTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationMaxHeight, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
                         </StackPanel>
+                        
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationDurationTitle}" />
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationDurationTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationDelay, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">ms</TextBlock>
                         </StackPanel>
@@ -217,7 +218,7 @@
                 <ScrollViewer>
                     <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="6">
                         <StackPanel Orientation="Horizontal" >
-                            <TextBlock Width="180" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
+                            <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
                             <ComboBox Width="200"
                                       ItemsSource="{Binding AvailableCultures}"
                                       SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
