@@ -1,5 +1,5 @@
 ﻿using ClipboardUtility.src.Services;
-using ClipboardUtility.src.ViewModels;  // この行を追加
+using ClipboardUtility.src.ViewModels;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -7,206 +7,257 @@ using System.Windows.Interop;
 using MessageBox = System.Windows.MessageBox;
 using System.ComponentModel;
 using System.Globalization;
+using System.Windows.Controls; // スライドナビゲーションに必要
+using ClipboardUtility.src.Views.WelcomeSlides;
+using CheckBox = System.Windows.Controls.CheckBox; // UserControlの参照に必要
 
-namespace ClipboardUtility.src.Views;
-
-public partial class WelcomeWindow   : Window
+namespace ClipboardUtility.src.Views
 {
-    private readonly WelcomeWindowViewModel _vm;
-    private readonly SettingsService _settingsService;
-    private readonly IAppRestartService _restartService;
-    private string _initialCultureName;
-
-    public WelcomeWindow(
-                WelcomeWindowViewModel viewModel,
-                IAppRestartService restartService,
-                SettingsService settingsService)
+    public partial class WelcomeWindow : Window
     {
-        InitializeComponent();
-        _vm = viewModel;
-        _restartService = restartService;
-        _settingsService = settingsService;
-        DataContext = _vm;
+        // 依存関係とViewModel
+        private readonly WelcomeWindowViewModel _vm;
+        private readonly SettingsService _settingsService;
+        private readonly IAppRestartService _restartService;
+        private string _initialCultureName;
 
-        // ウィンドウ作成時のカルチャ名を保存（null 安全）
-        _initialCultureName = _vm.SelectedCulture?.Name ?? CultureInfo.CurrentUICulture.Name;
+        // スライド制御用
+        private int _totalSlides;
 
-        // 閉じるときに確認ダイアログを出すハンドラを登録
-        this.Closing += WelcomeWindow_Closing;
-
-        SourceInitialized += WelcomeWindow_SourceInitialized;
-        this.SizeToContent = SizeToContent.WidthAndHeight;
-    }
-
-    // 閉じる前の処理: 言語変更があれば確認ダイアログを出す
-    private void WelcomeWindow_Closing(object? sender, CancelEventArgs e)
-    {
-        try
+        public WelcomeWindow(
+            WelcomeWindowViewModel viewModel,
+            IAppRestartService restartService,
+            SettingsService settingsService)
         {
-            var currentCulture = _vm.SelectedCulture?.Name ?? CultureInfo.CurrentUICulture.Name;
-            if (!string.Equals(_initialCultureName, currentCulture, StringComparison.OrdinalIgnoreCase))
-            {
-                var result = MessageBox.Show(
-                    "言語を変更しました。アプリを再起動しますか？\n（再起動しないと一部表示が反映されない場合があります）",
-                    "再起動の確認",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Question);
+            InitializeComponent();
 
-                if (result == MessageBoxResult.Yes)
-                {
-                    try
-                    {
-                        // DI コンテナ経由で再起動サービスを取得して再起動
-                        IAppRestartService restartService;
-                        try
-                        {
-                            _restartService.Restart();
-                        }
-                        catch
-                        {
-                            // 再起動に失敗した場合は例外をスローしてキャッチされる
-                            throw;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow_Closing: Restart failed");
-                        MessageBox.Show("アプリの再起動に失敗しました。手動で再起動してください。", "再起動失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-                        // 再起動失敗でも閉じる動作は続行（必要なら Cancel にする）
-                    }
-                }
-                else if (result == MessageBoxResult.No)
-                {
-                    // 再起動しないを選択 => そのまま閉じる。初期値を更新して次回確認しないようにする。
-                    _initialCultureName = currentCulture;
-                }
-                else // Cancel
-                {
-                    // 閉じるを中止
-                    e.Cancel = true;
-                }
+            // 依存関係をフィールドに保存
+            _vm = viewModel;
+            _restartService = restartService;
+            _settingsService = settingsService;
+
+            // ViewModelをDataContextに設定
+            DataContext = _vm;
+
+            // 初期カルチャを保存 (言語変更の比較用)
+            _initialCultureName = _vm.SelectedCulture?.Name ?? CultureInfo.CurrentUICulture.Name;
+
+            // イベントハンドラを登録
+            this.Closing += WelcomeWindow_Closing;
+            SourceInitialized += WelcomeWindow_SourceInitialized;
+
+            // スライドの総数を取得
+            _totalSlides = SlideTabControl.Items.Count;
+            UpdateNavigationUI();
+        }
+
+        // --- 1. スライドナビゲーション (前回提案のロジック) ---
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SlideTabControl.SelectedIndex > 0)
+            {
+                SlideTabControl.SelectedIndex--;
             }
         }
-        catch (Exception ex)
+
+        private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow_Closing: error");
+            if (SlideTabControl.SelectedIndex < _totalSlides - 1)
+            {
+                // 次のスライドへ
+                SlideTabControl.SelectedIndex++;
+            }
+            else
+            {
+                // 最後のスライドで「完了 (Done)」が押された
+                // 設定を保存してウィンドウを閉じる
+                SaveSettingsAndClose();
+            }
         }
-    }
 
-    private void WelcomeWindow_SourceInitialized(object? sender, EventArgs e)
-    {
-        try
+        private void SlideTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            RemoveTitleBarButtons();
+            if (e.OriginalSource != SlideTabControl)
+                return;
+            UpdateNavigationUI();
         }
-        catch (Exception ex)
+
+        private void UpdateNavigationUI()
         {
-            // 失敗しても例外が UI を壊さないようにログだけ残す
-            ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow: RemoveTitleBarButtons failed");
+            int currentIndex = SlideTabControl.SelectedIndex;
+
+            // ページ番号
+            PageIndicator.Text = $"{currentIndex + 1} / {_totalSlides}";
+
+            // 「前へ」ボタンの有効/無効
+            BackButton.IsEnabled = currentIndex > 0;
+
+            // 「次へ」/「完了」ボタンのテキスト切り替え
+            if (currentIndex == _totalSlides - 1)
+            {
+                // TODO: "Done" も多言語化 (LocalizedStrings.Instance にキーを追加)
+                NextButton.Content = "Done";
+            }
+            else
+            {
+                // TODO: "Next" も多言語化 (LocalizedStrings.Instance にキーを追加)
+                NextButton.Content = "Next";
+            }
         }
-    }
 
-    private void RemoveTitleBarButtons()
-    {
-        var helper = new WindowInteropHelper(this);
-        IntPtr hWnd = helper.Handle;
-        if (hWnd == IntPtr.Zero) return;
+        // --- 2. 設定保存 (ユーザー提供のButton_Clickロジックをベースに修正) ---
 
-        const int GWL_STYLE = -16;
-        const uint WS_MINIMIZEBOX = 0x00020000;
-        const uint WS_MAXIMIZEBOX = 0x00010000;
-        const uint WS_SYSMENU = 0x00080000;
-
-        // 現在のスタイルを取得
-        IntPtr stylePtr = GetWindowLongPtr(hWnd, GWL_STYLE);
-        ulong style = (ulong)stylePtr.ToInt64();
-
-        // 最寄りのビットをクリアしてボタンを非表示にする
-        // ここでは Minimize / Maximize / System menu (Close含む) を削除してタイトルバーのボタンを全て取り除く
-        ulong newStyle = style & ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
-
-        // 設定を反映
-        SetWindowLongPtr(hWnd, GWL_STYLE, new IntPtr((long)newStyle));
-
-        // 非クライアント領域を更新して変更を反映させる
-        const uint SWP_NOSIZE = 0x0001;
-        const uint SWP_NOMOVE = 0x0002;
-        const uint SWP_NOZORDER = 0x0004;
-        const uint SWP_FRAMECHANGED = 0x0020;
-        SetWindowPos(hWnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-    }
-
-    // 32/64-bit 対応の Get/Set wrappers
-    private static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
-    {
-        if (IntPtr.Size == 8)
+        private void SaveSettingsAndClose()
         {
-            return GetWindowLongPtr64(hWnd, nIndex);
+            bool neverShowAgain = NeverShowAgainCheckBox.IsChecked == true;
+
+            try
+            {
+                // 設定を保存
+                var settings = _settingsService.Current ?? new ClipboardUtility.src.Models.AppSettings();
+                settings.ShowWelcomeNotification = !neverShowAgain;
+                _settingsService.Save(settings);
+            }
+            catch (Exception ex)
+            {
+                ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow.SaveSettingsAndClose: Save settings failed");
+                MessageBox.Show("設定の保存に失敗しました。");
+            }
+            finally
+            {
+                // ウィンドウを閉じる (これにより WelcomeWindow_Closing がトリガーされる)
+                this.Close();
+            }
         }
-        else
+
+        // --- 3. 再起動確認 (ユーザー提供のロジック) ---
+
+        private void WelcomeWindow_Closing(object? sender, CancelEventArgs e)
         {
-            return new IntPtr(GetWindowLong32(hWnd, nIndex));
-        }
-    }
+            try
+            {
+                // 言語設定が変更されたかチェック
+                var currentCulture = _vm.SelectedCulture?.Name ?? CultureInfo.CurrentUICulture.Name;
+                if (!string.Equals(_initialCultureName, currentCulture, StringComparison.OrdinalIgnoreCase))
+                {
+                    var result = MessageBox.Show(
+                        "言語を変更しました。アプリを再起動しますか？\n（再起動しないと一部表示が反映されない場合があります）",
+                        "再起動の確認",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Question);
 
-    private static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr newValue)
-    {
-        if (IntPtr.Size == 8)
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        try
+                        {
+                            // アプリを再起動
+                            _restartService.Restart();
+                        }
+                        catch (Exception ex)
+                        {
+                            ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow_Closing: Restart failed");
+                            MessageBox.Show("アプリの再起動に失敗しました。手動で再起動してください。", "再起動失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    else if (result == MessageBoxResult.No)
+                    {
+                        // 再起動しない場合は、現在のカルチャを「初期値」として更新
+                        _initialCultureName = currentCulture;
+                    }
+                    else // Cancel
+                    {
+                        // ウィンドウを閉じるのをキャンセル
+                        e.Cancel = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow_Closing: error");
+            }
+        }
+
+        // --- 4. タイトルバー制御 (ユーザー提供のロジック) ---
+
+        private void WelcomeWindow_SourceInitialized(object? sender, EventArgs e)
         {
-            return SetWindowLongPtr64(hWnd, nIndex, newValue);
+            try
+            {
+                RemoveTitleBarButtons();
+            }
+            catch (Exception ex)
+            {
+                ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow: RemoveTitleBarButtons failed");
+            }
         }
-        else
+
+        private void RemoveTitleBarButtons()
         {
-            return new IntPtr(SetWindowLong32(hWnd, nIndex, newValue.ToInt32()));
+            var helper = new WindowInteropHelper(this);
+            IntPtr hWnd = helper.Handle;
+            if (hWnd == IntPtr.Zero) return;
+
+            const int GWL_STYLE = -16;
+            const uint WS_MINIMIZEBOX = 0x00020000;
+            const uint WS_MAXIMIZEBOX = 0x00010000;
+            // const uint WS_SYSMENU = 0x00080000; // 「X」ボタンを含むシステムメニュー
+
+            IntPtr stylePtr = GetWindowLongPtr(hWnd, GWL_STYLE);
+            ulong style = (ulong)stylePtr.ToInt64();
+
+            // XAMLで ResizeMode="NoResize" を設定しているため、
+            // 最小化・最大化ボタンのみを（念のため）無効化します。
+            // WS_SYSMENU を削除すると「X」ボタンも消えてしまうため、ここでは残します。
+            ulong newStyle = style & ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+
+            SetWindowLongPtr(hWnd, GWL_STYLE, new IntPtr((long)newStyle));
+
+            const uint SWP_NOSIZE = 0x0001;
+            const uint SWP_NOMOVE = 0x0002;
+            const uint SWP_NOZORDER = 0x0004;
+            const uint SWP_FRAMECHANGED = 0x0020;
+            SetWindowPos(hWnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
         }
-    }
 
-    [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
-    private static extern int GetWindowLong32(IntPtr hWnd, int nIndex);
+        // --- 5. Win32 API定義 (ユーザー提供のロジック) ---
 
-    [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
-    private static extern int SetWindowLong32(IntPtr hWnd, int nIndex, int dwNewLong);
-
-    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
-    private static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
-
-    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
-    private static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool SetWindowPos(
-        IntPtr hWnd,
-        IntPtr hWndInsertAfter,
-        int X,
-        int Y,
-        int cx,
-        int cy,
-        uint uFlags);
-
-    private void Button_Click(object sender, RoutedEventArgs e)
-    {
-        bool neverShowAgain = IsShowAgain.IsChecked == true;
-        try
+        private static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
         {
-            // 現在の設定を取得（null安全）
-            var settings = _settingsService.Current ?? new ClipboardUtility.src.Models.AppSettings();
-
-            // プロパティを更新
-            settings.ShowWelcomeNotification = !neverShowAgain;
-
-            // 保存（SettingsService がファイル書き込みと通知を行う）
-            _settingsService.Save(settings);
-
+            if (IntPtr.Size == 8)
+                return GetWindowLongPtr64(hWnd, nIndex);
+            else
+                return new IntPtr(GetWindowLong32(hWnd, nIndex));
         }
-        catch (Exception ex)
+
+        private static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr newValue)
         {
-            // エラーはログに残して UI に通知
-            ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow.Button_Click: Save settings failed");
-            System.Windows.MessageBox.Show("設定の保存に失敗しました。");
+            if (IntPtr.Size == 8)
+                return SetWindowLongPtr64(hWnd, nIndex, newValue);
+            else
+                return new IntPtr(SetWindowLong32(hWnd, nIndex, newValue.ToInt32()));
         }
-        finally {
-            // ウィンドウを閉じる
-            this.Close();
-        }
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
+        private static extern int GetWindowLong32(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
+        private static extern int SetWindowLong32(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
+        private static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
+        private static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(
+            IntPtr hWnd,
+            IntPtr hWndInsertAfter,
+            int X,
+            int Y,
+            int cx,
+            int cy,
+            uint uFlags);
     }
 }

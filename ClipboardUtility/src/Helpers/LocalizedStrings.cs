@@ -103,6 +103,8 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string UpdateCheckFailedText => Resources.ResourceManager.GetString("UpdateCheckFailedText", CultureInfo.CurrentUICulture) ?? "Update Check Failed";
     public string UpdateCheckFailedMessageText => Resources.ResourceManager.GetString("UpdateCheckFailedMessageText", CultureInfo.CurrentUICulture) ?? "Failed to check for updates. Please check your internet connection and try again.";
     public string CurrentVersionText => Resources.ResourceManager.GetString("CurrentVersionText", CultureInfo.CurrentUICulture) ?? "Current Version:";
+    public string BackButtonText => Resources.ResourceManager.GetString("BackButtonText", CultureInfo.CurrentUICulture) ?? "Back";
+    public string NextButtonText => Resources.ResourceManager.GetString("NextButtonText", CultureInfo.CurrentUICulture) ?? "Next";
 
 
     public void ChangeCulture(CultureInfo culture)
@@ -193,6 +195,8 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(UpdateCheckFailedText));
         OnPropertyChanged(nameof(UpdateCheckFailedMessageText));
         OnPropertyChanged(nameof(CurrentVersionText));
+        OnPropertyChanged(nameof(BackButtonText));
+        OnPropertyChanged(nameof(NextButtonText));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)
