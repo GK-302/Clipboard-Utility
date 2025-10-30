@@ -59,7 +59,6 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string NotificationDurationTitle => Resources.NotificationDurationTitle;
     public string ClipboardAccessDeniedMessage => Resources.ClipboardAccessDeniedMessage;
     public string AppTitle => Resources.AppTitle;
-    public string AppVersion => Resources.AppVersion;
     public string AppDescription => Resources.AppDescription;
     public string WelcomeNotificationCloseText => Resources.WelcomeNotificationCloseText;
     public string NeverShowAgainText => Resources.NeverShowAgainText;
