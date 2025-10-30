@@ -65,7 +65,7 @@
                 <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NeverShowAgainText}"
                            VerticalAlignment="Center" Margin="0,0,5,0"
                            Foreground="{StaticResource TextSecondaryBrush}"/>
-                <CheckBox x:Name="NeverShowAgainCheckBox" VerticalAlignment="Center"/>
+                <CheckBox x:Name="NeverShowAgainCheckBox" VerticalAlignment="Center" IsChecked="{Binding NeverShowAgain, Mode=TwoWay}"/>
             </StackPanel>
 
             <TextBlock x:Name="PageIndicator" 

@@ -34,7 +34,6 @@ namespace ClipboardUtility.src.Views
             // 依存関係をフィールドに保存
             _vm = viewModel;
             _restartService = restartService;
-            _settingsService = settingsService;
 
             // ViewModelをDataContextに設定
             DataContext = _vm;
@@ -110,14 +109,10 @@ namespace ClipboardUtility.src.Views
 
         private void SaveSettingsAndClose()
         {
-            bool neverShowAgain = NeverShowAgainCheckBox.IsChecked == true;
 
             try
             {
-                // 設定を保存
-                var settings = _settingsService.Current ?? new ClipboardUtility.src.Models.AppSettings();
-                settings.ShowWelcomeNotification = !neverShowAgain;
-                _settingsService.Save(settings);
+                _vm.SaveWelcomeSettings();
             }
             catch (Exception ex)
             {
