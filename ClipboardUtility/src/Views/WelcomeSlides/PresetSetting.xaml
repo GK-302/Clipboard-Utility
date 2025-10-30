@@ -5,16 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
+             xmlns:converters="clr-namespace:ClipboardUtility.src.Converters" 
+             x:Name="self"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1050"
              HorizontalAlignment="Center">
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/src/Resources/ColorResource.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
+            <converters:PresetToBooleanConverter x:Key="PresetConverter" />
             <sys:Double x:Key="ContainerWidth">800</sys:Double>
             <sys:Double x:Key="CardHeaderHeight">267</sys:Double>
             <sys:Double x:Key="CardContentHeight">30</sys:Double>
@@ -121,12 +121,20 @@
                 <RadioButton Grid.Column="0" 
                              Style="{StaticResource PresetCardStyle}"
                              Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndNormalizeWhitespace_Description}"
-                             Tag="{StaticResource Preset1HeaderBrush}" GroupName="PresetGroup"/>
+                             Tag="{StaticResource BackGroundBrush}" GroupName="PresetGroup"
+                             IsChecked="{Binding SelectedPreset, 
+                                     ElementName=self, 
+                                     Converter={StaticResource PresetConverter}, 
+                                     ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndNormalize}}"/>
 
                 <RadioButton Grid.Column="2" 
                              Style="{StaticResource PresetCardStyle}"
                              Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndRemoveWhitespace_Description}"
-                             Tag="{StaticResource Preset2HeaderBrush}" GroupName="PresetGroup"/>
+                             Tag="{StaticResource BackGroundBrush}" GroupName="PresetGroup"
+                             IsChecked="{Binding SelectedPreset, 
+                                     ElementName=self, 
+                                     Converter={StaticResource PresetConverter}, 
+                                     ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndRemoveAll}}"/>
 
             </Grid>
         </StackPanel>

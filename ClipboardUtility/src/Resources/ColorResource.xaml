@@ -4,9 +4,11 @@
     <Color x:Key="PrimaryColor">#FF4CAF50</Color>
     <Color x:Key="SecondaryColor">#FFD6D6D6</Color>
     <Color x:Key="AccentColor">#FF8BC34A</Color>
+    <Color x:Key="BackGroundColor">#888BC34A</Color>
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="BackGroundBrush" Color="{StaticResource BackGroundColor}" />
 
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="Black" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#FF5A5A5A" />

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClipboardUtility.src.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,5 +25,21 @@ public partial class PresetSetting : UserControl
     public PresetSetting()
     {
         InitializeComponent();
+    }
+    // 1. 依存関係プロパティの定義
+    public static readonly DependencyProperty SelectedPresetProperty =
+        DependencyProperty.Register(
+            "SelectedPreset", // プロパティ名
+            typeof(PresetType), // プロパティの型
+            typeof(PresetSetting), // 所有者の型
+            new FrameworkPropertyMetadata(
+                PresetType.None, // デフォルト値
+                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)); // TwoWayバインディングを許可
+
+    // 2. CLRラッパープロパティ
+    public PresetType SelectedPreset
+    {
+        get { return (PresetType)GetValue(SelectedPresetProperty); }
+        set { SetValue(SelectedPresetProperty, value); }
     }
 }

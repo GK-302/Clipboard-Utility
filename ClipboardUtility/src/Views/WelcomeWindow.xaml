@@ -37,7 +37,7 @@
                 <slides:Slide2_Guidance />
             </TabItem>
             <TabItem Header="PresetSetting">
-                <slides:PresetSetting />
+                <slides:PresetSetting SelectedPreset="{Binding SelectedPreset, Mode=TwoWay}"/>
             </TabItem>
 
         </TabControl>
