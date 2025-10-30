@@ -552,4 +552,7 @@
     <value>現在のバージョン:</value>
     <comment>設定画面の現在のバージョンラベル</comment>
   </data>
+  <data name="WelcomePresetSettingTitle" xml:space="preserve">
+    <value>使用するプリセットを選択してください（タスクトレイアイコンをクリックしたときに実行されます）</value>
+  </data>
 </root>

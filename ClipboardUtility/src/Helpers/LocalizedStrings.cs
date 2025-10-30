@@ -105,6 +105,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string CurrentVersionText => Resources.ResourceManager.GetString("CurrentVersionText", CultureInfo.CurrentUICulture) ?? "Current Version:";
     public string BackButtonText => Resources.ResourceManager.GetString("BackButtonText", CultureInfo.CurrentUICulture) ?? "Back";
     public string NextButtonText => Resources.ResourceManager.GetString("NextButtonText", CultureInfo.CurrentUICulture) ?? "Next";
+    public string WelcomePresetSettingTitle => Resources.ResourceManager.GetString("WelcomePresetSettingTitle", CultureInfo.CurrentUICulture) ?? "Welcome Preset Setting";
 
 
     public void ChangeCulture(CultureInfo culture)
@@ -197,6 +198,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(CurrentVersionText));
         OnPropertyChanged(nameof(BackButtonText));
         OnPropertyChanged(nameof(NextButtonText));
+        OnPropertyChanged(nameof(WelcomePresetSettingTitle));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

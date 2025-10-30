@@ -36,6 +36,9 @@
             <TabItem Header="Guidance">
                 <slides:Slide2_Guidance />
             </TabItem>
+            <TabItem Header="PresetSetting">
+                <slides:PresetSetting />
+            </TabItem>
 
         </TabControl>
 

@@ -537,14 +537,14 @@ Would you like to visit the download page?</value>
   </data>
   <data name="NoUpdateAvailableText" xml:space="preserve">
     <value>No Update Available</value>
-  <comment>Title shown when no update is available</comment>
+    <comment>Title shown when no update is available</comment>
   </data>
   <data name="NoUpdateAvailableMessageText" xml:space="preserve">
     <value>You are using the latest version ({0}).</value>
     <comment>Message shown when no update is available. {0} is the current version</comment>
   </data>
   <data name="UpdateCheckFailedText" xml:space="preserve">
-<value>Update Check Failed</value>
+    <value>Update Check Failed</value>
     <comment>Title shown when update check fails</comment>
   </data>
   <data name="UpdateCheckFailedMessageText" xml:space="preserve">
@@ -553,6 +553,9 @@ Would you like to visit the download page?</value>
   </data>
   <data name="CurrentVersionText" xml:space="preserve">
     <value>Current Version:</value>
-  <comment>Label for current version in settings</comment>
+    <comment>Label for current version in settings</comment>
+  </data>
+  <data name="WelcomePresetSettingTitle" xml:space="preserve">
+    <value>select your preset (it will be executed when tasktrayicon clicked)</value>
   </data>
 </root>
