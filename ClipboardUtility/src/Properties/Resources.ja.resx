@@ -466,11 +466,11 @@
     <value>閉じる</value>
     <comment>ウィンドウを閉じるボタンのテキスト</comment>
   </data>
-  <data name="Preset_RemoveLineBreaks_Name" xml:space="preserve">
-    <value>改行削除（ビルトイン）</value>
+  <data name="Preset_RemoveLineBreaksAndRemoveWhitespace_Name" xml:space="preserve">
+    <value>改行と空白を削除（ビルトイン）</value>
   </data>
-  <data name="Preset_RemoveLineBreaks_Description" xml:space="preserve">
-    <value>すべての改行を削除してスペースに置き換えます</value>
+  <data name="Preset_RemoveLineBreaksAndRemoveWhitespace_Description" xml:space="preserve">
+    <value>すべての改行と空白を削除します</value>
   </data>
   <data name="Preset_NormalizeWhitespace_Description" xml:space="preserve">
     <value>全角・半角を含むすべての空白文字を正規化します</value>
@@ -514,6 +514,9 @@
   <data name="Preset_RemoveLineBreaksAndNormalizeWhitespace_Name" xml:space="preserve">
     <value>改行を削除し、単語の間に半角スペース（ビルトイン）</value>
   </data>
+  <data name="Preset_RemoveLineBreaksAndNormalizeWhitespace_Description" xml:space="preserve">
+    <value>改行を削除し、単語の間に半角スペースを配置します</value>
+  </data>
   <data name="CheckForUpdatesText" xml:space="preserve">
     <value>更新を確認</value>
     <comment>更新を確認するボタンのテキスト</comment>
@@ -553,6 +556,7 @@
     <comment>設定画面の現在のバージョンラベル</comment>
   </data>
   <data name="WelcomePresetSettingTitle" xml:space="preserve">
-    <value>使用するプリセットを選択してください（タスクトレイアイコンをクリックしたときに実行されます）</value>
+    <value>使用するプリセットを選択してください
+タスクトレイアイコンをクリックしたときに実行されます</value>
   </data>
 </root>

@@ -8,7 +8,7 @@
         xmlns:slides="clr-namespace:ClipboardUtility.src.Views.WelcomeSlides"
         mc:Ignorable="d"
         Title="Welcome" 
-        Height="480" Width="700" ResizeMode="NoResize"
+        Height="720" Width="1050" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource SecondaryBrush}">
 

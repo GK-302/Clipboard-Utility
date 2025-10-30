@@ -106,6 +106,9 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string BackButtonText => Resources.ResourceManager.GetString("BackButtonText", CultureInfo.CurrentUICulture) ?? "Back";
     public string NextButtonText => Resources.ResourceManager.GetString("NextButtonText", CultureInfo.CurrentUICulture) ?? "Next";
     public string WelcomePresetSettingTitle => Resources.ResourceManager.GetString("WelcomePresetSettingTitle", CultureInfo.CurrentUICulture) ?? "Welcome Preset Setting";
+    public string Preset_RemoveLineBreaksAndRemoveWhitespace_Description => Resources.ResourceManager.GetString("Preset_RemoveLineBreaksAndRemoveWhitespace_Description", CultureInfo.CurrentUICulture) ?? "Removes line breaks and normalizes whitespace.";
+    public string Preset_RemoveLineBreaksAndNormalizeWhitespace_Description => Resources.ResourceManager.GetString("Preset_RemoveLineBreaksAndNormalizeWhitespace_Description", CultureInfo.CurrentUICulture) ?? "Removes line breaks and normalizes whitespace.";
+
 
 
     public void ChangeCulture(CultureInfo culture)
@@ -199,6 +202,9 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(BackButtonText));
         OnPropertyChanged(nameof(NextButtonText));
         OnPropertyChanged(nameof(WelcomePresetSettingTitle));
+        OnPropertyChanged(nameof(Preset_RemoveLineBreaksAndRemoveWhitespace_Description));
+        OnPropertyChanged(nameof(Preset_RemoveLineBreaksAndNormalizeWhitespace_Description));
+
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

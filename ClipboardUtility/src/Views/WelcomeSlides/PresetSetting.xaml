@@ -6,106 +6,100 @@
              xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="700"
+             d:DesignHeight="450" d:DesignWidth="1050"
              HorizontalAlignment="Center">
 
     <UserControl.Resources>
-        <sys:Double x:Key="ContainerWidth">600</sys:Double>
-        <sys:Double x:Key="CardHeaderHeight">200</sys:Double>
-        <sys:Double x:Key="CardContentHeight">30</sys:Double>
-        <GridLength x:Key="CardSpacerWidth">20</GridLength>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/src/Resources/ColorResource.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
-        <Thickness x:Key="CardContentPadding">20 5 0 0</Thickness>
-        <CornerRadius x:Key="CardCornerRadius">20</CornerRadius>
-        <CornerRadius x:Key="CardHeaderCornerRadius">20 20 0 0</CornerRadius>
-        <Thickness x:Key="CardBorderThickness">1</Thickness>
-        <Thickness x:Key="CardSelectedBorderThickness">2</Thickness>
-        <Color x:Key="CardBackgroundColorNormal">#FFFFFFFF</Color>
-        <Color x:Key="CardBackgroundColorHover">#FFF0F8FF</Color>
-        <Color x:Key="CardBackgroundColorSelected">#FFE6F2FF</Color>
-        <SolidColorBrush x:Key="CardBackgroundBrushNormal" Color="{StaticResource CardBackgroundColorNormal}"/>
+            <sys:Double x:Key="ContainerWidth">800</sys:Double>
+            <sys:Double x:Key="CardHeaderHeight">267</sys:Double>
+            <sys:Double x:Key="CardContentHeight">30</sys:Double>
+            <GridLength x:Key="CardSpacerWidth">20</GridLength>
 
-        <SolidColorBrush x:Key="PresetBorderBrush" Color="Orange"/>
-        <SolidColorBrush x:Key="PresetHoverBorderBrush" Color="DarkOrange"/>
-        <SolidColorBrush x:Key="PresetSelectedBorderBrush" Color="DodgerBlue"/>
+            <Thickness x:Key="CardContentPadding">20 5 0 0</Thickness>
+            <CornerRadius x:Key="CardCornerRadius">20</CornerRadius>
+            <CornerRadius x:Key="CardHeaderCornerRadius">20 20 0 0</CornerRadius>
+            <Thickness x:Key="CardBorderThickness">1</Thickness>
+            <Thickness x:Key="CardSelectedBorderThickness">2</Thickness>
 
-        <SolidColorBrush x:Key="Preset1HeaderBrush" Color="AliceBlue"/>
-        <SolidColorBrush x:Key="Preset2HeaderBrush" Color="AntiqueWhite"/>
+            <Style x:Key="PresetCardStyle" TargetType="ToggleButton">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="CardBorder"
+                                    CornerRadius="{StaticResource CardCornerRadius}"
+                                    BorderBrush="{StaticResource PresetBorderBrush}"
+                                    BorderThickness="{StaticResource CardBorderThickness}">
 
-        <Style x:Key="PresetCardStyle" TargetType="ToggleButton">
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="CardBorder"
-                                CornerRadius="{StaticResource CardCornerRadius}"
-                                BorderBrush="{StaticResource PresetBorderBrush}"
-                                BorderThickness="{StaticResource CardBorderThickness}">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{StaticResource CardBackgroundColorNormal}"/>
+                                </Border.Background>
 
-                            <Border.Background>
-                                <SolidColorBrush Color="{StaticResource CardBackgroundColorNormal}"/>
-                            </Border.Background>
+                                <StackPanel>
+                                    <Border Background="{TemplateBinding Tag}" 
+                                            Height="{StaticResource CardHeaderHeight}" 
+                                            CornerRadius="{StaticResource CardHeaderCornerRadius}"/>
+                                    <TextBlock Padding="{StaticResource CardContentPadding}" 
+                                               Height="{StaticResource CardContentHeight}"
+                                               Text="{TemplateBinding Content}"/>
+                                </StackPanel>
+                            </Border>
 
-                            <StackPanel>
-                                <Border Background="{TemplateBinding Tag}" 
-                                        Height="{StaticResource CardHeaderHeight}" 
-                                        CornerRadius="{StaticResource CardHeaderCornerRadius}"/>
-                                <TextBlock Padding="{StaticResource CardContentPadding}" 
-                                           Height="{StaticResource CardContentHeight}"
-                                           Text="{TemplateBinding Content}"/>
-                            </StackPanel>
-                        </Border>
+                            <ControlTemplate.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsChecked" Value="False"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetHoverBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <MultiTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorHover}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.EnterActions>
+                                    <MultiTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorNormal}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.ExitActions>
+                                </MultiTrigger>
 
-                        <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetSelectedBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <Setter TargetName="CardBorder" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{StaticResource CardBackgroundColorSelected}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
 
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsMouseOver" Value="True"/>
-                                    <Condition Property="IsChecked" Value="False"/>
-                                </MultiTrigger.Conditions>
-                                <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetHoverBorderBrush}"/>
-                                <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
-                                <MultiTrigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <ColorAnimation Storyboard.TargetName="CardBorder"
-                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                            To="{StaticResource CardBackgroundColorHover}"
-                                                            Duration="0:0:0.2"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </MultiTrigger.EnterActions>
-                                <MultiTrigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <ColorAnimation Storyboard.TargetName="CardBorder"
-                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                            To="{StaticResource CardBackgroundColorNormal}"
-                                                            Duration="0:0:0.2"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </MultiTrigger.ExitActions>
-                            </MultiTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetSelectedBorderBrush}"/>
-                                <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
-                                <Setter TargetName="CardBorder" Property="Background">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="{StaticResource CardBackgroundColorSelected}"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>
@@ -114,10 +108,9 @@
             <TextBlock Width="{StaticResource ContainerWidth}" 
                        Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WelcomePresetSettingTitle}" 
                        FontSize="16" 
-                       Margin="0,5"
+                       Margin="10"
                        TextWrapping="Wrap"
                        Foreground="{StaticResource TextPrimaryBrush}"/>
-
             <Grid Width="{StaticResource ContainerWidth}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -126,16 +119,14 @@
                 </Grid.ColumnDefinitions>
 
                 <RadioButton Grid.Column="0" 
-                              Style="{StaticResource PresetCardStyle}"
-                              Content="preset1"
-                              Tag="{StaticResource Preset1HeaderBrush}"
-                              GroupName="PresetGroup"/>
+                             Style="{StaticResource PresetCardStyle}"
+                             Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndNormalizeWhitespace_Description}"
+                             Tag="{StaticResource Preset1HeaderBrush}" GroupName="PresetGroup"/>
 
                 <RadioButton Grid.Column="2" 
-                              Style="{StaticResource PresetCardStyle}"
-                              Content="preset2"
-                              Tag="{StaticResource Preset2HeaderBrush}"
-                              GroupName="PresetGroup"/>
+                             Style="{StaticResource PresetCardStyle}"
+                             Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndRemoveWhitespace_Description}"
+                             Tag="{StaticResource Preset2HeaderBrush}" GroupName="PresetGroup"/>
 
             </Grid>
         </StackPanel>
