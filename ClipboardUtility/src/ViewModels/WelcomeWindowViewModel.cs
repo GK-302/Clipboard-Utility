@@ -12,10 +12,18 @@ using System.Diagnostics;
 
 namespace ClipboardUtility.src.ViewModels;
 
+public enum PresetType
+{
+    None, // 未選択
+    RemoveLineBreaksAndNormalize,
+    RemoveLineBreaksAndRemoveAll
+}
+
 public class WelcomeWindowViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
     private readonly SettingsService _settingsService;
+    private PresetType _selectedPreset = PresetType.None; // デフォルト値
 
     public WelcomeWindowViewModel(ICultureProvider cultureProvider, SettingsService settingsService)
     {
@@ -34,7 +42,18 @@ public class WelcomeWindowViewModel : INotifyPropertyChanged
         LoadAppVersion();
         // 設定変更の監視
     }
-
+    public PresetType SelectedPreset
+    {
+        get => _selectedPreset;
+        set
+        {
+            if (_selectedPreset != value)
+            {
+                _selectedPreset = value;
+                OnPropertyChanged(nameof(SelectedPreset)); // (INotifyPropertyChangedの実装)
+            }
+        }
+    }
     private string _appVersion;
     /// <summary>
     /// アプリケーションのバージョン情報（Viewにバインドされます）

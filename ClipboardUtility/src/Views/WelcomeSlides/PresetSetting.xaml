@@ -1,0 +1,142 @@
+﻿<UserControl x:Class="ClipboardUtility.src.Views.WelcomeSlides.PresetSetting"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
+             xmlns:converters="clr-namespace:ClipboardUtility.src.Converters" 
+             x:Name="self"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="1050"
+             HorizontalAlignment="Center">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:PresetToBooleanConverter x:Key="PresetConverter" />
+            <sys:Double x:Key="ContainerWidth">800</sys:Double>
+            <sys:Double x:Key="CardHeaderHeight">267</sys:Double>
+            <sys:Double x:Key="CardContentHeight">30</sys:Double>
+            <GridLength x:Key="CardSpacerWidth">20</GridLength>
+
+            <Thickness x:Key="CardContentPadding">20 5 0 0</Thickness>
+            <CornerRadius x:Key="CardCornerRadius">20</CornerRadius>
+            <CornerRadius x:Key="CardHeaderCornerRadius">20 20 0 0</CornerRadius>
+            <Thickness x:Key="CardBorderThickness">1</Thickness>
+            <Thickness x:Key="CardSelectedBorderThickness">2</Thickness>
+
+            <Style x:Key="PresetCardStyle" TargetType="ToggleButton">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="CardBorder"
+                                    CornerRadius="{StaticResource CardCornerRadius}"
+                                    BorderBrush="{StaticResource PresetBorderBrush}"
+                                    BorderThickness="{StaticResource CardBorderThickness}">
+
+                                <Border.Background>
+                                    <SolidColorBrush Color="{StaticResource CardBackgroundColorNormal}"/>
+                                </Border.Background>
+
+                                <StackPanel>
+                                    <Border Background="{TemplateBinding Tag}" 
+                                            Height="{StaticResource CardHeaderHeight}" 
+                                            CornerRadius="{StaticResource CardHeaderCornerRadius}"/>
+                                    <TextBlock Padding="{StaticResource CardContentPadding}" 
+                                               Height="{StaticResource CardContentHeight}"
+                                               Text="{TemplateBinding Content}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <ControlTemplate.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsChecked" Value="False"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetHoverBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <MultiTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorHover}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.EnterActions>
+                                    <MultiTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorNormal}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.ExitActions>
+                                </MultiTrigger>
+
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetSelectedBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <Setter TargetName="CardBorder" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{StaticResource CardBackgroundColorSelected}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <StackPanel VerticalAlignment="Center">
+
+            <TextBlock Width="{StaticResource ContainerWidth}" 
+                       Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WelcomePresetSettingTitle}" 
+                       FontSize="16" 
+                       Margin="10"
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource TextPrimaryBrush}"/>
+            <Grid Width="{StaticResource ContainerWidth}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="{StaticResource CardSpacerWidth}" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <RadioButton Grid.Column="0" 
+                             Style="{StaticResource PresetCardStyle}"
+                             Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndNormalizeWhitespace_Description}"
+                             Tag="{StaticResource BackGroundBrush}" GroupName="PresetGroup"
+                             IsChecked="{Binding SelectedPreset, 
+                                     ElementName=self, 
+                                     Converter={StaticResource PresetConverter}, 
+                                     ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndNormalize}}"/>
+
+                <RadioButton Grid.Column="2" 
+                             Style="{StaticResource PresetCardStyle}"
+                             Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndRemoveWhitespace_Description}"
+                             Tag="{StaticResource BackGroundBrush}" GroupName="PresetGroup"
+                             IsChecked="{Binding SelectedPreset, 
+                                     ElementName=self, 
+                                     Converter={StaticResource PresetConverter}, 
+                                     ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndRemoveAll}}"/>
+
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -642,20 +642,11 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Removes all line breaks and replaces them with spaces に類似しているローカライズされた文字列を検索します。
+        ///   Remove Line Breaks and Normalize Whitespace(Built-in) に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        public static string Preset_RemoveLineBreaks_Description {
+        public static string Preset_RemoveLineBreaksAndNormalizeWhitespace_Description {
             get {
-                return ResourceManager.GetString("Preset_RemoveLineBreaks_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Remove Line Breaks(Built-in) に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Preset_RemoveLineBreaks_Name {
-            get {
-                return ResourceManager.GetString("Preset_RemoveLineBreaks_Name", resourceCulture);
+                return ResourceManager.GetString("Preset_RemoveLineBreaksAndNormalizeWhitespace_Description", resourceCulture);
             }
         }
         
@@ -665,6 +656,24 @@ namespace ClipboardUtility.src.Properties {
         public static string Preset_RemoveLineBreaksAndNormalizeWhitespace_Name {
             get {
                 return ResourceManager.GetString("Preset_RemoveLineBreaksAndNormalizeWhitespace_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Removes all line breaks and whitespace に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_RemoveLineBreaksAndRemoveWhitespace_Description {
+            get {
+                return ResourceManager.GetString("Preset_RemoveLineBreaksAndRemoveWhitespace_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Line Breaks and Whitespace(Built-in) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_RemoveLineBreaksAndRemoveWhitespace_Name {
+            get {
+                return ResourceManager.GetString("Preset_RemoveLineBreaksAndRemoveWhitespace_Name", resourceCulture);
             }
         }
         
@@ -1063,6 +1072,16 @@ namespace ClipboardUtility.src.Properties {
         public static string WelcomeNotificationCloseText {
             get {
                 return ResourceManager.GetString("WelcomeNotificationCloseText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   select your preset
+        ///it will be executed when tasktrayicon clicked に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string WelcomePresetSettingTitle {
+            get {
+                return ResourceManager.GetString("WelcomePresetSettingTitle", resourceCulture);
             }
         }
         

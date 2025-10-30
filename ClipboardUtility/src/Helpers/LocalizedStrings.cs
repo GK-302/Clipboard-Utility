@@ -102,6 +102,12 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string UpdateCheckFailedText => Resources.ResourceManager.GetString("UpdateCheckFailedText", CultureInfo.CurrentUICulture) ?? "Update Check Failed";
     public string UpdateCheckFailedMessageText => Resources.ResourceManager.GetString("UpdateCheckFailedMessageText", CultureInfo.CurrentUICulture) ?? "Failed to check for updates. Please check your internet connection and try again.";
     public string CurrentVersionText => Resources.ResourceManager.GetString("CurrentVersionText", CultureInfo.CurrentUICulture) ?? "Current Version:";
+    public string BackButtonText => Resources.ResourceManager.GetString("BackButtonText", CultureInfo.CurrentUICulture) ?? "Back";
+    public string NextButtonText => Resources.ResourceManager.GetString("NextButtonText", CultureInfo.CurrentUICulture) ?? "Next";
+    public string WelcomePresetSettingTitle => Resources.ResourceManager.GetString("WelcomePresetSettingTitle", CultureInfo.CurrentUICulture) ?? "Welcome Preset Setting";
+    public string Preset_RemoveLineBreaksAndRemoveWhitespace_Description => Resources.ResourceManager.GetString("Preset_RemoveLineBreaksAndRemoveWhitespace_Description", CultureInfo.CurrentUICulture) ?? "Removes line breaks and normalizes whitespace.";
+    public string Preset_RemoveLineBreaksAndNormalizeWhitespace_Description => Resources.ResourceManager.GetString("Preset_RemoveLineBreaksAndNormalizeWhitespace_Description", CultureInfo.CurrentUICulture) ?? "Removes line breaks and normalizes whitespace.";
+
 
 
     public void ChangeCulture(CultureInfo culture)
@@ -192,6 +198,12 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(UpdateCheckFailedText));
         OnPropertyChanged(nameof(UpdateCheckFailedMessageText));
         OnPropertyChanged(nameof(CurrentVersionText));
+        OnPropertyChanged(nameof(BackButtonText));
+        OnPropertyChanged(nameof(NextButtonText));
+        OnPropertyChanged(nameof(WelcomePresetSettingTitle));
+        OnPropertyChanged(nameof(Preset_RemoveLineBreaksAndRemoveWhitespace_Description));
+        OnPropertyChanged(nameof(Preset_RemoveLineBreaksAndNormalizeWhitespace_Description));
+
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)
