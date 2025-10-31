@@ -23,7 +23,7 @@ public class WelcomeWindowViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
     private readonly SettingsService _settingsService;
-    private PresetType _selectedPreset = PresetType.None;
+    private PresetType _selectedPreset = PresetType.RemoveLineBreaksAndNormalize;
     private bool _neverShowAgain;
 
     public WelcomeWindowViewModel(ICultureProvider cultureProvider, SettingsService settingsService)
