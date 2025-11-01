@@ -82,7 +82,6 @@
                                         </BeginStoryboard>
                                     </MultiTrigger.ExitActions>
                                 </MultiTrigger>
-
                                 <Trigger Property="IsChecked" Value="True">
                                     <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetSelectedBorderBrush}"/>
                                     <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
@@ -92,7 +91,115 @@
                                         </Setter.Value>
                                     </Setter>
                                 </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
+            <Style x:Key="AnimatedPresetCardStyle" TargetType="ToggleButton" BasedOn="{StaticResource PresetCardStyle}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+
+                            <Border x:Name="CardBorder"
+                                    CornerRadius="{StaticResource CardCornerRadius}"
+                                    BorderBrush="{StaticResource PresetBorderBrush}"
+                                    BorderThickness="{StaticResource CardBorderThickness}">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{StaticResource CardBackgroundColorNormal}"/>
+                                </Border.Background>
+
+                                <StackPanel>
+
+                                    <Grid Height="{StaticResource CardHeaderHeight}">
+
+                                        <Border Background="{TemplateBinding Tag}" 
+                                                CornerRadius="{StaticResource CardHeaderCornerRadius}"/>
+
+                                        <Grid VerticalAlignment="Top">
+                                            <TextBlock Text="Loading." 
+                                                       VerticalAlignment="Top" 
+                                                       HorizontalAlignment="Left" 
+                                                       Foreground="White">
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <StringAnimationUsingKeyFrames Storyboard.TargetProperty="Text">
+                                                                    <DiscreteStringKeyFrame KeyTime="0:0:0" Value="Loading." />
+                                                                    <DiscreteStringKeyFrame KeyTime="0:0:0.5" Value="Loading.." />
+                                                                    <DiscreteStringKeyFrame KeyTime="0:0:1" Value="Loading..." />
+                                                                </StringAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+
+                                            <Ellipse Fill="Orange" Width="10" Height="10" 
+                                                     HorizontalAlignment="Right" 
+                                                     VerticalAlignment="Top">
+                                                <Ellipse.Triggers>
+                                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" 
+                                                                                 From="1.0" To="0.2" Duration="0:0:1" />
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </Ellipse.Triggers>
+                                            </Ellipse>
+                                        </Grid>
+
+                                    </Grid>
+                                    <TextBlock Padding="{StaticResource CardContentPadding}" 
+                                               Height="{StaticResource CardContentHeight}"
+                                               Text="{TemplateBinding Content}"
+                                               TextTrimming="CharacterEllipsis"/>
+
+                                </StackPanel>
+                            </Border>
+
+                            <ControlTemplate.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsChecked" Value="False"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetHoverBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <MultiTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorHover}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.EnterActions>
+                                    <MultiTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorNormal}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.ExitActions>
+                                </MultiTrigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetSelectedBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <Setter TargetName="CardBorder" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{StaticResource CardBackgroundColorSelected}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
@@ -111,6 +218,7 @@
                        Margin="10"
                        TextWrapping="Wrap"
                        Foreground="{StaticResource TextPrimaryBrush}"/>
+
             <Grid Width="{StaticResource ContainerWidth}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -119,22 +227,24 @@
                 </Grid.ColumnDefinitions>
 
                 <RadioButton Grid.Column="0" 
-                             Style="{StaticResource PresetCardStyle}"
-                             Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndNormalizeWhitespace_Description}"
+                             Style="{StaticResource AnimatedPresetCardStyle}"
                              Tag="{StaticResource BackGroundBrush}" GroupName="PresetGroup"
+                             Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndNormalizeWhitespace_Description}"
                              IsChecked="{Binding SelectedPreset, 
-                                     ElementName=self, 
-                                     Converter={StaticResource PresetConverter}, 
-                                     ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndNormalize}}"/>
+                                           ElementName=self, 
+                                           Converter={StaticResource PresetConverter}, 
+                                           ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndNormalize}}">
+                </RadioButton>
 
                 <RadioButton Grid.Column="2" 
                              Style="{StaticResource PresetCardStyle}"
                              Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndRemoveWhitespace_Description}"
                              Tag="{StaticResource BackGroundBrush}" GroupName="PresetGroup"
                              IsChecked="{Binding SelectedPreset, 
-                                     ElementName=self, 
-                                     Converter={StaticResource PresetConverter}, 
-                                     ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndRemoveAll}}"/>
+                                           ElementName=self, 
+                                           Converter={StaticResource PresetConverter}, 
+                                           ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndRemoveAll}}">
+                </RadioButton>
 
             </Grid>
         </StackPanel>
