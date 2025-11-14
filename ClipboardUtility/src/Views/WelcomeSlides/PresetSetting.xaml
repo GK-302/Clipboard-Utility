@@ -141,15 +141,15 @@
                                                  StrokeStartLineCap="Square" StrokeEndLineCap="Square">
                                             </Line>
                                             <TextBlock Text="Sample"
-           Foreground="White"
-           FontSize="16"
-           Margin="60,50,0,0">
+                                               Foreground="White"
+                                               FontSize="16"
+                                               Margin="60,50,0,0">
                                             </TextBlock>
 
                                             <TextBlock Text="Text"
-           Foreground="White"
-           FontSize="16"
-           Margin="60,75,0,0">
+                                               Foreground="White"
+                                               FontSize="16"
+                                               Margin="60,75,0,0">
                                                 <TextBlock.RenderTransform>
                                                     <TranslateTransform X="0" Y="0" />
                                                 </TextBlock.RenderTransform>
@@ -175,9 +175,9 @@
                                             </TextBlock>
 
                                             <TextBlock Text="To"
-           Foreground="White"
-           FontSize="16"
-           Margin="60,100,0,0">
+                                               Foreground="White"
+                                               FontSize="16"
+                                               Margin="60,100,0,0">
                                                 <TextBlock.RenderTransform>
                                                     <TranslateTransform X="0" Y="0" />
                                                 </TextBlock.RenderTransform>
@@ -193,7 +193,7 @@
                         EasingFunction="{StaticResource SmoothEaseInOut}"/>
                                                                 <DoubleAnimation 
                         Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
-                        From="0" To="100" Duration="0:0:3"
+                        From="0" To="105" Duration="0:0:3"
                         BeginTime="0:0:0"
                         EasingFunction="{StaticResource SmoothEaseInOut}"/>
                                                             </Storyboard>
@@ -463,7 +463,7 @@
                         EasingFunction="{StaticResource SmoothEaseInOut}"/>
                                                                 <DoubleAnimation 
                         Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
-                        From="0" To="200" Duration="0:0:3"
+                        From="0" To="196" Duration="0:0:3"
                         BeginTime="0:0:0"
                         EasingFunction="{StaticResource SmoothEaseInOut}"/>
                                                             </Storyboard>
