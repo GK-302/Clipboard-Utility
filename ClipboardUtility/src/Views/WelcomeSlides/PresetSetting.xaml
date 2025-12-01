@@ -14,6 +14,11 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
+            <!-- Merge centralized color resources so this control can resolve color/brush keys -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/ColorResource.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
             <converters:PresetToBooleanConverter x:Key="PresetConverter" />
             <sys:Double x:Key="ContainerWidth">800</sys:Double>
             <sys:Double x:Key="CardHeaderHeight">267</sys:Double>
@@ -141,13 +146,13 @@
                                                  StrokeStartLineCap="Square" StrokeEndLineCap="Square">
                                             </Line>
                                             <TextBlock Text="Sample"
-                                               Foreground="White"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
                                                FontSize="16"
                                                Margin="60,50,0,0">
                                             </TextBlock>
 
                                             <TextBlock Text="Text"
-                                               Foreground="White"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
                                                FontSize="16"
                                                Margin="60,75,0,0">
                                                 <TextBlock.RenderTransform>
@@ -175,7 +180,7 @@
                                             </TextBlock>
 
                                             <TextBlock Text="To"
-                                               Foreground="White"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
                                                FontSize="16"
                                                Margin="60,100,0,0">
                                                 <TextBlock.RenderTransform>
@@ -203,9 +208,9 @@
                                             </TextBlock>
 
                                             <TextBlock Text="Demonstrate"
-           Foreground="White"
-           FontSize="16"
-           Margin="60,125,0,0">
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               FontSize="16"
+                                               Margin="60,125,0,0">
                                                 <TextBlock.RenderTransform>
                                                     <TranslateTransform X="0" Y="0" />
                                                 </TextBlock.RenderTransform>
@@ -231,9 +236,9 @@
                                             </TextBlock>
 
                                             <TextBlock Text="Preset"
-           Foreground="White"
-           FontSize="16"
-           Margin="60,150,0,0">
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               FontSize="16"
+                                               Margin="60,150,0,0">
                                                 <TextBlock.RenderTransform>
                                                     <TranslateTransform X="0" Y="0" />
                                                 </TextBlock.RenderTransform>
@@ -355,13 +360,13 @@
                                                  StrokeStartLineCap="Square" StrokeEndLineCap="Square">
                                             </Line>
                                             <TextBlock Text="Sample"
-           Foreground="White"
+           Foreground="{StaticResource TextPrimaryBrush}"
            FontSize="16"
            Margin="60,50,0,0">
                                             </TextBlock>
 
                                             <TextBlock Text="Text"
-           Foreground="White"
+           Foreground="{StaticResource TextPrimaryBrush}"
            FontSize="16"
            Margin="60,75,0,0">
                                                 <TextBlock.RenderTransform>
@@ -389,7 +394,7 @@
                                             </TextBlock>
 
                                             <TextBlock Text="To"
-           Foreground="White"
+           Foreground="{StaticResource TextPrimaryBrush}"
            FontSize="16"
            Margin="60,100,0,0">
                                                 <TextBlock.RenderTransform>
@@ -417,7 +422,7 @@
                                             </TextBlock>
 
                                             <TextBlock Text="Demonstrate"
-           Foreground="White"
+           Foreground="{StaticResource TextPrimaryBrush}"
            FontSize="16"
            Margin="60,125,0,0">
                                                 <TextBlock.RenderTransform>
@@ -445,7 +450,7 @@
                                             </TextBlock>
 
                                             <TextBlock Text="Preset"
-           Foreground="White"
+           Foreground="{StaticResource TextPrimaryBrush}"
            FontSize="16"
            Margin="60,150,0,0">
                                                 <TextBlock.RenderTransform>
