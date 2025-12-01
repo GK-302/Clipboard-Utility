@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="ClipboardUtility.src.Views.WelcomeSlides.Slide2_Guidance"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.expression/blend/2008" 
+             xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="700"
+             IsVisibleChanged="Slide2_Guidance_IsVisibleChanged">
+
+    <UserControl.Resources>
+        <Storyboard x:Key="CurtainOpenAnimation">
+            <DoubleAnimation Storyboard.TargetName="LeftCurtain"
+                             Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                             To="0" Duration="0:0:0.7">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <DoubleAnimation Storyboard.TargetName="RightCurtain"
+                             Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                             To="0" Duration="0:0:0.7">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Key="TextFadeInAnimation">
+            <DoubleAnimation Storyboard.TargetName="TextContent"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.5"
+                             BeginTime="0:0:0.0"/>
+        </Storyboard>
+
+    </UserControl.Resources>
+
+    <Grid>
+
+        <StackPanel x:Name="TextContent" 
+                    VerticalAlignment="Center" 
+                    Margin="50,40"
+                    Opacity="0">
+            <TextBlock Text="How to Use" FontSize="24" 
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextPrimaryBrush}"
+                       Margin="0,10,0,15"/>
+
+            <TextBlock Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=OperationGuidanceText}" 
+                       FontSize="16" 
+                       Margin="0,5"
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource TextSecondaryBrush}"/>
+        </StackPanel>
+
+        <Grid x:Name="CurtainGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+        </Grid>
+
+    </Grid>
+</UserControl>

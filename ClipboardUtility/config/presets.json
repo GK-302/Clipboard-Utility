@@ -4,7 +4,7 @@
     {
       "id": "00000000-0000-0000-0000-000000000001",
       "name": "Remove Line Breaks and White Space",
-      "nameResourceKey": "Preset_RemoveLineBreaks_Name",
+      "nameResourceKey": "Preset_RemoveLineBreaksAndRemoveWhitespace_Name",
       "description": "Removes all line breaks and replaces them with spaces",
       "descriptionResourceKey": "Preset_RemoveLineBreaks_Description",
       "isBuiltIn": true,

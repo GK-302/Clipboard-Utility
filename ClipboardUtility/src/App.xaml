@@ -4,21 +4,27 @@
              xmlns:local="clr-namespace:ClipboardUtility">
     <!-- StartupUri を削除（コードで作成するため） -->
     <Application.Resources>
-        <FontFamily x:Key="GlobalFont">./Assets/Fonts/NotoSansJP/NotoSansJP-VariableFont_wght.ttf#Noto Sans JP</FontFamily>
-        <Style TargetType="Window">
-            <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
-        </Style>
-        <Style TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
-        </Style>
-        <Style TargetType="Button">
-            <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
-        </Style>
-        <Style TargetType="Label">
-            <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/ColorResource.xaml" />
+                <ResourceDictionary Source="Styles/ButtonStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <FontFamily x:Key="GlobalFont">./Assets/Fonts/NotoSansJP/NotoSansJP-VariableFont_wght.ttf#Noto Sans JP</FontFamily>
+            <Style TargetType="Window">
+                <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
+            </Style>
+            <Style TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
+            </Style>
+            <Style TargetType="TextBox">
+                <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="FontFamily" Value="{StaticResource GlobalFont}"/>
+            </Style>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

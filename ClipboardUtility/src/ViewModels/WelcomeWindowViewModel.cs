@@ -12,10 +12,19 @@ using System.Diagnostics;
 
 namespace ClipboardUtility.src.ViewModels;
 
+public enum PresetType
+{
+    None, // 未選択
+    RemoveLineBreaksAndNormalize,
+    RemoveLineBreaksAndRemoveAll
+}
+
 public class WelcomeWindowViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
     private readonly SettingsService _settingsService;
+    private PresetType _selectedPreset = PresetType.RemoveLineBreaksAndNormalize;
+    private bool _neverShowAgain;
 
     public WelcomeWindowViewModel(ICultureProvider cultureProvider, SettingsService settingsService)
     {
@@ -30,11 +39,42 @@ public class WelcomeWindowViewModel : INotifyPropertyChanged
         // 初期選択
         _selectedCulture = AvailableCultures.FirstOrDefault(c => c.Name == cultureName)
                           ?? CultureInfo.CurrentUICulture;
-
+        if (settings != null)
+        {
+            // 「今後表示しない」の初期値をロード
+            _neverShowAgain = !settings.ShowWelcomeNotification;
+        }
         LoadAppVersion();
         // 設定変更の監視
     }
-
+    public PresetType SelectedPreset
+    {
+        get => _selectedPreset;
+        set
+        {
+            if (_selectedPreset != value)
+            {
+                _selectedPreset = value;
+                OnPropertyChanged(nameof(SelectedPreset)); // (INotifyPropertyChangedの実装)
+            }
+        }
+    }
+    // --- 「今後表示しない」プロパティを追加 ---
+    /// <summary>
+    /// 「今後この通知を表示しない」チェックボックスの状態
+    /// </summary>
+    public bool NeverShowAgain
+    {
+        get => _neverShowAgain;
+        set
+        {
+            if (_neverShowAgain != value)
+            {
+                _neverShowAgain = value;
+                OnPropertyChanged(); // (CallerMemberName により "NeverShowAgain" が渡される)
+            }
+        }
+    }
     private string _appVersion;
     /// <summary>
     /// アプリケーションのバージョン情報（Viewにバインドされます）
@@ -142,7 +182,58 @@ public class WelcomeWindowViewModel : INotifyPropertyChanged
             FileLogger.LogException(ex, "WelcomeWindowViewModel.SaveCultureSetting");
         }
     }
+    // --- 「完了」時に呼び出す保存メソッド (修正) ---
+    /// <summary>
+    /// ウェルカム画面で設定された項目を保存します。
+    /// </summary>
+    public void SaveWelcomeSettings()
+    {
+        try
+        {
+            var settings = _settingsService.Current ?? new AppSettings();
 
+            // 1. 「今後表示しない」設定を保存
+            settings.ShowWelcomeNotification = !this.NeverShowAgain;
+
+            // 2. 「操作プリセット」設定を保存
+            // 選択された enum (SelectedPreset) に応じて、
+            // 対応するプリセットの GUID (id) を AppSettings に保存します。
+
+            Guid? defaultPresetId = null;
+            switch (this.SelectedPreset)
+            {
+                case PresetType.RemoveLineBreaksAndNormalize:
+                    // JSON の "Remove Line Breaks and Normalize Whitespace" の ID
+                    defaultPresetId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+                    break;
+
+                case PresetType.RemoveLineBreaksAndRemoveAll:
+                    // JSON の "Remove Line Breaks and White Space" の ID
+                    defaultPresetId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                    break;
+
+                case PresetType.None:
+                default:
+                    // 未選択時は、現在の設定をそのまま維持するか、
+                    // もしくは null (または特定のデフォルトGUID) を設定します。
+                    // ここでは例として null (未設定) にします。
+                    defaultPresetId = null;
+                    break;
+            }
+
+            // SettingsViewModel が読み込んでいる AppSettings のプロパティに設定
+            // (プロパティ名が "SelectedPresetId" であると仮定)
+            settings.SelectedPresetId = defaultPresetId;
+
+            // 設定を保存
+            _settingsService.Save(settings);
+        }
+        catch (Exception ex)
+        {
+            FileLogger.LogException(ex, "WelcomeWindowViewModel.SaveWelcomeSettings");
+            // エラーはログに記録されます
+        }
+    }
     protected void OnPropertyChanged([CallerMemberName] string name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="src\Assets\drawing_1.ico" />
     <None Remove="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
     <None Remove="src\Assets\Fonts\NotoSansJP\OFL.txt" />
     <None Remove="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
@@ -41,7 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="src\Assets\drawing_1.ico" />
     <Resource Include="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
     <Content Include="src\Assets\Fonts\NotoSansJP\OFL.txt">
       <Link>licences\NotoSansJP\OFL.txt</Link>
