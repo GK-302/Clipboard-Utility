@@ -8,6 +8,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/ColorResource.xaml" />
                 <ResourceDictionary Source="Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <FontFamily x:Key="GlobalFont">./Assets/Fonts/NotoSansJP/NotoSansJP-VariableFont_wght.ttf#Noto Sans JP</FontFamily>
             <Style TargetType="Window">

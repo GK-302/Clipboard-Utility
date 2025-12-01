@@ -1,4 +1,4 @@
-﻿<Window x:Class="ClipboardUtility.src.Views.WelcomeWindow"
+<Window x:Class="ClipboardUtility.src.Views.WelcomeWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:ClipboardUtility.src.Views"
         xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
         xmlns:slides="clr-namespace:ClipboardUtility.src.Views.WelcomeSlides"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
         Title="Welcome" 
         Height="720" Width="1050" ResizeMode="NoResize"
@@ -18,16 +19,17 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TabControl x:Name="SlideTabControl" Grid.Row="0" 
-                    SelectionChanged="SlideTabControl_SelectionChanged"
-                    BorderThickness="0"
-                    Background="Transparent">
+        <hc:TabControl x:Name="SlideTabControl" Grid.Row="0" 
+                       SelectionChanged="SlideTabControl_SelectionChanged"
+                       BorderThickness="0"
+                       Background="Transparent"
+                       Style="{StaticResource TabControlInLine}">
 
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="TabItem">
+            <hc:TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem" BasedOn="{StaticResource TabItemInLine}">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </Style>
-            </TabControl.ItemContainerStyle>
+            </hc:TabControl.ItemContainerStyle>
 
             <TabItem Header="Intro">
                 <slides:Slide1_Intro />
@@ -40,7 +42,7 @@
                 <slides:PresetSetting SelectedPreset="{Binding SelectedPreset, Mode=TwoWay}"/>
             </TabItem>
 
-        </TabControl>
+        </hc:TabControl>
 
         <Grid Grid.Row="1" Margin="20" Background="{StaticResource SecondaryBrush}">
             <Grid.ColumnDefinitions>
@@ -55,10 +57,10 @@
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Width="Auto" VerticalAlignment="Center" Margin="0,0,10,0"
                            Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
-                <ComboBox Width="200"
-                          ItemsSource="{Binding AvailableCultures}"
-                          SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
-                          DisplayMemberPath="NativeName" />
+                <hc:ComboBox Width="200"
+                             ItemsSource="{Binding AvailableCultures}"
+                             SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
+                             DisplayMemberPath="NativeName" />
             </StackPanel>
 
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">

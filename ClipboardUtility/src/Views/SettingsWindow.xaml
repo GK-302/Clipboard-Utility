@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
         xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
         Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WindowTitle}" Height="520" Width="640">
     <Window.Resources>
@@ -41,7 +42,7 @@
                        Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SettingInfomationText}" Margin="10 0 0 0" />
         </StackPanel>
 
-        <TabControl Grid.Row="1">
+        <hc:TabControl Grid.Row="1">
             <TabItem Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=GeneralText}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <Grid Margin="8">
@@ -85,6 +86,7 @@
                                         IsEnabled="{Binding CanCheckForUpdates}"
                                         Width="200"
                                         Margin="0,8,0,0"
+                                        Style="{StaticResource PrimaryButton}"
                                         HorizontalAlignment="Left" />
                             </Grid>
                         </GroupBox>
@@ -108,26 +110,26 @@
 
                                 <!-- Processing Mode -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ProcessingModeTitle}" Style="{StaticResource FormLabel}" />
-                                <ComboBox Grid.Row="1" Grid.Column="1" Width="260" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}"
+                                <hc:ComboBox Grid.Row="1" Grid.Column="1" Width="260" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}"
                                           IsEnabled="{Binding UsePresets, Converter={StaticResource InverseBooleanConverter}}" Style="{StaticResource FormInput}">
-                                    <ComboBox.ItemTemplate>
+                                    <hc:ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
                                         </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
+                                    </hc:ComboBox.ItemTemplate>
+                                </hc:ComboBox>
 
                                 <!-- Preset for tray click -->
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=PresetForTrayClickTitle}" Style="{StaticResource FormLabel}" />
-                                <ComboBox Grid.Row="2" Grid.Column="1" Width="260" ItemsSource="{Binding AvailablePresets}" x:Name="presetCombobox"
+                                <hc:ComboBox Grid.Row="2" Grid.Column="1" Width="260" ItemsSource="{Binding AvailablePresets}" x:Name="presetCombobox"
                                           SelectedItem="{Binding SelectedPresetForTrayClick, Mode=TwoWay}"
                                           IsEnabled="{Binding UsePresets}" Style="{StaticResource FormInput}" >
-                                    <ComboBox.ItemTemplate>
+                                    <hc:ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Name}"/>
                                         </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
+                                    </hc:ComboBox.ItemTemplate>
+                                </hc:ComboBox>
                             </Grid>
                         </GroupBox>
                     </Grid>
@@ -144,9 +146,9 @@
                     <ListBox ItemsSource="{Binding AvailablePresets}" SelectedItem="{Binding SelectedPreset}" DisplayMemberPath="Name" MinHeight="180" />
 
                     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-                        <Button Style="{StaticResource ActionButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NewText}" Click="BtnNewPreset_Click" />
-                        <Button Style="{StaticResource ActionButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=EditText}" Click="BtnEditPreset_Click" />
-                        <Button Style="{StaticResource ActionButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=DeleteText}" Click="BtnDeletePreset_Click" />
+                        <Button Style="{StaticResource PrimaryButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NewText}" Click="BtnNewPreset_Click" />
+                        <Button Style="{StaticResource SecondaryButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=EditText}" Click="BtnEditPreset_Click" />
+                        <Button Style="{StaticResource SecondaryButton}" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=DeleteText}" Click="BtnDeletePreset_Click" />
                     </StackPanel>
                 </Grid>
             </TabItem>
@@ -219,7 +221,7 @@
                     <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="6">
                         <StackPanel Orientation="Horizontal" >
                             <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
-                            <ComboBox Width="200"
+                            <hc:ComboBox Width="200"
                                       ItemsSource="{Binding AvailableCultures}"
                                       SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
                                       DisplayMemberPath="NativeName" />
@@ -227,7 +229,7 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-        </TabControl>
+        </hc:TabControl>
 
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
@@ -235,11 +237,11 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0" Width="84" Margin="6" Content="LICENSE" HorizontalAlignment="Left" Click="Button_Click"/>
+            <Button Grid.Column="0" Content="LICENSE" HorizontalAlignment="Left" Click="Button_Click" Style="{StaticResource SecondaryButton}"/>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button x:Name="BtnSave" Width="84" Margin="6" Click="BtnSave_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SaveText}" />
-                <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CancelText}" />
+                <Button x:Name="BtnSave" Click="BtnSave_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SaveText}" Style="{StaticResource PrimaryButton}" />
+                <Button x:Name="BtnCancel" Click="BtnCancel_Click" Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CancelText}" Style="{StaticResource SecondaryButton}" />
             </StackPanel>
         </Grid>
     </Grid>

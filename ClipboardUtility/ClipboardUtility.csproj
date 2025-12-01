@@ -52,6 +52,7 @@
       <Link>licences\Roboto\OFL.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <PackageReference Include="HandyControl" Version="3.5.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
     <Resource Include="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
