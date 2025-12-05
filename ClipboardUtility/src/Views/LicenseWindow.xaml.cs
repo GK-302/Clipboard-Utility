@@ -13,6 +13,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using ClipboardUtility.src.Models;
+using ClipboardUtility.src.Services;
 using GroupBox = System.Windows.Controls.GroupBox;
 using Path = System.IO.Path;
 using TextBox = System.Windows.Controls.TextBox;
@@ -24,73 +26,175 @@ namespace ClipboardUtility.src.Views
     /// </summary>
     public partial class LicenseWindow : Window
     {
+        private readonly LicenseLoaderService _licenseLoader;
+
         public LicenseWindow()
         {
             InitializeComponent();
-            LoadLicenseText();
+            _licenseLoader = new LicenseLoaderService();
+            LoadAllLicenses();
             Debug.WriteLine("LicenseWindow initialized.");
         }
-        private void LoadLicenseText()
+
+        private void LoadAllLicenses()
+        {
+            LoadPackageLicenses();
+            LoadFontLicenses();
+        }
+
+        private void LoadPackageLicenses()
         {
             try
             {
-                // OFL.txt files are now set as "Content" build action, so they are copied to output directory
-                var baseDir = AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
-                var foundFiles = new List<string>();
+                var licenses = _licenseLoader.LoadPackageLicenses();
 
-                try
+                if (licenses.Count == 0)
                 {
-                    if (Directory.Exists(baseDir))
+                    PackageLicenseStackPanel.Children.Add(new TextBlock
                     {
-                        // Search for files named OFL.txt under the output directory
-                        foundFiles = Directory.EnumerateFiles(baseDir, "OFL.txt", SearchOption.AllDirectories).ToList();
-                        Debug.WriteLine($"Searching for OFL.txt in: {baseDir}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error while searching for license files on disk: {ex}");
-                }
-
-                if (foundFiles.Count > 0)
-                {
-                    Debug.WriteLine($"Found {foundFiles.Count} license file(s) on disk.");
-                    foreach (var file in foundFiles)
-                    {
-                        Debug.WriteLine($"Loading license from: {file}");
-                        
-                        // Extract the font directory name (e.g., "Roboto" or "NotoSansJP")
-                        string title = Path.GetFileName(Path.GetDirectoryName(file)) ?? Path.GetFileName(file);
-                        
-                        string content = File.ReadAllText(file, Encoding.UTF8);
-                        AddLicenseBlock(title, content);
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("No OFL.txt files found in the output directory.");
-                    LicenseStackPanel.Children.Add(new TextBlock 
-                    { 
-                        Text = "ライセンス情報が見つかりませんでした。\n\n" +
-                               $"検索パス: {baseDir}", 
+                        Text = "パッケージライセンス情報が見つかりませんでした。\n\n" +
+                               "licenses.json がビルド出力ディレクトリに存在しない可能性があります。\n" +
+                               "dotnet-project-licenses ツールがインストールされているか確認してください。",
                         Margin = new Thickness(8),
                         TextWrapping = TextWrapping.Wrap
                     });
+                    return;
                 }
+
+                foreach (var license in licenses.OrderBy(l => l.PackageName))
+                {
+                    AddPackageLicenseBlock(license);
+                }
+
+                Debug.WriteLine($"Loaded {licenses.Count} package license(s).");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to load license text: {ex}");
-                LicenseStackPanel.Children.Add(new TextBlock 
-                { 
-                    Text = "ライセンス情報の読み込みに失敗しました。\n\n" + ex.Message, 
+                Debug.WriteLine($"Failed to load package licenses: {ex}");
+                PackageLicenseStackPanel.Children.Add(new TextBlock
+                {
+                    Text = "パッケージライセンス情報の読み込みに失敗しました。\n\n" + ex.Message,
                     Margin = new Thickness(8),
                     TextWrapping = TextWrapping.Wrap
                 });
             }
         }
 
-        private void AddLicenseBlock(string title, string content)
+        private void LoadFontLicenses()
+        {
+            try
+            {
+                var fontLicenses = _licenseLoader.LoadFontLicenses();
+
+                if (fontLicenses.Count == 0)
+                {
+                    FontLicenseStackPanel.Children.Add(new TextBlock
+                    {
+                        Text = "フォントライセンス情報が見つかりませんでした。",
+                        Margin = new Thickness(8),
+                        TextWrapping = TextWrapping.Wrap
+                    });
+                    return;
+                }
+
+                foreach (var (title, content) in fontLicenses.OrderBy(kv => kv.Key))
+                {
+                    AddFontLicenseBlock(title, content);
+                }
+
+                Debug.WriteLine($"Loaded {fontLicenses.Count} font license(s).");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to load font licenses: {ex}");
+                FontLicenseStackPanel.Children.Add(new TextBlock
+                {
+                    Text = "フォントライセンス情報の読み込みに失敗しました。\n\n" + ex.Message,
+                    Margin = new Thickness(8),
+                    TextWrapping = TextWrapping.Wrap
+                });
+            }
+        }
+
+        private void AddPackageLicenseBlock(LicenseInfo license)
+        {
+            var group = new GroupBox
+            {
+                Header = license.DisplayName,
+                Margin = new Thickness(8)
+            };
+
+            var stackPanel = new StackPanel { Margin = new Thickness(8) };
+
+            // License Type
+            if (!string.IsNullOrWhiteSpace(license.LicenseType))
+            {
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = $"ライセンス: {license.LicenseType}",
+                    FontWeight = FontWeights.SemiBold,
+                    Margin = new Thickness(0, 0, 0, 4)
+                });
+            }
+
+            // Authors
+            if (!string.IsNullOrWhiteSpace(license.AuthorsDisplay))
+            {
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = $"著者: {license.AuthorsDisplay}",
+                    Margin = new Thickness(0, 0, 0, 4)
+                });
+            }
+
+            // Copyright
+            if (!string.IsNullOrWhiteSpace(license.Copyright))
+            {
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = license.Copyright,
+                    Margin = new Thickness(0, 0, 0, 4),
+                    TextWrapping = TextWrapping.Wrap
+                });
+            }
+
+            // Description
+            if (!string.IsNullOrWhiteSpace(license.Description))
+            {
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = license.Description,
+                    Margin = new Thickness(0, 0, 0, 8),
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = new SolidColorBrush(Colors.Gray)
+                });
+            }
+
+            // Links
+            var linksPanel = new WrapPanel { Margin = new Thickness(0, 4, 0, 0) };
+
+            if (!string.IsNullOrWhiteSpace(license.PackageUrl))
+            {
+                var packageLink = CreateHyperlink("パッケージURL", license.PackageUrl);
+                linksPanel.Children.Add(packageLink);
+            }
+
+            if (!string.IsNullOrWhiteSpace(license.LicenseUrl))
+            {
+                var licenseLink = CreateHyperlink("ライセンスURL", license.LicenseUrl);
+                linksPanel.Children.Add(licenseLink);
+            }
+
+            if (linksPanel.Children.Count > 0)
+            {
+                stackPanel.Children.Add(linksPanel);
+            }
+
+            group.Content = stackPanel;
+            PackageLicenseStackPanel.Children.Add(group);
+        }
+
+        private void AddFontLicenseBlock(string title, string content)
         {
             var group = new GroupBox
             {
@@ -109,7 +213,35 @@ namespace ClipboardUtility.src.Views
             };
 
             group.Content = textBox;
-            LicenseStackPanel.Children.Add(group);
+            FontLicenseStackPanel.Children.Add(group);
+        }
+
+        private UIElement CreateHyperlink(string text, string url)
+        {
+            var textBlock = new TextBlock { Margin = new Thickness(0, 0, 16, 0) };
+            var hyperlink = new Hyperlink
+            {
+                NavigateUri = new Uri(url)
+            };
+            hyperlink.Inlines.Add(text);
+            hyperlink.RequestNavigate += (sender, e) =>
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = e.Uri.AbsoluteUri,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to open URL: {ex.Message}");
+                }
+                e.Handled = true;
+            };
+            textBlock.Inlines.Add(hyperlink);
+            return textBlock;
         }
     }
 }

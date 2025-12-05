@@ -35,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include=".github\" />
     <Folder Include="src\Common\" />
   </ItemGroup>
 
@@ -52,6 +51,7 @@
       <Link>licences\Roboto\OFL.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include=".github\workflows\build.yml" />
     <PackageReference Include="HandyControl" Version="3.5.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
@@ -83,5 +83,20 @@
     </None>
   </ItemGroup>
 
+  <!-- 
+    CI/CD対応: dotnet-project-licenses でNuGetパッケージのライセンス情報を生成
+    ツールがインストールされていない場合はエラーを無視して続行
+  -->
+  <Target Name="GenerateLicenseJson" AfterTargets="Build">
+    <PropertyGroup>
+      <ProjectDirTrimmed>$([System.String]::Copy('$(ProjectDir)').TrimEnd('\'))</ProjectDirTrimmed>
+    </PropertyGroup>
+    
+    <!-- ツールを直接実行（失敗しても続行） -->
+    <Exec Command="dotnet-project-licenses -i . --outfile $(TargetDir)\licenses.json -j"
+		  IgnoreExitCode="true" 
+		  ContinueOnError="true" 
+		  StandardOutputImportance="Normal" />
+  </Target>
 
 </Project>
