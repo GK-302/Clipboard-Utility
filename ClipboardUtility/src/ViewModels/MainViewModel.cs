@@ -67,7 +67,8 @@ public class MainViewModel : INotifyPropertyChanged
             _notificationsService,
             () => _isInternalClipboardOperation, // Func<bool> を渡す
             _settingsService,
-            _taskTrayService
+            _taskTrayService,
+            _clipboardService
         );
         // 注入された SettingsService を使用
         _settingsService.SettingsChanged += OnSettingsChanged;

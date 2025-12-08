@@ -50,6 +50,9 @@ public class ClipboardService : IDisposable
     private bool _isDisposed = false;
     private readonly object _lockObject = new();
 
+    // 最後の読み取り試行回数（通知用のデバッグ表示に使用）
+    public int LastReadAttempts { get; private set; } = 0;
+
     public void StartMonitoring(Window window)
     {
         FileLogger.Log("ClipboardService: StartMonitoring called");
@@ -238,22 +241,45 @@ public class ClipboardService : IDisposable
             {
                 // WndProc 上では例外が発生してもアプリを壊さないように catch する
                 string text = null;
-                try
+                LastReadAttempts = 0;
+                const int maxAttempts = 3;
+                const int delayMs = 25;
+                for (int attempt = 1; attempt <= maxAttempts; attempt++)
                 {
-                    text = GetTextSafely();
-                }
-                catch (COMException comEx)
-                {
-                    Debug.WriteLine($"ClipboardService.WndProc: COMException reading clipboard: {comEx.Message}");
-                    FileLogger.LogException(comEx, "ClipboardService.WndProc: COMException");
+                    try
+                    {
+                        text = GetTextSafely();
+                        LastReadAttempts = attempt;
+                        if (text != null)
+                        {
+                            break;
+                        }
+                    }
+                    catch (COMException comEx)
+                    {
+                        LastReadAttempts = attempt;
+                        Debug.WriteLine($"ClipboardService.WndProc: COMException reading clipboard (attempt {attempt}): {comEx.Message}");
+                        FileLogger.LogException(comEx, "ClipboardService.WndProc: COMException");
 
-                    // 外部へ通知（UI スレッド上で呼ばれる点に注意）
-                    OnClipboardError(comEx, "WndProc:GetTextSafely");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"ClipboardService.WndProc: Unexpected error reading clipboard: {ex.Message}");
-                    FileLogger.LogException(ex, "ClipboardService.WndProc: Unexpected");
+                        if (attempt == maxAttempts)
+                        {
+                            // 外部へ通知（UI スレッド上で呼ばれる点に注意）
+                            OnClipboardError(comEx, "WndProc:GetTextSafely");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LastReadAttempts = attempt;
+                        Debug.WriteLine($"ClipboardService.WndProc: Unexpected error reading clipboard (attempt {attempt}): {ex.Message}");
+                        FileLogger.LogException(ex, "ClipboardService.WndProc: Unexpected");
+                        if (attempt == maxAttempts)
+                        {
+                            OnClipboardError(ex, "WndProc:GetTextSafely");
+                        }
+                    }
+
+                    // 次の試行まで少し待機
+                    System.Threading.Thread.Sleep(delayMs);
                 }
 
                 if (text != null)
