@@ -1,15 +1,14 @@
 ﻿<Window x:Class="ClipboardUtility.src.Views.NotificationWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="clr-namespace:ClipboardUtility.src.Converters"
-        xmlns:hc="https://handyorg.github.io/handycontrol"
-        WindowStyle="None"
-        Topmost="True"
-        AllowsTransparency="True"
-        ShowInTaskbar="False"
-        Background="Transparent"
-        Title="NotificationWindow"
-        SizeToContent="WidthAndHeight">
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:converters="clr-namespace:ClipboardUtility.src.Converters"
+WindowStyle="None"
+Topmost="True"
+AllowsTransparency="True"
+ShowInTaskbar="False"
+Background="Transparent"
+Title="NotificationWindow"
+SizeToContent="WidthAndHeight">
     <Window.Resources>
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
     </Window.Resources>

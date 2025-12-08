@@ -6,7 +6,7 @@
       xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
       xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
       xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
-      xmlns:hc="https://handyorg.github.io/handycontrol"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:ClipboardManagerViewModel, IsDesignTimeCreatable=False}"
       Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ClipboardManagerTitle}" 
@@ -63,15 +63,15 @@
                     </TextBlock>
                 </StackPanel>
 
-                <hc:TextBox Grid.Row="1"
-                            Text="{Binding ClipboardText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            TextWrapping="Wrap"
-                            AcceptsReturn="True"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto"
-                            FontFamily="Consolas"
-                            IsReadOnly="False"
-                            Margin="4" />
+                <TextBox Grid.Row="1"
+                         Text="{Binding ClipboardText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"
+                         FontFamily="Consolas"
+                         IsReadOnly="False"
+                         Margin="4" />
             </Grid>
         </GroupBox>
 
@@ -83,15 +83,15 @@
                     <TextBlock VerticalAlignment="Center" 
                                Margin="0,0,8,0"
                                Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SelectProcessingModeText}" />
-                    <hc:ComboBox Width="280" 
-                                 ItemsSource="{Binding ProcessingModes}" 
-                                 SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">
-                        <hc:ComboBox.ItemTemplate>
+                    <ComboBox Width="280" 
+                              ItemsSource="{Binding ProcessingModes}" 
+                              SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
                             </DataTemplate>
-                        </hc:ComboBox.ItemTemplate>
-                    </hc:ComboBox>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ApplyText}" 
                             Style="{StaticResource PrimaryButton}"
                             Margin="8,0,0,0"
