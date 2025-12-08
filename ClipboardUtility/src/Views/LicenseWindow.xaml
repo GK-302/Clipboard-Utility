@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClipboardUtility.src.Views"
         xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
-        Title="License" Height="450" Width="800">
+        Title="License" Height="500" Width="850">
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
@@ -22,10 +22,46 @@
                    FontSize="13"
                    Margin="0,0,0,8" />
 
-        <Separator Grid.Row="1" Margin="0,0,0,8" />
+        <hc:Divider Grid.Row="1" Margin="0,0,0,8" />
 
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="4">
-            <StackPanel x:Name="LicenseStackPanel" Orientation="Vertical" />
-        </ScrollViewer>
+        <TabControl Grid.Row="2">
+            <!-- NuGet Packages Tab -->
+            <TabItem Header="NuGet Packages">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" 
+                               Text="このアプリケーションで使用されているNuGetパッケージのライセンス情報:" 
+                               Margin="8,8,8,4"
+                               TextWrapping="Wrap" />
+                    
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="4">
+                        <StackPanel x:Name="PackageLicenseStackPanel" Orientation="Vertical" />
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            
+            <!-- Font Licenses Tab -->
+            <TabItem Header="Font Licenses">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" 
+                               Text="このアプリケーションで使用されているフォントのライセンス情報:" 
+                               Margin="8,8,8,4"
+                               TextWrapping="Wrap" />
+                    
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="4">
+                        <StackPanel x:Name="FontLicenseStackPanel" Orientation="Vertical" />
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

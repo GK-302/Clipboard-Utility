@@ -6,7 +6,8 @@
              xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
-             xmlns:converters="clr-namespace:ClipboardUtility.src.Converters" 
+             xmlns:converters="clr-namespace:ClipboardUtility.src.Converters"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
              x:Name="self"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1050"
@@ -542,7 +543,13 @@
                        FontSize="16" 
                        Margin="10"
                        TextWrapping="Wrap"
-                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                       Foreground="{StaticResource TextPrimaryBrush}"
+                       Style="{StaticResource TextBlockDefault}"/>
+
+            <hc:Divider Width="{StaticResource ContainerWidth}"
+                        Margin="10,5,10,15" 
+                        LineStroke="{StaticResource PrimaryBrush}"
+                        LineStrokeThickness="2"/>
 
             <Grid Width="{StaticResource ContainerWidth}">
                 <Grid.ColumnDefinitions>

@@ -6,12 +6,13 @@
       xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
       xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
       xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
+      xmlns:hc="https://handyorg.github.io/handycontrol"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance Type=vm:ClipboardManagerViewModel, IsDesignTimeCreatable=False}"
       Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ClipboardManagerTitle}" 
       Height="500" Width="600"
       ResizeMode="NoResize"
-WindowStyle="None"
+      WindowStyle="None"
       WindowStartupLocation="Manual"
       ShowInTaskbar="True"
       Topmost="False">
@@ -62,15 +63,15 @@ WindowStyle="None"
                     </TextBlock>
                 </StackPanel>
 
-                <TextBox Grid.Row="1"
-                         Text="{Binding ClipboardText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Auto"
-                         FontFamily="Consolas"
-                         IsReadOnly="False"
-                         Margin="4" />
+                <hc:TextBox Grid.Row="1"
+                            Text="{Binding ClipboardText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            VerticalScrollBarVisibility="Auto"
+                            HorizontalScrollBarVisibility="Auto"
+                            FontFamily="Consolas"
+                            IsReadOnly="False"
+                            Margin="4" />
             </Grid>
         </GroupBox>
 
@@ -82,17 +83,17 @@ WindowStyle="None"
                     <TextBlock VerticalAlignment="Center" 
                                Margin="0,0,8,0"
                                Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SelectProcessingModeText}" />
-                    <ComboBox Width="280" 
-                              ItemsSource="{Binding ProcessingModes}" 
-                              SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
+                    <hc:ComboBox Width="280" 
+                                 ItemsSource="{Binding ProcessingModes}" 
+                                 SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}">
+                        <hc:ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
                             </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        </hc:ComboBox.ItemTemplate>
+                    </hc:ComboBox>
                     <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ApplyText}" 
-                            Width="80" 
+                            Style="{StaticResource PrimaryButton}"
                             Margin="8,0,0,0"
                             Command="{Binding ApplyProcessingCommand}" />
                 </StackPanel>
@@ -109,15 +110,15 @@ WindowStyle="None"
                   Margin="0,0,0,12">
             <StackPanel Orientation="Horizontal" Margin="4" HorizontalAlignment="Left">
                 <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CopyToClipboardText}" 
-                        Width="140" 
+                        Style="{StaticResource PrimaryButton}"
                         Margin="0,4,8,4"
                         Command="{Binding CopyToClipboardCommand}" />
                 <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=RefreshText}" 
-                        Width="100" 
+                        Style="{StaticResource SecondaryButton}"
                         Margin="0,4,8,4"
                         Command="{Binding RefreshClipboardCommand}" />
                 <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ClearText}" 
-                        Width="100" 
+                        Style="{StaticResource SecondaryButton}"
                         Margin="0,4,0,4"
                         Command="{Binding ClearCommand}" />
             </StackPanel>
@@ -127,16 +128,15 @@ WindowStyle="None"
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right">
             <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=OpenSettingText}" 
-                    Width="100" 
+                    Style="{StaticResource SecondaryButton}"
                     Margin="0,0,8,0"
                     Command="{Binding OpenSettingsCommand}" />
             <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ExitText}" 
-                    Width="100" 
+                    Style="{StaticResource SecondaryButton}"
                     Margin="0,0,8,0"
-                    Background="BurlyWood"
                     Command="{Binding ExitApplicationCommand}" />
             <Button Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CloseText}" 
-                    Width="100"
+                    Style="{StaticResource PrimaryButton}"
                     IsCancel="True"
                     Click="CloseButton_Click" />
         </StackPanel>
