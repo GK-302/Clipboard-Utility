@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
         xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
-        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WindowTitle}" Height="520" Width="640">
     <Window.Resources>
@@ -42,7 +42,7 @@
                        Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=SettingInfomationText}" Margin="10 0 0 0" />
         </StackPanel>
 
-        <hc:TabControl Grid.Row="1">
+        <TabControl Grid.Row="1">
             <TabItem Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=GeneralText}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <Grid Margin="8">
@@ -110,26 +110,26 @@
 
                                 <!-- Processing Mode -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=ProcessingModeTitle}" Style="{StaticResource FormLabel}" />
-                                <hc:ComboBox Grid.Row="1" Grid.Column="1" Width="260" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}"
+                                <ComboBox Grid.Row="1" Grid.Column="1" Width="260" ItemsSource="{Binding ProcessingModes}" SelectedItem="{Binding SelectedProcessingMode, Mode=TwoWay}"
                                           IsEnabled="{Binding UsePresets, Converter={StaticResource InverseBooleanConverter}}" Style="{StaticResource FormInput}">
-                                    <hc:ComboBox.ItemTemplate>
+                                    <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Converter={StaticResource ProcModeToDisplay}}"/>
                                         </DataTemplate>
-                                    </hc:ComboBox.ItemTemplate>
-                                </hc:ComboBox>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
 
                                 <!-- Preset for tray click -->
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=PresetForTrayClickTitle}" Style="{StaticResource FormLabel}" />
-                                <hc:ComboBox Grid.Row="2" Grid.Column="1" Width="260" ItemsSource="{Binding AvailablePresets}" x:Name="presetCombobox"
+                                <ComboBox Grid.Row="2" Grid.Column="1" Width="260" ItemsSource="{Binding AvailablePresets}" x:Name="presetCombobox"
                                           SelectedItem="{Binding SelectedPresetForTrayClick, Mode=TwoWay}"
                                           IsEnabled="{Binding UsePresets}" Style="{StaticResource FormInput}" >
-                                    <hc:ComboBox.ItemTemplate>
+                                    <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Name}"/>
                                         </DataTemplate>
-                                    </hc:ComboBox.ItemTemplate>
-                                </hc:ComboBox>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </Grid>
                         </GroupBox>
                     </Grid>
@@ -221,7 +221,7 @@
                     <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="6">
                         <StackPanel Orientation="Horizontal" >
                             <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
-                            <hc:ComboBox Width="200"
+                            <ComboBox Width="200"
                                       ItemsSource="{Binding AvailableCultures}"
                                       SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
                                       DisplayMemberPath="NativeName" />
@@ -229,7 +229,7 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-        </hc:TabControl>
+        </TabControl>
 
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>

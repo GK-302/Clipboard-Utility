@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ClipboardUtility.src.Views"
         xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
         xmlns:slides="clr-namespace:ClipboardUtility.src.Views.WelcomeSlides"
-        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="Welcome" 
         Height="720" Width="1050" ResizeMode="NoResize"
@@ -19,17 +19,16 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <hc:TabControl x:Name="SlideTabControl" Grid.Row="0" 
-                       SelectionChanged="SlideTabControl_SelectionChanged"
-                       BorderThickness="0"
-                       Background="Transparent"
-                       Style="{StaticResource TabControlInLine}">
+        <TabControl x:Name="SlideTabControl" Grid.Row="0" 
+                    SelectionChanged="SlideTabControl_SelectionChanged"
+                    BorderThickness="0"
+                    Background="Transparent">
 
-            <hc:TabControl.ItemContainerStyle>
-                <Style TargetType="TabItem" BasedOn="{StaticResource TabItemInLine}">
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </Style>
-            </hc:TabControl.ItemContainerStyle>
+            </TabControl.ItemContainerStyle>
 
             <TabItem Header="Intro">
                 <slides:Slide1_Intro />
@@ -42,7 +41,7 @@
                 <slides:PresetSetting SelectedPreset="{Binding SelectedPreset, Mode=TwoWay}"/>
             </TabItem>
 
-        </hc:TabControl>
+        </TabControl>
 
         <Grid Grid.Row="1" Margin="20" Background="{StaticResource SecondaryBrush}">
             <Grid.ColumnDefinitions>
@@ -57,10 +56,10 @@
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Width="Auto" VerticalAlignment="Center" Margin="0,0,10,0"
                            Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=LanugageSettingTitle}"/>
-                <hc:ComboBox Width="200"
-                             ItemsSource="{Binding AvailableCultures}"
-                             SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
-                             DisplayMemberPath="NativeName" />
+                <ComboBox Width="200"
+                          ItemsSource="{Binding AvailableCultures}"
+                          SelectedItem="{Binding SelectedCulture, Mode=TwoWay}"
+                          DisplayMemberPath="NativeName" />
             </StackPanel>
 
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
