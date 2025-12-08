@@ -17,19 +17,22 @@ public class ClipboardEventCoordinator
     private readonly Func<bool> _isInternalOperationGetter;
     private readonly TaskTrayService? _taskTrayService;
     private readonly SettingsService _settingsService;
+    private readonly ClipboardService _clipboardService;
 
     public ClipboardEventCoordinator(
         TextProcessingService textProcessingService,
         NotificationsService notificationsService,
         Func<bool> isInternalOperationGetter,
         SettingsService settingsService,
-        TaskTrayService? taskTrayService = null)
+        TaskTrayService? taskTrayService = null,
+        ClipboardService clipboardService = null)
     {
         _textProcessingService = textProcessingService ?? throw new ArgumentNullException(nameof(textProcessingService));
         _notificationsService = notificationsService ?? throw new ArgumentNullException(nameof(notificationsService));
         _isInternalOperationGetter = isInternalOperationGetter ?? throw new ArgumentNullException(nameof(isInternalOperationGetter));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService)); // <--- 3. フィールドに代入
         _taskTrayService = taskTrayService;
+        _clipboardService = clipboardService ?? throw new ArgumentNullException(nameof(clipboardService));
     }
 
     /// <summary>
@@ -71,6 +74,7 @@ public class ClipboardEventCoordinator
             formattedText = $"Copied {charCount} words";
         }
 
+        // デバッグ用のリトライ表示を削除し、通常メッセージのみ表示
         _ = _notificationsService.ShowNotification(formattedText, NotificationType.Copy);
     }
 
