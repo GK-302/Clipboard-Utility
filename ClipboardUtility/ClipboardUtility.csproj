@@ -52,8 +52,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include=".github\workflows\build.yml" />
-    <PackageReference Include="HandyControl" Version="3.5.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="WPF-UI" Version="4.1.0" />
     <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
     <Resource Include="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
     <Resource Include="src\Assets\Icons\small_icon.ico" />
@@ -93,10 +93,7 @@
     </PropertyGroup>
     
     <!-- ツールを直接実行（失敗しても続行） -->
-    <Exec Command="dotnet-project-licenses -i . --outfile $(TargetDir)\licenses.json -j"
-		  IgnoreExitCode="true" 
-		  ContinueOnError="true" 
-		  StandardOutputImportance="Normal" />
+    <Exec Command="dotnet-project-licenses -i . --outfile $(TargetDir)\licenses.json -j" IgnoreExitCode="true" ContinueOnError="true" StandardOutputImportance="Normal" />
   </Target>
 
 </Project>
