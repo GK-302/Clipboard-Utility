@@ -1,69 +1,63 @@
-# ワークフローの名前
-name: .NET WPF Release
+name: .NET WPF Release with Licenses
 
-# ワークフローが実行されるタイミングを定義
+# ワークフローが実行されるタイミング
 on:
   push:
     tags:
-      - "v*.*.*" # vで始まり、.が2つ含まれるタグ（例: v0.1.2, v0.1.2-beta）で実行
-
+      - "v*.*.*" # 例: v0.1.2, v0.1.2-beta
   workflow_dispatch:
 
-# 実行される一連のタスク（ジョブ）を定義
 jobs:
   build-and-release:
-    # ジョブの名前
-    name: Build and Release
-    # 実行環境を指定。WPFはWindowsが必須
+    name: Build, Generate License, and Release
     runs-on: windows-latest
-
-    # GitHubリリースを作成・編集するために、リポジトリのコンテンツへの書き込み権限を付与します。
     permissions:
       contents: write
 
     steps:
-      # 1. リポジトリのソースコードをチェックアウトする
+      # 1. チェックアウト
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. .NET SDKをセットアップする
+      # 2. .NET SDK セットアップ
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          # プロジェクトで使用している.NETのバージョンを指定
           dotnet-version: "8.0.x"
-          # dotnet restore がWPFプロジェクトを処理できるようにワークロードを追加
           workloads: microsoft-net-sdk-windowsdesktop
 
-      # 3. MSBuildをセットアップする (インストーラーのビルドに必要)
+      # 3. MSBuild セットアップ
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # 4. ソリューション全体のNuGetパッケージを復元する
+      # --- [追加] ライセンス生成ツールのインストール ---
+      - name: Install License Tool
+        run: dotnet tool install --global dotnet-project-licenses
+
+      # 4. NuGet パッケージの復元
       - name: Restore NuGet packages
-        # workloads を追加したため、ソリューション全体の restore が安全に実行できる
         run: dotnet restore ClipboardUtility.sln
 
-      # 4a. タグ名からバージョン番号を抽出
+      # --- [追加] ライセンス情報の生成 ---
+      # 復元後、ビルド前にライセンス情報を生成します。
+      # 後のステップでコピーしやすいよう、一時的にルート直下へ 'licenses.json' として出力します。
+      - name: Generate License Information
+        working-directory: ClipboardUtility
+        run: dotnet-project-licenses -i . --outfile ../licenses.json -j
+
+      # 4a. バージョン番号の抽出
       - name: Extract version number from tag
         id: extract_version
         run: |
-          # タグ名 (v1.2.3 や v1.2.3-beta) から 'v' と '-beta' などのプレリリース部分を除去
           $VERSION_NUMBER = "${{ github.ref_name }}" -replace '^v', '' -replace '-.*', ''
           Write-Host "Extracted version: $VERSION_NUMBER"
-          # 抽出したバージョン番号を、後のステップで使えるように 'outputs' にセット
           echo "VERSION_NUMBER=$VERSION_NUMBER" >> $env:GITHUB_OUTPUT
 
-      # 4b. タグとインストーラーのバージョンを比較
+      # 4b. インストーラーバージョンの検証
       - name: Compare Tag Version with Installer Version
         run: |
-          # タグ名 (v1.0.1 や v1.0.1-beta) から 'v' と '-beta' などを除去
           $TAG_VERSION = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
-          Write-Host "Checking Tag Version: $TAG_VERSION"
-
           $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj"
-
-          # .vdproj ファイルから "ProductVersion" = "8:1.0.0" の行を探す
           $FILE_CONTENT = Get-Content $VDPROJ_PATH
           $FILE_VERSION_LINE = $FILE_CONTENT | Select-String -Pattern '("ProductVersion" = "8:)([\d\.]+)"'
 
@@ -72,116 +66,88 @@ jobs:
             exit 1
           }
 
-          # マッチした部分からバージョン番号(例: 1.0.0)のみを抽出
           $FILE_VERSION = $FILE_VERSION_LINE.Matches.Groups[2].Value
-          Write-Host "Found Installer Version: $FILE_VERSION"
-
-          # バージョンを比較
+          
           if ($TAG_VERSION -ne $FILE_VERSION) {
-            Write-Error "Tag version ($TAG_VERSION) does not match installer version ($FILE_VERSION). Please update $VDPROJ_PATH and re-tag."
+            Write-Error "Tag version ($TAG_VERSION) does not match installer version ($FILE_VERSION)."
             exit 1
           }
+          Write-Host "Versions match. Proceeding."
 
-          Write-Host "Versions match. Proceeding with build."
-
-      # 4c. .csproj の <Version> タグを更新
+      # 4c. csprojのバージョン更新
       - name: Update .csproj Version Tag
         run: |
           $CSPROJ_PATH = "ClipboardUtility/ClipboardUtility.csproj"
-          # ステップ 4a から3桁のバージョン (例: 1.0.1) を取得
           $TAG_VERSION = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
-
-          # .csproj に書き込むために 4桁 (例: 1.0.1.0) にする
           $VERSION_4_DIGITS = "$TAG_VERSION.0"
-          Write-Host "Updating $CSPROJ_PATH <Version> tag to $VERSION_4_DIGITS using XML parser"
-
-          # 1. XMLファイルとして読み込む
+          
           [xml]$csproj = Get-Content -Path $CSPROJ_PATH
-
-          # 2. <Version> タグを探す
-          #    XPath を使って PropertyGroup の中の Version タグを正確に指定
           $versionNode = $csproj.SelectSingleNode("//PropertyGroup/Version")
-
+          
           if ($versionNode -eq $null) {
             Write-Error "<Version> tag not found in $CSPROJ_PATH"
             exit 1
           }
-
-          # 3. ノードの値を更新
+          
           $versionNode.InnerText = $VERSION_4_DIGITS
-
-          # 4. ファイルに保存
           $csproj.Save($CSPROJ_PATH)
 
-          Write-Host "Successfully updated $CSPROJ_PATH"
-
-      # 5. WPFアプリケーションを発行する (単一exeファイル用)
+      # 5. WPFアプリケーションの発行 (単一exe)
       - name: Publish WPF Application
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
 
-      # 6. MSIインストーラーをビルドする
+      # --- [追加] ライセンスファイルを単一exe用フォルダへコピー ---
+      - name: Copy License to publish folder
+        run: Copy-Item -Path ./licenses.json -Destination ./publish/
+
+      # 6. MSIインストーラーのビルド
       - name: Build MSI Installer
         run: |
           & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller"
-
-          Write-Host "--- Displaying IDE Activity Log (ide_activity.log) ---"
+          
           if (Test-Path "ide_activity.log") {
-            # XML形式のログなので、中身をそのままテキストとして表示
             Get-Content "ide_activity.log" -Encoding UTF8 -ErrorAction SilentlyContinue
-          } else {
-            Write-Warning "ide_activity.log not found."
           }
-      # 7. noadmin版インストーラー用のファイルを作成し、UAC要求を削除する
+
+      # --- [追加] ライセンスファイルをインストーラー出力先へコピー ---
+      # NoAdmin版作成時にこのフォルダごとコピーされるため、NoAdmin版にも自動的に含まれます
+      - name: Copy License to Installer Release folder
+        run: Copy-Item -Path ./licenses.json -Destination ./ClipboardUtilityInstaller/Release/
+
+      # 7. NoAdmin版インストーラーの作成とUAC解除
       - name: Create and Modify NoAdmin Installer Version
         run: |
-          # noadmin版を格納する新しいディレクトリを作成
           New-Item -ItemType Directory -Force -Path "./ClipboardUtilityInstaller/Release-NoAdmin"
-
-          # ビルドされた通常版のファイルをnoadmin用のディレクトリにコピー
           Copy-Item -Path ./ClipboardUtilityInstaller/Release/* -Destination ./ClipboardUtilityInstaller/Release-NoAdmin/ -Recurse
 
-          # Windows SDKの中から最新のmsiinfo.exeを探す
           $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Sort-Object FullName -Descending | Select-Object -First 1).FullName
-          if (-not $sdkPath) {
-            Write-Error "msiinfo.exe not found in Windows SDK."
-            exit 1
-          }
-          Write-Host "Found msiinfo.exe at $sdkPath"
-
-          # コピーされたMSIファイルのパスを指定
           $msiPath = "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi"
-
-          # コピーされたMSIファイルからUAC昇格要求を削除
-          Write-Host "Modifying $msiPath to remove UAC requirement..."
+          
           & $sdkPath $msiPath /W 10
 
-      # 8. README.mdをpublishディレクトリにコピーする
+      # 8. READMEのコピー
       - name: Copy README to publish folder
         run: Copy-Item -Path ./README* -Destination ./publish/
 
-      # 9. 単一exeファイルの成果物をZIPに圧縮する
+      # 9. 単一exe版のZIP圧縮 (licenses.jsonが含まれます)
       - name: Zip the standalone artifact
         run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-Standalone-${{ github.ref_name }}.zip
 
-      # 10. 通常版インストーラーの成果物をZIPに圧縮する
+      # 10. 通常版インストーラーのZIP圧縮 (licenses.jsonが含まれます)
       - name: Zip the normal installer artifact
         run: Compress-Archive -Path ./ClipboardUtilityInstaller/Release/* -DestinationPath ClipboardUtility-Installer-${{ github.ref_name }}.zip
 
-      # 11. noadmin版インストーラーの成果物をZIPに圧縮する
+      # 11. NoAdmin版インストーラーのZIP圧縮 (licenses.jsonが含まれます)
       - name: Zip the no-admin installer artifact
         run: Compress-Archive -Path ./ClipboardUtilityInstaller/Release-NoAdmin/* -DestinationPath ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
 
-      # 12. GitHubリリースを作成 または 更新 (MSI/EXEアセットのアップロード)
+      # 12. GitHubリリース作成
       - name: Create or Update Release with MSI/EXE assets
         uses: softprops/action-gh-release@v1
         with:
-          # ワークフローのトリガーとなったタグ名
           tag_name: ${{ github.ref_name }}
-          # リリース名
-          name: Release ${{ github.ref_name }} # (release_name から name に修正済み)
-          # タグ名にハイフンが含まれていればプレリリースに設定
+          name: Release ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, '-') }}
-          # 3つのZIPファイルをアップロード
           files: |
             ./ClipboardUtility-Standalone-${{ github.ref_name }}.zip
             ./ClipboardUtility-Installer-${{ github.ref_name }}.zip
