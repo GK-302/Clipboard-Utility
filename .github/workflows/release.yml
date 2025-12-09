@@ -19,11 +19,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. .NET SDK セットアップ
+# 2. .NET SDKをセットアップする
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          # プロジェクト本体用の8.0と、ツール用の7.0を両方インストール
+          dotnet-version: |
+            8.0.x
+            7.0.x
           workloads: microsoft-net-sdk-windowsdesktop
 
       # 3. MSBuild セットアップ
