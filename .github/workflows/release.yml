@@ -123,6 +123,9 @@ jobs:
       # 5. WPFアプリケーションを発行する (単一exeファイル用)
       # ここでビルドが走り、csprojの AfterTargets="Build" がトリガーされ、licenses.json が生成されます
       - name: Publish WPF Application
+      # ツールが .NET 7 を要求しても、インストール済みの .NET 8 (Major更新版) で実行させる
+        env:
+          DOTNET_ROLL_FORWARD: Major
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
 
       # 6. MSIインストーラーをビルドする
