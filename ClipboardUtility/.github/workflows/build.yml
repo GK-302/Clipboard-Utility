@@ -33,6 +33,13 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
+    # Generate license information using dotnet-project-licenses
+    # This matches the local MSBuild target behavior
+    - name: Generate License Information
+      working-directory: ClipboardUtility
+      run: dotnet-project-licenses -i . --outfile bin/Release/net8.0-windows/licenses.json -j
+      continue-on-error: true
+
     - name: Run Tests
       run: dotnet test --no-build --configuration Release --verbosity normal
 
