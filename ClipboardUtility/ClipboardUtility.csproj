@@ -58,8 +58,8 @@
       <Link>licences\Roboto\OFL.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <PackageReference Include="WPF-UI" Version="3.0.5" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="WPF-UI" Version="4.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
     <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
     <Resource Include="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
     <Resource Include="src\Assets\Icons\small_icon.ico" />
