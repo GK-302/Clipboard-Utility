@@ -119,15 +119,6 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   v0.5.1 に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string AppVersion {
-            get {
-                return ResourceManager.GetString("AppVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Cancel に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string CancelText {
@@ -142,6 +133,15 @@ namespace ClipboardUtility.src.Properties {
         public static string CharacterCountText {
             get {
                 return ResourceManager.GetString("CharacterCountText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Check for Updates に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CheckForUpdatesText {
+            get {
+                return ResourceManager.GetString("CheckForUpdatesText", resourceCulture);
             }
         }
         
@@ -196,6 +196,15 @@ namespace ClipboardUtility.src.Properties {
         public static string CopyToClipboardText {
             get {
                 return ResourceManager.GetString("CopyToClipboardText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Current Version: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CurrentVersionText {
+            get {
+                return ResourceManager.GetString("CurrentVersionText", resourceCulture);
             }
         }
         
@@ -587,6 +596,24 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   You are using the latest version ({0}). に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NoUpdateAvailableMessageText {
+            get {
+                return ResourceManager.GetString("NoUpdateAvailableMessageText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   No Update Available に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NoUpdateAvailableText {
+            get {
+                return ResourceManager.GetString("NoUpdateAvailableText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Setting に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string OpenSetting {
@@ -615,20 +642,11 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
-        ///   Removes all line breaks and replaces them with spaces に類似しているローカライズされた文字列を検索します。
+        ///   Remove Line Breaks and Normalize Whitespace(Built-in) に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        public static string Preset_RemoveLineBreaks_Description {
+        public static string Preset_RemoveLineBreaksAndNormalizeWhitespace_Description {
             get {
-                return ResourceManager.GetString("Preset_RemoveLineBreaks_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Remove Line Breaks(Built-in) に類似しているローカライズされた文字列を検索します。
-        /// </summary>
-        public static string Preset_RemoveLineBreaks_Name {
-            get {
-                return ResourceManager.GetString("Preset_RemoveLineBreaks_Name", resourceCulture);
+                return ResourceManager.GetString("Preset_RemoveLineBreaksAndNormalizeWhitespace_Description", resourceCulture);
             }
         }
         
@@ -638,6 +656,24 @@ namespace ClipboardUtility.src.Properties {
         public static string Preset_RemoveLineBreaksAndNormalizeWhitespace_Name {
             get {
                 return ResourceManager.GetString("Preset_RemoveLineBreaksAndNormalizeWhitespace_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Removes all line breaks and whitespace に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_RemoveLineBreaksAndRemoveWhitespace_Description {
+            get {
+                return ResourceManager.GetString("Preset_RemoveLineBreaksAndRemoveWhitespace_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Remove Line Breaks and Whitespace(Built-in) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Preset_RemoveLineBreaksAndRemoveWhitespace_Name {
+            get {
+                return ResourceManager.GetString("Preset_RemoveLineBreaksAndRemoveWhitespace_Name", resourceCulture);
             }
         }
         
@@ -975,6 +1011,53 @@ namespace ClipboardUtility.src.Properties {
         }
         
         /// <summary>
+        ///   A new version ({0}) is available. Current version: {1}
+        ///
+        ///Would you like to visit the download page? に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UpdateAvailableMessageText {
+            get {
+                return ResourceManager.GetString("UpdateAvailableMessageText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Update Available! に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UpdateAvailableText {
+            get {
+                return ResourceManager.GetString("UpdateAvailableText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Failed to check for updates. Please check your internet connection and try again. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UpdateCheckFailedMessageText {
+            get {
+                return ResourceManager.GetString("UpdateCheckFailedMessageText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Update Check Failed に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UpdateCheckFailedText {
+            get {
+                return ResourceManager.GetString("UpdateCheckFailedText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Checking for updates... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UpdateCheckInProgressText {
+            get {
+                return ResourceManager.GetString("UpdateCheckInProgressText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Use Presets に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string UsePresetsText {
@@ -989,6 +1072,16 @@ namespace ClipboardUtility.src.Properties {
         public static string WelcomeNotificationCloseText {
             get {
                 return ResourceManager.GetString("WelcomeNotificationCloseText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   select your preset
+        ///it will be executed when tasktrayicon clicked に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string WelcomePresetSettingTitle {
+            get {
+                return ResourceManager.GetString("WelcomePresetSettingTitle", resourceCulture);
             }
         }
         

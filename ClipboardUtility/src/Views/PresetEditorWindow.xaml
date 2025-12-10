@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
         xmlns:conv="clr-namespace:ClipboardUtility.src.Converters"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="Preset Editor" Height="450" Width="640">
     <Window.Resources>
@@ -36,7 +37,7 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <Button Content="Add" Command="{Binding AddSelectedModeCommand}" Width="84" Margin="6,0,0,0" />
+                <Button Content="Add" Command="{Binding AddSelectedModeCommand}" Style="{StaticResource PrimaryButton}" Margin="6,0,0,0" />
             </StackPanel>
         </StackPanel>
 
@@ -66,8 +67,8 @@
         </Grid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-            <Button x:Name="BtnOk" Width="84" Margin="6" Click="BtnOk_Click">OK</Button>
-            <Button x:Name="BtnCancel" Width="84" Margin="6" Click="BtnCancel_Click">Cancel</Button>
+            <Button x:Name="BtnOk" Click="BtnOk_Click" Style="{StaticResource PrimaryButton}">OK</Button>
+            <Button x:Name="BtnCancel" Click="BtnCancel_Click" Style="{StaticResource SecondaryButton}">Cancel</Button>
         </StackPanel>
     </Grid>
 </Window>

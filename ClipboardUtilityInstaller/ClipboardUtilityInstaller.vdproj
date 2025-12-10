@@ -27,7 +27,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_E4BEBF2B9484429DA04A12F87F017FA5"
+        "MsmKey" = "8:_C938EA8857344BB2BACB3B0E61CD7D5C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_EE8F4A1D85A64B2FA931F91C8CC88D41"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -153,10 +159,30 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E4BEBF2B9484429DA04A12F87F017FA5"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C938EA8857344BB2BACB3B0E61CD7D5C"
             {
-            "SourcePath" = "8:..\\LICENSE.rtf"
+            "SourcePath" = "8:LICENSE.rtf"
             "TargetName" = "8:LICENSE.rtf"
+            "Tag" = "8:"
+            "Folder" = "8:_11D7C0EA47E049EBB5B6B970DEC27C4B"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_EE8F4A1D85A64B2FA931F91C8CC88D41"
+            {
+            "SourcePath" = "8:..\\ClipboardUtility\\src\\Assets\\licenses.json"
+            "TargetName" = "8:licenses.json"
             "Tag" = "8:"
             "Folder" = "8:_11D7C0EA47E049EBB5B6B970DEC27C4B"
             "Condition" = "8:"
@@ -229,15 +255,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Clipboard Utility"
-        "ProductCode" = "8:{69445BD8-4B6A-44B4-91DE-3BA846177AAE}"
-        "PackageCode" = "8:{4EE7E83B-AA74-472C-A2C8-0A38CA7363FF}"
+        "ProductCode" = "8:{839875FD-868A-4B52-A8F6-D4E8AF568398}"
+        "PackageCode" = "8:{61C16072-2A40-4360-A87C-BED7C7BD137A}"
         "UpgradeCode" = "8:{DBF77C92-B594-4443-B59A-065B5B5DDD9C}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.6"
+        "ProductVersion" = "8:1.2.0"
         "Manufacturer" = "8:GK-302"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -619,7 +645,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:_E4BEBF2B9484429DA04A12F87F017FA5"
+                            "Value" = "8:_C938EA8857344BB2BACB3B0E61CD7D5C"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "Sunken"
@@ -1055,7 +1081,6 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:_E4BEBF2B9484429DA04A12F87F017FA5"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "Sunken"
@@ -1221,7 +1246,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BE0F15CD0B3448D488B25BEEB719015F"
             {
-            "SourcePath" = "8:..\\ClipboardUtility\\obj\\Release\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\ClipboardUtility\\obj\\Debug\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_11D7C0EA47E049EBB5B6B970DEC27C4B"

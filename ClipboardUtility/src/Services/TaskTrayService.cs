@@ -1,5 +1,6 @@
 ﻿using ClipboardUtility.src.Helpers;
 using ClipboardUtility.src.Models;
+using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
@@ -8,49 +9,15 @@ namespace ClipboardUtility.src.Services;
 
 public class TaskTrayService : ITaskTrayService, IDisposable
 {
-    #region Singleton実装
-
-    // 1. 静的なインスタンス変数（初期値はnull）
-    private static TaskTrayService _instance;
-
-    // 2. スレッドセーフのためのロックオブジェクト
-    private static readonly object _lock = new();
-
-    // 3. 外部からインスタンスにアクセスするためのプロパティ
-    public static TaskTrayService Instance
-    {
-        get
-        {
-            // Double-checked lockingパターン
-            if (_instance == null)
-            {
-                lock (_lock)
-                {
-                    if (_instance == null)
-                    {
-                        _instance = new TaskTrayService();
-                    }
-                }
-            }
-            return _instance;
-        }
-    }
-
-    // 4. プライベートコンストラクタ（外部からnewできないようにする）
-    private TaskTrayService()
-    {
-        // 初期化処理は必要に応じてここに
-    }
-
-    #endregion
 
     private NotifyIcon _notifyIcon;
     private bool _isInitialized = false;
     private src.Views.ClipboardManagerWindow _clipboardManagerWindow;
-    private PresetService _presetService;
     private TextProcessingService _textProcessingService;
-    private ClipboardService _clipboardService;
-
+    private readonly PresetService _presetService;
+    private readonly ClipboardService _clipboardService;
+    private readonly SettingsService _settingsService;
+    private readonly IServiceProvider _serviceProvider;
     // クリップボードの統計情報を保持
     private string _currentClipboardText = string.Empty;
 
@@ -59,7 +26,17 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     public event EventHandler ShowWindowRequested;
     public event EventHandler ExitApplicationRequested;
     public event EventHandler<ProcessingPreset> PresetExecutionRequested;
-
+    public TaskTrayService(
+        IServiceProvider serviceProvider,
+        PresetService presetService,
+        ClipboardService clipboardService,
+        SettingsService settingsService)
+    {
+        _serviceProvider = serviceProvider;
+        _presetService = presetService;
+        _clipboardService = clipboardService;
+        _settingsService = settingsService;
+    }
     public void Initialize()
     {
         // 既に初期化済みの場合は何もしない
@@ -70,11 +47,7 @@ public class TaskTrayService : ITaskTrayService, IDisposable
         }
 
         // サービスの初期化
-        _textProcessingService = new TextProcessingService();
-        _presetService = new PresetService(_textProcessingService);
         _presetService.LoadPresets();
-        _clipboardService = new ClipboardService();
-
         System.IO.Stream iconStream;
         try
         {
@@ -214,7 +187,7 @@ public class TaskTrayService : ITaskTrayService, IDisposable
     {
         try
         {
-            var settings = SettingsService.Instance.Current;
+            var settings = _settingsService.Current;
             if (!settings.SelectedPresetId.HasValue)
             {
                 Debug.WriteLine("TaskTrayService.ExecuteSelectedPreset: No preset selected in settings");
@@ -272,8 +245,7 @@ public class TaskTrayService : ITaskTrayService, IDisposable
                 }
                 else
                 {
-                    // 新しいウィンドウを作成
-                    _clipboardManagerWindow = new src.Views.ClipboardManagerWindow();
+                    _clipboardManagerWindow = _serviceProvider.GetRequiredService<src.Views.ClipboardManagerWindow>();
                     _clipboardManagerWindow.Closed += (s, e) => _clipboardManagerWindow = null;
                     _clipboardManagerWindow.Show();
                     _clipboardManagerWindow.Activate();
@@ -314,10 +286,5 @@ public class TaskTrayService : ITaskTrayService, IDisposable
         }
         _isInitialized = false;
 
-        // Singletonインスタンスもリセット
-        lock (_lock)
-        {
-            _instance = null;
-        }
     }
 }

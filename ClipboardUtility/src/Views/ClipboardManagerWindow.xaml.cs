@@ -18,13 +18,12 @@ public partial class ClipboardManagerWindow : Window
 
     private bool _isClosing = false;
 
-    public ClipboardManagerWindow()
+    public ClipboardManagerWindow(ViewModels.ClipboardManagerViewModel viewModel)
     {
         InitializeComponent();
-        var viewModel = new ViewModels.ClipboardManagerViewModel();
         viewModel.OwnerWindow = this;
         DataContext = viewModel;
-        
+
         // ウィンドウが読み込まれた後に位置を設定
         Loaded += ClipboardManagerWindow_Loaded;
         Deactivated += ClipboardManagerWindow_Deactivated;

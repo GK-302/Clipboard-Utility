@@ -1,5 +1,5 @@
 ﻿using ClipboardUtility.src.Services;
-using ClipboardUtility.src.ViewModels;  // この行を追加
+using ClipboardUtility.src.ViewModels;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -7,38 +7,132 @@ using System.Windows.Interop;
 using MessageBox = System.Windows.MessageBox;
 using System.ComponentModel;
 using System.Globalization;
+using System.Windows.Controls; // スライドナビゲーションに必要
+using ClipboardUtility.src.Views.WelcomeSlides;
+using CheckBox = System.Windows.Controls.CheckBox; // UserControlの参照に必要
 
 namespace ClipboardUtility.src.Views
 {
-    public partial class WelcomeWindow   : Window
+    public partial class WelcomeWindow : Window
     {
-        private readonly WelcomeWindowViewModel _vm;  // この行を追加
+        // 依存関係とViewModel
+        private readonly WelcomeWindowViewModel _vm;
+        private readonly SettingsService _settingsService;
+        private readonly IAppRestartService _restartService;
         private string _initialCultureName;
 
-        public WelcomeWindow()
+        // スライド制御用
+        private int _totalSlides;
+
+        public WelcomeWindow(
+            WelcomeWindowViewModel viewModel,
+            IAppRestartService restartService,
+            SettingsService settingsService)
         {
             InitializeComponent();
-            // CultureProvider を作成して ViewModel に注入
-            var cultureProvider = new CultureProvider();
-            // ViewModelを設定（これらの行を追加）
-            _vm = new WelcomeWindowViewModel(cultureProvider);
+
+            // 依存関係をフィールドに保存
+            _vm = viewModel;
+            _restartService = restartService;
+
+            // ViewModelをDataContextに設定
             DataContext = _vm;
 
-            // ウィンドウ作成時のカルチャ名を保存（null 安全）
+            // 初期カルチャを保存 (言語変更の比較用)
             _initialCultureName = _vm.SelectedCulture?.Name ?? CultureInfo.CurrentUICulture.Name;
 
-            // 閉じるときに確認ダイアログを出すハンドラを登録
+            // イベントハンドラを登録
             this.Closing += WelcomeWindow_Closing;
-
             SourceInitialized += WelcomeWindow_SourceInitialized;
-            this.SizeToContent = SizeToContent.WidthAndHeight;
+
+            // スライドの総数を取得
+            _totalSlides = SlideTabControl.Items.Count;
+            UpdateNavigationUI();
         }
 
-        // 閉じる前の処理: 言語変更があれば確認ダイアログを出す
+        // --- 1. スライドナビゲーション (前回提案のロジック) ---
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SlideTabControl.SelectedIndex > 0)
+            {
+                SlideTabControl.SelectedIndex--;
+            }
+        }
+
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SlideTabControl.SelectedIndex < _totalSlides - 1)
+            {
+                // 次のスライドへ
+                SlideTabControl.SelectedIndex++;
+            }
+            else
+            {
+                // 最後のスライドで「完了 (Done)」が押された
+                // 設定を保存してウィンドウを閉じる
+                SaveSettingsAndClose();
+            }
+        }
+
+        private void SlideTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.OriginalSource != SlideTabControl)
+                return;
+            UpdateNavigationUI();
+        }
+
+        private void UpdateNavigationUI()
+        {
+            int currentIndex = SlideTabControl.SelectedIndex;
+
+            // ページ番号
+            PageIndicator.Text = $"{currentIndex + 1} / {_totalSlides}";
+
+            // 「前へ」ボタンの有効/無効
+            BackButton.IsEnabled = currentIndex > 0;
+
+            // 「次へ」/「完了」ボタンのテキスト切り替え
+            if (currentIndex == _totalSlides - 1)
+            {
+                // TODO: "Done" も多言語化 (LocalizedStrings.Instance にキーを追加)
+                NextButton.Content = "Done";
+            }
+            else
+            {
+                // TODO: "Next" も多言語化 (LocalizedStrings.Instance にキーを追加)
+                NextButton.Content = "Next";
+            }
+        }
+
+        // --- 2. 設定保存 (ユーザー提供のButton_Clickロジックをベースに修正) ---
+
+        private void SaveSettingsAndClose()
+        {
+
+            try
+            {
+                _vm.SaveWelcomeSettings();
+            }
+            catch (Exception ex)
+            {
+                ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow.SaveSettingsAndClose: Save settings failed");
+                MessageBox.Show("設定の保存に失敗しました。");
+            }
+            finally
+            {
+                // ウィンドウを閉じる (これにより WelcomeWindow_Closing がトリガーされる)
+                this.Close();
+            }
+        }
+
+        // --- 3. 再起動確認 (ユーザー提供のロジック) ---
+
         private void WelcomeWindow_Closing(object? sender, CancelEventArgs e)
         {
             try
             {
+                // 言語設定が変更されたかチェック
                 var currentCulture = _vm.SelectedCulture?.Name ?? CultureInfo.CurrentUICulture.Name;
                 if (!string.Equals(_initialCultureName, currentCulture, StringComparison.OrdinalIgnoreCase))
                 {
@@ -52,36 +146,23 @@ namespace ClipboardUtility.src.Views
                     {
                         try
                         {
-                            // DI コンテナ経由で再起動サービスを取得して再起動
-                            IAppRestartService restartService;
-                            try
-                            {
-                                restartService = App.Services.Get<IAppRestartService>();
-                            }
-                            catch
-                            {
-                                // フォールバック
-                                restartService = new AppRestartService();
-                            }
-
-                            restartService.Restart();
-                            // Restart() が Application.Shutdown() を行う想定なのでここでは閉じる許可
+                            // アプリを再起動
+                            _restartService.Restart();
                         }
                         catch (Exception ex)
                         {
                             ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow_Closing: Restart failed");
                             MessageBox.Show("アプリの再起動に失敗しました。手動で再起動してください。", "再起動失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-                            // 再起動失敗でも閉じる動作は続行（必要なら Cancel にする）
                         }
                     }
                     else if (result == MessageBoxResult.No)
                     {
-                        // 再起動しないを選択 => そのまま閉じる。初期値を更新して次回確認しないようにする。
+                        // 再起動しない場合は、現在のカルチャを「初期値」として更新
                         _initialCultureName = currentCulture;
                     }
                     else // Cancel
                     {
-                        // 閉じるを中止
+                        // ウィンドウを閉じるのをキャンセル
                         e.Cancel = true;
                     }
                 }
@@ -92,6 +173,8 @@ namespace ClipboardUtility.src.Views
             }
         }
 
+        // --- 4. タイトルバー制御 (ユーザー提供のロジック) ---
+
         private void WelcomeWindow_SourceInitialized(object? sender, EventArgs e)
         {
             try
@@ -100,7 +183,6 @@ namespace ClipboardUtility.src.Views
             }
             catch (Exception ex)
             {
-                // 失敗しても例外が UI を壊さないようにログだけ残す
                 ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow: RemoveTitleBarButtons failed");
             }
         }
@@ -114,20 +196,18 @@ namespace ClipboardUtility.src.Views
             const int GWL_STYLE = -16;
             const uint WS_MINIMIZEBOX = 0x00020000;
             const uint WS_MAXIMIZEBOX = 0x00010000;
-            const uint WS_SYSMENU = 0x00080000;
+            // const uint WS_SYSMENU = 0x00080000; // 「X」ボタンを含むシステムメニュー
 
-            // 現在のスタイルを取得
             IntPtr stylePtr = GetWindowLongPtr(hWnd, GWL_STYLE);
             ulong style = (ulong)stylePtr.ToInt64();
 
-            // 最寄りのビットをクリアしてボタンを非表示にする
-            // ここでは Minimize / Maximize / System menu (Close含む) を削除してタイトルバーのボタンを全て取り除く
-            ulong newStyle = style & ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+            // XAMLで ResizeMode="NoResize" を設定しているため、
+            // 最小化・最大化ボタンのみを（念のため）無効化します。
+            // WS_SYSMENU を削除すると「X」ボタンも消えてしまうため、ここでは残します。
+            ulong newStyle = style & ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
 
-            // 設定を反映
             SetWindowLongPtr(hWnd, GWL_STYLE, new IntPtr((long)newStyle));
 
-            // 非クライアント領域を更新して変更を反映させる
             const uint SWP_NOSIZE = 0x0001;
             const uint SWP_NOMOVE = 0x0002;
             const uint SWP_NOZORDER = 0x0004;
@@ -135,29 +215,22 @@ namespace ClipboardUtility.src.Views
             SetWindowPos(hWnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
         }
 
-        // 32/64-bit 対応の Get/Set wrappers
+        // --- 5. Win32 API定義 (ユーザー提供のロジック) ---
+
         private static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
         {
             if (IntPtr.Size == 8)
-            {
                 return GetWindowLongPtr64(hWnd, nIndex);
-            }
             else
-            {
                 return new IntPtr(GetWindowLong32(hWnd, nIndex));
-            }
         }
 
         private static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr newValue)
         {
             if (IntPtr.Size == 8)
-            {
                 return SetWindowLongPtr64(hWnd, nIndex, newValue);
-            }
             else
-            {
                 return new IntPtr(SetWindowLong32(hWnd, nIndex, newValue.ToInt32()));
-            }
         }
 
         [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
@@ -181,32 +254,5 @@ namespace ClipboardUtility.src.Views
             int cx,
             int cy,
             uint uFlags);
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            bool neverShowAgain = IsShowAgain.IsChecked == true;
-            try
-            {
-                // 現在の設定を取得（null安全）
-                var settings = ClipboardUtility.src.Services.SettingsService.Instance.Current ?? new ClipboardUtility.src.Models.AppSettings();
-
-                // プロパティを更新
-                settings.ShowWelcomeNotification = !neverShowAgain;
-
-                // 保存（SettingsService がファイル書き込みと通知を行う）
-                ClipboardUtility.src.Services.SettingsService.Instance.Save(settings);
-
-            }
-            catch (Exception ex)
-            {
-                // エラーはログに残して UI に通知
-                ClipboardUtility.src.Helpers.FileLogger.LogException(ex, "WelcomeWindow.Button_Click: Save settings failed");
-                System.Windows.MessageBox.Show("設定の保存に失敗しました。");
-            }
-            finally {
-                // ウィンドウを閉じる
-                this.Close();
-            }
-        }
     }
 }

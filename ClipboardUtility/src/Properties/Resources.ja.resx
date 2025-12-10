@@ -371,10 +371,6 @@
   <data name="AppTitle" xml:space="preserve">
     <value>Clipboard Utility</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="AppVersion" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
   <data name="AppDescription" xml:space="preserve">
     <value>このアプリはクリップボードツールです。文字数をカウントしたり、文字列処理を行ったりします。</value>
   </data>
@@ -466,11 +462,11 @@
     <value>閉じる</value>
     <comment>ウィンドウを閉じるボタンのテキスト</comment>
   </data>
-  <data name="Preset_RemoveLineBreaks_Name" xml:space="preserve">
-    <value>改行削除（ビルトイン）</value>
+  <data name="Preset_RemoveLineBreaksAndRemoveWhitespace_Name" xml:space="preserve">
+    <value>改行と空白を削除（ビルトイン）</value>
   </data>
-  <data name="Preset_RemoveLineBreaks_Description" xml:space="preserve">
-    <value>すべての改行を削除してスペースに置き換えます</value>
+  <data name="Preset_RemoveLineBreaksAndRemoveWhitespace_Description" xml:space="preserve">
+    <value>すべての改行と空白を削除します</value>
   </data>
   <data name="Preset_NormalizeWhitespace_Description" xml:space="preserve">
     <value>全角・半角を含むすべての空白文字を正規化します</value>
@@ -513,5 +509,50 @@
   </data>
   <data name="Preset_RemoveLineBreaksAndNormalizeWhitespace_Name" xml:space="preserve">
     <value>改行を削除し、単語の間に半角スペース（ビルトイン）</value>
+  </data>
+  <data name="Preset_RemoveLineBreaksAndNormalizeWhitespace_Description" xml:space="preserve">
+    <value>改行を削除し、単語の間に半角スペースを配置します</value>
+  </data>
+  <data name="CheckForUpdatesText" xml:space="preserve">
+    <value>更新を確認</value>
+    <comment>更新を確認するボタンのテキスト</comment>
+  </data>
+  <data name="UpdateCheckInProgressText" xml:space="preserve">
+    <value>更新を確認しています...</value>
+    <comment>更新確認中に表示されるメッセージ</comment>
+  </data>
+  <data name="UpdateAvailableText" xml:space="preserve">
+    <value>アップデートが利用可能です！</value>
+    <comment>更新が利用可能なときに表示されるタイトル</comment>
+  </data>
+  <data name="UpdateAvailableMessageText" xml:space="preserve">
+    <value>新しいバージョン ({0}) が利用可能です。現在のバージョン: {1}
+
+ダウンロードページを開きますか？</value>
+    <comment>更新が利用可能なときに表示されるメッセージ。{0}は新バージョン、{1}は現在のバージョン</comment>
+  </data>
+  <data name="NoUpdateAvailableText" xml:space="preserve">
+    <value>更新はありません</value>
+    <comment>更新が利用不可能なときに表示されるタイトル</comment>
+  </data>
+  <data name="NoUpdateAvailableMessageText" xml:space="preserve">
+    <value>最新バージョン ({0}) を使用しています。</value>
+    <comment>更新が利用不可能なときに表示されるメッセージ。{0}は現在のバージョン</comment>
+  </data>
+  <data name="UpdateCheckFailedText" xml:space="preserve">
+    <value>更新確認に失敗しました</value>
+    <comment>更新確認が失敗したときに表示されるタイトル</comment>
+  </data>
+  <data name="UpdateCheckFailedMessageText" xml:space="preserve">
+    <value>更新の確認に失敗しました。インターネット接続を確認して、再度お試しください。</value>
+    <comment>更新確認が失敗したときに表示されるメッセージ</comment>
+  </data>
+  <data name="CurrentVersionText" xml:space="preserve">
+    <value>現在のバージョン:</value>
+    <comment>設定画面の現在のバージョンラベル</comment>
+  </data>
+  <data name="WelcomePresetSettingTitle" xml:space="preserve">
+    <value>使用するプリセットを選択してください
+タスクトレイアイコンをクリックしたときに実行されます</value>
   </data>
 </root>

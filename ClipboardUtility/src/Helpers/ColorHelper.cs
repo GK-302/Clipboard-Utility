@@ -369,23 +369,33 @@ namespace ClipboardUtility.src.Helpers
         }
 
         /// <summary>
-        /// デフォルトの背景色を取得します（システムテーマに基づく）
+        /// デフォルトの背景色を取得します（現在のマウス位置の画面ピクセルをサンプリング）
         /// </summary>
         /// <returns>デフォルト背景色</returns>
         public static WpfColor GetDefaultBackgroundColor()
         {
             try
             {
-                // システムの背景色を取得
-                var systemColor = WpfSystemColors.DesktopColor;
-                Debug.WriteLine($"ColorHelper: Using system desktop color as default: R={systemColor.R}, G={systemColor.G}, B={systemColor.B}");
-                return systemColor;
+                // 現在のマウスカーソル位置の色をサンプリング
+                var cursorPos = MouseHelper.GetCursorPosition();
+                if (cursorPos.X >= 0 && cursorPos.Y >= 0 &&
+                    cursorPos.X < SystemParameters.VirtualScreenWidth &&
+                    cursorPos.Y < SystemParameters.VirtualScreenHeight)
+                {
+                    var color = GetBackgroundColor(cursorPos.X, cursorPos.Y);
+                    Debug.WriteLine($"ColorHelper: Using cursor position color as default: R={color.R}, G={color.G}, B={color.B}");
+                    return color;
+                }
+
+                // 範囲外などの場合は中間グレーにフォールバック（視認性が安定）
+                Debug.WriteLine("ColorHelper: Cursor position out of bounds, using fallback gray (128,128,128)");
+                return WpfColor.FromRgb(128, 128, 128);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ColorHelper: Error getting system desktop color: {ex.Message}");
-                // 最終フォールバック
-                return WpfColor.FromRgb(240, 240, 240); // 薄いグレー
+                Debug.WriteLine($"ColorHelper: Error getting default background color: {ex.Message}");
+                // 最終フォールバック: 中間グレー
+                return WpfColor.FromRgb(128, 128, 128);
             }
         }
 

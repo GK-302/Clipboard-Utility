@@ -59,7 +59,6 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string NotificationDurationTitle => Resources.NotificationDurationTitle;
     public string ClipboardAccessDeniedMessage => Resources.ClipboardAccessDeniedMessage;
     public string AppTitle => Resources.AppTitle;
-    public string AppVersion => Resources.AppVersion;
     public string AppDescription => Resources.AppDescription;
     public string WelcomeNotificationCloseText => Resources.WelcomeNotificationCloseText;
     public string NeverShowAgainText => Resources.NeverShowAgainText;
@@ -94,6 +93,21 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string NotificationText => Resources.ResourceManager.GetString("NotificationText", CultureInfo.CurrentUICulture) ?? "Notification";
     public string LicenseText => Resources.ResourceManager.GetString("LicenseText", CultureInfo.CurrentUICulture) ?? "LICENSE";
     public string TaskTrayClickOperationText => Resources.TaskTrayClickOperationText;
+    public string CheckForUpdatesText => Resources.ResourceManager.GetString("CheckForUpdatesText", CultureInfo.CurrentUICulture) ?? "Check for Updates";
+    public string UpdateCheckInProgressText => Resources.ResourceManager.GetString("UpdateCheckInProgressText", CultureInfo.CurrentUICulture) ?? "Checking for updates...";
+    public string UpdateAvailableText => Resources.ResourceManager.GetString("UpdateAvailableText", CultureInfo.CurrentUICulture) ?? "Update Available!";
+    public string UpdateAvailableMessageText => Resources.ResourceManager.GetString("UpdateAvailableMessageText", CultureInfo.CurrentUICulture) ?? "A new version ({0}) is available. Current version: {1}\n\nWould you like to visit the download page?";
+    public string NoUpdateAvailableText => Resources.ResourceManager.GetString("NoUpdateAvailableText", CultureInfo.CurrentUICulture) ?? "No Update Available";
+    public string NoUpdateAvailableMessageText => Resources.ResourceManager.GetString("NoUpdateAvailableMessageText", CultureInfo.CurrentUICulture) ?? "You are using the latest version ({0}).";
+    public string UpdateCheckFailedText => Resources.ResourceManager.GetString("UpdateCheckFailedText", CultureInfo.CurrentUICulture) ?? "Update Check Failed";
+    public string UpdateCheckFailedMessageText => Resources.ResourceManager.GetString("UpdateCheckFailedMessageText", CultureInfo.CurrentUICulture) ?? "Failed to check for updates. Please check your internet connection and try again.";
+    public string CurrentVersionText => Resources.ResourceManager.GetString("CurrentVersionText", CultureInfo.CurrentUICulture) ?? "Current Version:";
+    public string BackButtonText => Resources.ResourceManager.GetString("BackButtonText", CultureInfo.CurrentUICulture) ?? "Back";
+    public string NextButtonText => Resources.ResourceManager.GetString("NextButtonText", CultureInfo.CurrentUICulture) ?? "Next";
+    public string WelcomePresetSettingTitle => Resources.ResourceManager.GetString("WelcomePresetSettingTitle", CultureInfo.CurrentUICulture) ?? "Welcome Preset Setting";
+    public string Preset_RemoveLineBreaksAndRemoveWhitespace_Description => Resources.ResourceManager.GetString("Preset_RemoveLineBreaksAndRemoveWhitespace_Description", CultureInfo.CurrentUICulture) ?? "Removes line breaks and normalizes whitespace.";
+    public string Preset_RemoveLineBreaksAndNormalizeWhitespace_Description => Resources.ResourceManager.GetString("Preset_RemoveLineBreaksAndNormalizeWhitespace_Description", CultureInfo.CurrentUICulture) ?? "Removes line breaks and normalizes whitespace.";
+
 
 
     public void ChangeCulture(CultureInfo culture)
@@ -175,6 +189,21 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
         OnPropertyChanged(nameof(GeneralText));
         OnPropertyChanged(nameof(PresetsText));
         OnPropertyChanged(nameof(TaskTrayClickOperationText));
+        OnPropertyChanged(nameof(CheckForUpdatesText));
+        OnPropertyChanged(nameof(UpdateCheckInProgressText));
+        OnPropertyChanged(nameof(UpdateAvailableText));
+        OnPropertyChanged(nameof(UpdateAvailableMessageText));
+        OnPropertyChanged(nameof(NoUpdateAvailableText));
+        OnPropertyChanged(nameof(NoUpdateAvailableMessageText));
+        OnPropertyChanged(nameof(UpdateCheckFailedText));
+        OnPropertyChanged(nameof(UpdateCheckFailedMessageText));
+        OnPropertyChanged(nameof(CurrentVersionText));
+        OnPropertyChanged(nameof(BackButtonText));
+        OnPropertyChanged(nameof(NextButtonText));
+        OnPropertyChanged(nameof(WelcomePresetSettingTitle));
+        OnPropertyChanged(nameof(Preset_RemoveLineBreaksAndRemoveWhitespace_Description));
+        OnPropertyChanged(nameof(Preset_RemoveLineBreaksAndNormalizeWhitespace_Description));
+
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)

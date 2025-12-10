@@ -12,11 +12,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove=".github\**" />
+    <EmbeddedResource Remove=".github\**" />
+    <None Remove=".github\**" />
+    <Page Remove=".github\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="ClipboardUtility.Tests" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="src\Assets\drawing_1.ico" />
     <None Remove="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
     <None Remove="src\Assets\Fonts\NotoSansJP\OFL.txt" />
     <None Remove="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
@@ -36,12 +42,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include=".github\" />
     <Folder Include="src\Common\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="src\Assets\drawing_1.ico" />
     <Resource Include="src\Assets\Fonts\NotoSansJP\NotoSansJP-VariableFont_wght.ttf" />
     <Content Include="src\Assets\Fonts\NotoSansJP\OFL.txt">
       <Link>licences\NotoSansJP\OFL.txt</Link>
@@ -54,6 +58,8 @@
       <Link>licences\Roboto\OFL.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <PackageReference Include="WPF-UI" Version="4.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
     <Resource Include="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
     <Resource Include="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
     <Resource Include="src\Assets\Icons\small_icon.ico" />
@@ -83,5 +89,17 @@
     </None>
   </ItemGroup>
 
+  <!-- 
+    CI/CD対応: dotnet-project-licenses でNuGetパッケージのライセンス情報を生成
+    ツールがインストールされていない場合はエラーを無視して続行
+  -->
+  <Target Name="GenerateLicenseJson" AfterTargets="Build">
+    <PropertyGroup>
+      <ProjectDirTrimmed>$([System.String]::Copy('$(ProjectDir)').TrimEnd('\'))</ProjectDirTrimmed>
+    </PropertyGroup>
+    
+    <!-- ツールを直接実行（失敗しても続行） -->
+    <Exec Command="dotnet-project-licenses -i . --outfile $(TargetDir)\licenses.json -j" IgnoreExitCode="true" ContinueOnError="true" StandardOutputImportance="Normal" />
+  </Target>
 
 </Project>

@@ -1,0 +1,584 @@
+﻿<UserControl x:Class="ClipboardUtility.src.Views.WelcomeSlides.PresetSetting"
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+xmlns:loc="clr-namespace:ClipboardUtility.src.Helpers"
+xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+xmlns:vm="clr-namespace:ClipboardUtility.src.ViewModels"
+xmlns:converters="clr-namespace:ClipboardUtility.src.Converters"
+xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+x:Name="self"
+mc:Ignorable="d" 
+d:DesignHeight="450" d:DesignWidth="1050"
+HorizontalAlignment="Center">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <!-- Merge centralized color resources so this control can resolve color/brush keys -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/ColorResource.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:PresetToBooleanConverter x:Key="PresetConverter" />
+            <sys:Double x:Key="ContainerWidth">800</sys:Double>
+            <sys:Double x:Key="CardHeaderHeight">267</sys:Double>
+            <sys:Double x:Key="CardContentHeight">30</sys:Double>
+            <GridLength x:Key="CardSpacerWidth">20</GridLength>
+
+            <Thickness x:Key="CardContentPadding">20 5 0 0</Thickness>
+            <CornerRadius x:Key="CardCornerRadius">20</CornerRadius>
+            <CornerRadius x:Key="CardHeaderCornerRadius">20 20 0 0</CornerRadius>
+            <Thickness x:Key="CardBorderThickness">1</Thickness>
+            <Thickness x:Key="CardSelectedBorderThickness">2</Thickness>
+
+            <Style x:Key="PresetCardStyle" TargetType="ToggleButton">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="CardBorder"
+                                    CornerRadius="{StaticResource CardCornerRadius}"
+                                    BorderBrush="{StaticResource PresetBorderBrush}"
+                                    BorderThickness="{StaticResource CardBorderThickness}">
+
+                                <Border.Background>
+                                    <SolidColorBrush Color="{StaticResource CardBackgroundColorNormal}"/>
+                                </Border.Background>
+
+                                <StackPanel>
+                                    <Border Background="{TemplateBinding Tag}" 
+                                            Height="{StaticResource CardHeaderHeight}" 
+                                            CornerRadius="{StaticResource CardHeaderCornerRadius}"/>
+                                    <TextBlock Padding="{StaticResource CardContentPadding}" 
+                                               Height="{StaticResource CardContentHeight}"
+                                               Text="{TemplateBinding Content}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <ControlTemplate.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsChecked" Value="False"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetHoverBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <MultiTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorHover}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.EnterActions>
+                                    <MultiTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorNormal}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.ExitActions>
+                                </MultiTrigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetSelectedBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <Setter TargetName="CardBorder" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{StaticResource CardBackgroundColorSelected}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="AnimatedPresetCardStyle1" TargetType="ToggleButton" BasedOn="{StaticResource PresetCardStyle}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <ControlTemplate.Resources>
+                                <CubicEase x:Key="SmoothEaseInOut" EasingMode="EaseInOut" />
+                            </ControlTemplate.Resources>
+                            <Border x:Name="CardBorder"
+                                    CornerRadius="{StaticResource CardCornerRadius}"
+                                    BorderBrush="{StaticResource PresetBorderBrush}"
+                                    BorderThickness="{StaticResource CardBorderThickness}">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{StaticResource CardBackgroundColorNormal}"/>
+                                </Border.Background>
+
+                                <StackPanel>
+
+                                    <Grid Height="{StaticResource CardHeaderHeight}">
+
+                                        <Border Background="{TemplateBinding Tag}" 
+                                                CornerRadius="{StaticResource CardHeaderCornerRadius}"/>
+
+                                        <Grid VerticalAlignment="Top">
+                                            <Line X1="50" X2="350" Y1="75" Y2="75" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <Line X1="50" X2="350" Y1="100" Y2="100" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <Line X1="50" X2="350" Y1="125" Y2="125" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <Line X1="50" X2="350" Y1="150" Y2="150" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <Line X1="50" X2="350" Y1="175" Y2="175" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <TextBlock Text="Sample"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               FontSize="16"
+                                               Margin="60,50,0,0">
+                                            </TextBlock>
+
+                                            <TextBlock Text="Text"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               FontSize="16"
+                                               Margin="60,75,0,0">
+                                                <TextBlock.RenderTransform>
+                                                    <TranslateTransform X="0" Y="0" />
+                                                </TextBlock.RenderTransform>
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                        From="0" To="-25" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                        From="0" To="65" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+
+                                            <TextBlock Text="To"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               FontSize="16"
+                                               Margin="60,100,0,0">
+                                                <TextBlock.RenderTransform>
+                                                    <TranslateTransform X="0" Y="0" />
+                                                </TextBlock.RenderTransform>
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                        From="0" To="-50" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                        From="0" To="105" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+
+                                            <TextBlock Text="Demonstrate"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               FontSize="16"
+                                               Margin="60,125,0,0">
+                                                <TextBlock.RenderTransform>
+                                                    <TranslateTransform X="0" Y="0" />
+                                                </TextBlock.RenderTransform>
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                        From="0" To="-75" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                        From="0" To="130" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+
+                                            <TextBlock Text="Preset"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               FontSize="16"
+                                               Margin="60,150,0,0">
+                                                <TextBlock.RenderTransform>
+                                                    <TranslateTransform X="0" Y="0" />
+                                                </TextBlock.RenderTransform>
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                        From="0" To="-100" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                        From="0" To="240" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+                                        </Grid>
+
+                                    </Grid>
+                                    <TextBlock Padding="{StaticResource CardContentPadding}" 
+                                               Height="{StaticResource CardContentHeight}"
+                                               Text="{TemplateBinding Content}"
+                                               TextTrimming="CharacterEllipsis"/>
+
+                                </StackPanel>
+                            </Border>
+
+                            <ControlTemplate.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsChecked" Value="False"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetHoverBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <MultiTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorHover}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.EnterActions>
+                                    <MultiTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorNormal}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.ExitActions>
+                                </MultiTrigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetSelectedBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <Setter TargetName="CardBorder" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{StaticResource CardBackgroundColorSelected}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="AnimatedPresetCardStyle2" TargetType="ToggleButton" BasedOn="{StaticResource PresetCardStyle}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <ControlTemplate.Resources>
+                                <CubicEase x:Key="SmoothEaseInOut" EasingMode="EaseInOut" />
+                            </ControlTemplate.Resources>
+                            <Border x:Name="CardBorder"
+                                    CornerRadius="{StaticResource CardCornerRadius}"
+                                    BorderBrush="{StaticResource PresetBorderBrush}"
+                                    BorderThickness="{StaticResource CardBorderThickness}">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{StaticResource CardBackgroundColorNormal}"/>
+                                </Border.Background>
+
+                                <StackPanel>
+
+                                    <Grid Height="{StaticResource CardHeaderHeight}">
+
+                                        <Border Background="{TemplateBinding Tag}" 
+                                                CornerRadius="{StaticResource CardHeaderCornerRadius}"/>
+
+                                        <Grid VerticalAlignment="Top">
+                                            <Line X1="50" X2="350" Y1="75" Y2="75" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <Line X1="50" X2="350" Y1="100" Y2="100" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <Line X1="50" X2="350" Y1="125" Y2="125" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <Line X1="50" X2="350" Y1="150" Y2="150" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <Line X1="50" X2="350" Y1="175" Y2="175" 
+                                                 Stroke="Gray" StrokeThickness="2" 
+                                                 StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                                            </Line>
+                                            <TextBlock Text="Sample"
+           Foreground="{StaticResource TextPrimaryBrush}"
+           FontSize="16"
+           Margin="60,50,0,0">
+                                            </TextBlock>
+
+                                            <TextBlock Text="Text"
+           Foreground="{StaticResource TextPrimaryBrush}"
+           FontSize="16"
+           Margin="60,75,0,0">
+                                                <TextBlock.RenderTransform>
+                                                    <TranslateTransform X="0" Y="0" />
+                                                </TextBlock.RenderTransform>
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                        From="0" To="-25" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                        From="0" To="55" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+
+                                            <TextBlock Text="To"
+           Foreground="{StaticResource TextPrimaryBrush}"
+           FontSize="16"
+           Margin="60,100,0,0">
+                                                <TextBlock.RenderTransform>
+                                                    <TranslateTransform X="0" Y="0" />
+                                                </TextBlock.RenderTransform>
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                        From="0" To="-50" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                        From="0" To="85" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+
+                                            <TextBlock Text="Demonstrate"
+           Foreground="{StaticResource TextPrimaryBrush}"
+           FontSize="16"
+           Margin="60,125,0,0">
+                                                <TextBlock.RenderTransform>
+                                                    <TranslateTransform X="0" Y="0" />
+                                                </TextBlock.RenderTransform>
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                        From="0" To="-75" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                        From="0" To="103" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+
+                                            <TextBlock Text="Preset"
+           Foreground="{StaticResource TextPrimaryBrush}"
+           FontSize="16"
+           Margin="60,150,0,0">
+                                                <TextBlock.RenderTransform>
+                                                    <TranslateTransform X="0" Y="0" />
+                                                </TextBlock.RenderTransform>
+                                                <TextBlock.Triggers>
+                                                    <EventTrigger RoutedEvent="Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                        From="0" To="-100" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                                <DoubleAnimation 
+                        Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                        From="0" To="196" Duration="0:0:3"
+                        BeginTime="0:0:0"
+                        EasingFunction="{StaticResource SmoothEaseInOut}"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </TextBlock.Triggers>
+                                            </TextBlock>
+                                        </Grid>
+
+                                    </Grid>
+                                    <TextBlock Padding="{StaticResource CardContentPadding}" 
+                                               Height="{StaticResource CardContentHeight}"
+                                               Text="{TemplateBinding Content}"
+                                               TextTrimming="CharacterEllipsis"/>
+
+                                </StackPanel>
+                            </Border>
+
+                            <ControlTemplate.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsChecked" Value="False"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetHoverBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <MultiTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorHover}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.EnterActions>
+                                    <MultiTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="CardBorder"
+                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                To="{StaticResource CardBackgroundColorNormal}"
+                                                                Duration="0:0:0.2"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </MultiTrigger.ExitActions>
+                                </MultiTrigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource PresetSelectedBorderBrush}"/>
+                                    <Setter TargetName="CardBorder" Property="BorderThickness" Value="{StaticResource CardSelectedBorderThickness}"/>
+                                    <Setter TargetName="CardBorder" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{StaticResource CardBackgroundColorSelected}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <StackPanel VerticalAlignment="Center">
+
+            <TextBlock Width="{StaticResource ContainerWidth}" 
+                       Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=WelcomePresetSettingTitle}" 
+                       FontSize="16" 
+                       Margin="10"
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource TextPrimaryBrush}"
+/>
+
+            <Separator Width="{StaticResource ContainerWidth}"
+                       Margin="10,5,10,15" 
+                       Background="{StaticResource PrimaryBrush}"
+                       Height="2"/>
+
+            <Grid Width="{StaticResource ContainerWidth}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="{StaticResource CardSpacerWidth}" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <RadioButton Grid.Column="0" 
+                             Style="{StaticResource AnimatedPresetCardStyle1}"
+                             Tag="{StaticResource BackGroundBrush}" GroupName="PresetGroup"
+                             Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndNormalizeWhitespace_Description}"
+                             IsChecked="{Binding SelectedPreset, 
+                                           ElementName=self, 
+                                           Converter={StaticResource PresetConverter}, 
+                                           ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndNormalize}}">
+                </RadioButton>
+
+                <RadioButton Grid.Column="2" 
+                             Style="{StaticResource AnimatedPresetCardStyle2}"
+                             Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=Preset_RemoveLineBreaksAndRemoveWhitespace_Description}"
+                             Tag="{StaticResource BackGroundBrush}" GroupName="PresetGroup"
+                             IsChecked="{Binding SelectedPreset, 
+                                           ElementName=self, 
+                                           Converter={StaticResource PresetConverter}, 
+                                           ConverterParameter={x:Static vm:PresetType.RemoveLineBreaksAndRemoveAll}}">
+                </RadioButton>
+
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

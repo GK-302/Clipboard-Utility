@@ -10,11 +10,15 @@ using System.Windows.Input;
 
 namespace ClipboardUtility.src.ViewModels;
 
-internal class ClipboardManagerViewModel : INotifyPropertyChanged
+public class ClipboardManagerViewModel : INotifyPropertyChanged
 {
     private readonly ClipboardService _clipboardService;
     private readonly TextProcessingService _textProcessingService;
     private readonly PresetService _presetService;
+    private readonly SettingsService _settingsService;
+    private readonly IAppRestartService _restartService;
+    private readonly ICultureProvider _cultureProvider;
+    private readonly UpdateCheckService _updateCheckService;
     private string _clipboardText = string.Empty;
     private ProcessingMode _selectedProcessingMode;
 
@@ -23,14 +27,28 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
     // 親ウィンドウへの参照（設定ウィンドウのオーナー指定用）
     public System.Windows.Window? OwnerWindow { get; set; }
 
-    public ClipboardManagerViewModel()
+    public ClipboardManagerViewModel(
+            ClipboardService clipboardService,
+            TextProcessingService textProcessingService,
+            PresetService presetService,
+            SettingsService settingsService,
+            IAppRestartService restartService,
+            ICultureProvider cultureProvider,
+            UpdateCheckService updateCheckService)
     {
-        _clipboardService = new ClipboardService();
-        _textProcessingService = new TextProcessingService();
+        //_clipboardService = new ClipboardService();
+        //_textProcessingService = new TextProcessingService();
 
-        // PresetService を初期化してプリセットを読み込む
-        _presetService = new PresetService(_textProcessingService);
-        _presetService.LoadPresets();
+        //// PresetService を初期化してプリセットを読み込む
+        //_presetService = new PresetService(_textProcessingService);
+        //_presetService.LoadPresets();
+        _clipboardService = clipboardService;
+        _textProcessingService = textProcessingService;
+        _presetService = presetService;
+        _settingsService = settingsService;
+        _restartService = restartService;
+        _cultureProvider = cultureProvider;
+        _updateCheckService = updateCheckService;
 
         Presets = new ObservableCollection<ProcessingPreset>(_presetService.Presets);
         SelectedPreset = Presets.FirstOrDefault();
@@ -204,9 +222,16 @@ internal class ClipboardManagerViewModel : INotifyPropertyChanged
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                var currentSettings = SettingsService.Instance.Current;
-                var settingsWindow = new src.Views.SettingsWindow(currentSettings);
-                
+                var currentSettings = _settingsService.Current;
+                var settingsWindow = new src.Views.SettingsWindow(
+                                                        currentSettings,
+                                                        _restartService,
+                                                        _cultureProvider,
+                                                        _settingsService,
+                                                        _presetService,
+                                                        _textProcessingService,
+                                                        _updateCheckService);
+
                 // 親ウィンドウを設定してモーダルダイアログとして表示
                 if (OwnerWindow != null)
                 {
