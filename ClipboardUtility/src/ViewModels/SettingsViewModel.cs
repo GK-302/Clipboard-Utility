@@ -93,7 +93,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
         {
             Debug.WriteLine($"SettingsViewModel: Loading preset from settings, ID = {_settings.SelectedPresetId.Value}");
             SelectedPresetForTrayClick = AvailablePresets.FirstOrDefault(p => p.Id == _settings.SelectedPresetId.Value);
-            
+
             if (SelectedPresetForTrayClick != null)
             {
                 Debug.WriteLine($"SettingsViewModel: Found preset: {SelectedPresetForTrayClick.Name}");
@@ -112,7 +112,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
             _settings.SelectedPresetId = SelectedPresetForTrayClick?.Id;
             Debug.WriteLine($"SettingsViewModel: Assigned settings.SelectedPresetId = {_settings.SelectedPresetId} (during ctor fallback)");
         }
-        
+
         Debug.WriteLine($"SettingsViewModel: Final SelectedPresetForTrayClick = {SelectedPresetForTrayClick?.Name ?? "null"}");
         Debug.WriteLine($"SettingsViewModel: Final SelectedPresetForTrayClick.Id = {SelectedPresetForTrayClick?.Id.ToString() ?? "null"}");
         Debug.WriteLine($"SettingsViewModel: AvailablePresets count = {AvailablePresets.Count}");
@@ -126,14 +126,14 @@ internal class SettingsViewModel : INotifyPropertyChanged
                           ?? CultureInfo.CurrentUICulture;
 
         // コマンドの初期化
-      CheckForUpdatesCommand = new RelayCommand(async _ => await CheckForUpdatesAsync(), _ => CanCheckForUpdates);
+        CheckForUpdatesCommand = new RelayCommand(async _ => await CheckForUpdatesAsync(), _ => CanCheckForUpdates);
     }
 
     private void OnSettingsServiceChanged(object sender, AppSettings newSettings)
     {
         try
         {
-            Debug.WriteLine($"SettingsViewModel.OnSettingsServiceChanged: invoked. old _settings hash={( _settings?.GetHashCode() ?? 0 )}, newSettings hash={( newSettings?.GetHashCode() ?? 0 )}");
+            Debug.WriteLine($"SettingsViewModel.OnSettingsServiceChanged: invoked. old _settings hash={(_settings?.GetHashCode() ?? 0)}, newSettings hash={(newSettings?.GetHashCode() ?? 0)}");
             Debug.WriteLine($"  old SelectedPresetId={_settings?.SelectedPresetId}, new SelectedPresetId={newSettings?.SelectedPresetId}");
             // Update local reference to the canonical runtime settings
             _settings = newSettings ?? new AppSettings();
@@ -146,7 +146,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
 
     private IList<ProcessingMode> _processingModes;
     public IList<ProcessingMode> ProcessingModes => _processingModes;
-    
+
     public IList<CultureInfo> AvailableCultures { get; }
 
     // Presets - ObservableCollection に変更
@@ -254,13 +254,13 @@ internal class SettingsViewModel : INotifyPropertyChanged
     private void ApplyCulture(CultureInfo ci)
     {
         if (ci == null) return;
-        
+
         try
         {
             Debug.WriteLine($"ApplyCulture: start. current SelectedPresetForTrayClick.Id={SelectedPresetForTrayClick?.Id.ToString() ?? "null"}, settings.SelectedPresetId={_settings.SelectedPresetId?.ToString() ?? "null"}");
             // 現在選択されているモードを保存
             var currentMode = SelectedProcessingMode;
-            
+
             // プロセス/スレッド全体の既定カルチャを設定
             CultureInfo.DefaultThreadCurrentCulture = ci;
             CultureInfo.DefaultThreadCurrentUICulture = ci;
@@ -273,7 +273,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
             // ProcessingModesリストを再作成して、ComboBoxを強制的に更新
             _processingModes = Enum.GetValues(typeof(ProcessingMode)).Cast<ProcessingMode>().ToList();
             OnPropertyChanged(nameof(ProcessingModes));
-            
+
             // 選択を復元
             SelectedProcessingMode = currentMode;
 
@@ -309,7 +309,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
             var savedTrayPresetId = _settings.SelectedPresetId ?? _selectedPreset?.Id;
 
             _presetService.LoadPresets();
-            
+
             // 現在の選択を保存
             var selectedId = _selectedPreset?.Id;
 
@@ -325,7 +325,7 @@ internal class SettingsViewModel : INotifyPropertyChanged
             // 選択を復元（ID で検索）
             if (selectedId.HasValue)
             {
-                SelectedPreset = AvailablePresets.FirstOrDefault(p => p.Id == selectedId.Value);    
+                SelectedPreset = AvailablePresets.FirstOrDefault(p => p.Id == selectedId.Value);
                 Debug.WriteLine($"RefreshPresetLocalization: attempted to restore SelectedPreset by saved selectedId={selectedId}. result SelectedPreset.Id={SelectedPreset?.Id.ToString() ?? "null"}");
             }
             else
@@ -483,74 +483,74 @@ internal class SettingsViewModel : INotifyPropertyChanged
     {
         if (IsCheckingForUpdates)
         {
-     return;
+            return;
         }
 
         IsCheckingForUpdates = true;
 
         try
-    {
-     Debug.WriteLine("SettingsViewModel: Checking for updates...");
+        {
+            Debug.WriteLine("SettingsViewModel: Checking for updates...");
             var updateInfo = await _updateCheckService.CheckForUpdatesAsync();
 
-  if (updateInfo == null)
+            if (updateInfo == null)
             {
-    // 更新確認失敗
-     System.Windows.MessageBox.Show(
-         LocalizedStrings.Instance.UpdateCheckFailedMessageText,
-      LocalizedStrings.Instance.UpdateCheckFailedText,
-           System.Windows.MessageBoxButton.OK,
-          System.Windows.MessageBoxImage.Warning);
-      return;
+                // 更新確認失敗
+                System.Windows.MessageBox.Show(
+                    LocalizedStrings.Instance.UpdateCheckFailedMessageText,
+                 LocalizedStrings.Instance.UpdateCheckFailedText,
+                      System.Windows.MessageBoxButton.OK,
+                     System.Windows.MessageBoxImage.Warning);
+                return;
             }
 
-   if (updateInfo.IsUpdateAvailable)
- {
-          // 更新が利用可能
-        var message = string.Format(
-          LocalizedStrings.Instance.UpdateAvailableMessageText,
-              updateInfo.LatestVersion,
-   updateInfo.CurrentVersion);
+            if (updateInfo.IsUpdateAvailable)
+            {
+                // 更新が利用可能
+                var message = string.Format(
+                  LocalizedStrings.Instance.UpdateAvailableMessageText,
+                      updateInfo.LatestVersion,
+           updateInfo.CurrentVersion);
 
-   var result = System.Windows.MessageBox.Show(
-      message,
-      LocalizedStrings.Instance.UpdateAvailableText,
-  System.Windows.MessageBoxButton.YesNo,
-           System.Windows.MessageBoxImage.Information);
+                var result = System.Windows.MessageBox.Show(
+                   message,
+                   LocalizedStrings.Instance.UpdateAvailableText,
+               System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Information);
 
-    if (result == System.Windows.MessageBoxResult.Yes)
-    {
-      _updateCheckService.OpenReleasePage(updateInfo.ReleaseUrl);
-          }
-     }
-        else
-       {
-           // 更新なし
- var message = string.Format(
-          LocalizedStrings.Instance.NoUpdateAvailableMessageText,
-        updateInfo.CurrentVersion);
+                if (result == System.Windows.MessageBoxResult.Yes)
+                {
+                    _updateCheckService.OpenReleasePage(updateInfo.ReleaseUrl);
+                }
+            }
+            else
+            {
+                // 更新なし
+                var message = string.Format(
+                         LocalizedStrings.Instance.NoUpdateAvailableMessageText,
+                       updateInfo.CurrentVersion);
 
                 System.Windows.MessageBox.Show(
    message,
    LocalizedStrings.Instance.NoUpdateAvailableText,
       System.Windows.MessageBoxButton.OK,
              System.Windows.MessageBoxImage.Information);
-    }
+            }
         }
         catch (Exception ex)
         {
-Debug.WriteLine($"SettingsViewModel.CheckForUpdatesAsync: error: {ex}");
-       FileLogger.LogException(ex, "SettingsViewModel.CheckForUpdatesAsync");
+            Debug.WriteLine($"SettingsViewModel.CheckForUpdatesAsync: error: {ex}");
+            FileLogger.LogException(ex, "SettingsViewModel.CheckForUpdatesAsync");
 
             System.Windows.MessageBox.Show(
      LocalizedStrings.Instance.UpdateCheckFailedMessageText,
      LocalizedStrings.Instance.UpdateCheckFailedText,
 System.Windows.MessageBoxButton.OK,
              System.Windows.MessageBoxImage.Error);
-  }
+        }
         finally
         {
-  IsCheckingForUpdates = false;
+            IsCheckingForUpdates = false;
         }
     }
 
