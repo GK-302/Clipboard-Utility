@@ -1,6 +1,11 @@
 name: Test MSIX (GitHub Pages)
 
 on:
+  # テスト用タグ: test-v1.2.1 などでトリガー
+  # 本番用の v*.*.* タグとは干渉しない
+  push:
+    tags:
+      - "test-v*"
   workflow_dispatch:
     inputs:
       version:
@@ -51,8 +56,25 @@ jobs:
 
       - name: Set Version
         run: |
-          $version = "${{ github.event.inputs.version }}.0"
+          # タグトリガーの場合: test-v1.2.1 → 1.2.1.0
+          # workflow_dispatchの場合: inputs.version を使用
+          $inputVersion = "${{ github.event.inputs.version }}"
+          $tagName = "${{ github.ref_name }}"
+          
+          if ($inputVersion) {
+            # workflow_dispatch
+            $version = "$inputVersion.0"
+          } elseif ($tagName -match '^test-v(.+)$') {
+            # タグトリガー: test-v1.2.1 → 1.2.1
+            $versionBase = $Matches[1] -replace '-.*', ''
+            $version = "$versionBase.0"
+          } else {
+            Write-Error "Version could not be determined"
+            exit 1
+          }
+          
           echo "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Version set to: $version"
         shell: pwsh
 
       - name: Restore solution
@@ -150,14 +172,14 @@ jobs:
             ${{ env.APPINSTALLER_PATH }}
 
       # GitHub Pagesのテストディレクトリにデプロイ
+      # タグトリガー時は常にデプロイ、workflow_dispatch時はinputsで制御
       - name: Deploy to GitHub Pages (test directory)
-        if: ${{ github.event.inputs.deploy_to_pages == 'true' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.deploy_to_pages == 'true' }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ github.workspace }}\output
           publish_branch: gh-pages
-          # /docs/test にデプロイ（本番の /docs とは分離）
           destination_dir: .
           keep_files: true
           user_name: 'github-actions[bot]'
@@ -170,7 +192,7 @@ jobs:
         shell: pwsh
 
       - name: Output Test URLs
-        if: ${{ github.event.inputs.deploy_to_pages == 'true' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.deploy_to_pages == 'true' }}
         run: |
           Write-Host "========================================"
           Write-Host "テストインストール用URL:"
