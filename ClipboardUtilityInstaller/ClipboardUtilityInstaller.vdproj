@@ -255,8 +255,8 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Clipboard Utility"
-        "ProductCode" = "8:{839875FD-868A-4B52-A8F6-D4E8AF568398}"
-        "PackageCode" = "8:{61C16072-2A40-4360-A87C-BED7C7BD137A}"
+        "ProductCode" = "8:{325DDE9B-D872-4A50-9960-AFBEF306FB97}"
+        "PackageCode" = "8:{D9D2D0EE-86C4-439D-A35B-F6BCEC04A82B}"
         "UpgradeCode" = "8:{DBF77C92-B594-4443-B59A-065B5B5DDD9C}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
