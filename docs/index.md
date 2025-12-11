@@ -21,7 +21,14 @@ Clipboard Utilityは、論文の翻訳のためのテキストの整形を支援
 <img src="{{ site.baseurl }}/assets/images/Screenshot_ClipboardManager_ja.png" alt="クリップボードマネージャーの画像">
 
 ### 入手方法
-インストーラは[こちら](https://github.com/GK-302/Clipboard-Utility/releases/latest)より入手できます。[リリース](https://github.com/GK-302/Clipboard-Utility/releases)から入手する、または、[GitHubリポジトリ](https://github.com/GK-302/Clipboard-Utility)にアクセスして、右側にあるReleaseより実行ファイルをダウンロードしてください。（このアプリには有効な署名がないため、実行時に警告が出る可能性があります。）
+
+<a href="ClipboardUtilityMSIXInstaller.appinstaller" class="download-button" style="display: inline-block; padding: 12px 24px; background-color: #0078d4; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0;">📦 アプリをインストール</a>
+
+上のボタンをクリックするとApp Installerが起動し、アプリをインストールできます。インストール後は自動更新にも対応しています。
+
+**※ 初回インストール時の注意**: 自己署名証明書を使用しているため、事前に証明書のインストールが必要な場合があります。
+
+従来のインストーラは[GitHubリリース](https://github.com/GK-302/Clipboard-Utility/releases/latest)からも入手できます。
 
 ### 言語
 起動時にUIの表示言語が英語になっている場合は、タスクトレイアイコンを右クリックし、Open Settingsより設定を開いてLanguageより日本語を選択してください。
