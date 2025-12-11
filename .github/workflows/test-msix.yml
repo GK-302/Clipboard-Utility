@@ -1,10 +1,16 @@
-name: Release MSIX (Auto-Update)
+name: Test MSIX (GitHub Pages)
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'テスト用バージョン (例: 1.2.1)'
+        required: true
+        default: '0.0.1'
+      deploy_to_pages:
+        description: 'GitHub Pagesにデプロイする'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -12,16 +18,14 @@ permissions:
   id-token: write
 
 jobs:
-  build-and-release-msix:
+  test-msix-build:
     runs-on: windows-latest
 
     env:
-      # 1. パッケージプロジェクトのパス
       PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
-      # 2. .appinstaller のファイル名
       APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
-      # 3. GitHub PagesのURL
-      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility/ClipboardUtilityMSIXInstaller.appinstaller'
+      # テスト用のサブディレクトリを使用
+      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility'
 
     steps:
       - name: Checkout code
@@ -30,8 +34,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
-          # MSIXプロジェクトが依存するWPFプロジェクトの復元/ビルドに必要
+          dotnet-version: |
+            8.0.x
+            7.0.x
           workloads: microsoft-net-sdk-windowsdesktop
 
       - name: Setup MSBuild
@@ -44,17 +49,15 @@ jobs:
           echo "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
-      - name: Set Version from Tag
+      - name: Set Version
         run: |
-          $rawTag = "${{ github.ref_name }}"
-          $version = $rawTag.Substring(1) -replace '-.*', ''
-          $version = "$version.0"
+          $version = "${{ github.event.inputs.version }}.0"
           echo "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "RELEASE_TAG=$rawTag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
-      - name: Restore solution with dotnet
+      - name: Restore solution
         run: dotnet restore ClipboardUtility.sln -r win-x86
+
       - name: Update App Manifest Version
         run: |
           $manifestPath = "${{ github.workspace }}\ClipboardUtilityMSIXInstaller\Package.appxmanifest"
@@ -63,12 +66,12 @@ jobs:
           Write-Host "Updating $manifestPath <Identity Version> to $version"
           
           $xml = [xml](Get-Content $manifestPath)
-          # Identity タグの Version 属性を更新
           $xml.Package.Identity.Version = $version
           $xml.Save($manifestPath)
           
           Write-Host "Manifest updated successfully."
         shell: pwsh
+
       - name: Build MSIX Package
         run: |
           $outputPath = "${{ github.workspace }}\output"
@@ -93,11 +96,10 @@ jobs:
           $searchPath = "${{ github.workspace }}\output"
           Write-Host "Searching for *.msixbundle in $searchPath (recursive)..."
           
-          # サブフォルダも含めて検索 (-Recurse を追加)
           $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
           
           if ($null -eq $msixBundle) {
-            Write-Error "MSIX Bundle (*.msixbundle) not found in $searchPath or its subdirectories."
+            Write-Error "MSIX Bundle (*.msixbundle) not found."
             exit 1
           }
 
@@ -106,57 +108,77 @@ jobs:
           echo "MSIX_BUNDLE_NAME=$($msixBundle.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "MSIX_BUNDLE_PATH=$($msixBundle.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           
-          # appinstaller は output 直下に生成されるため、パスは変更しない
           $appInstallerFile = "${{ github.workspace }}\output\${{ env.APPINSTALLER_FILENAME }}"
           echo "APPINSTALLER_PATH=$appInstallerFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
-      - name: Update AppInstaller with Release URL
+      - name: Update AppInstaller with Test URL
         run: |
           [xml]$appInstallerXml = Get-Content "${{ env.APPINSTALLER_PATH }}"
           
-          $pagesBaseUrl = "${{ env.APPINSTALLER_URL }}"
-          $msixUrl = $pagesBaseUrl.Replace("${{ env.APPINSTALLER_FILENAME }}", "${{ env.MSIX_BUNDLE_NAME }}")
+          # テスト用URLを設定
+          $baseUrl = "${{ env.APPINSTALLER_URL }}"
+          $msixUrl = "$baseUrl/${{ env.MSIX_BUNDLE_NAME }}"
+          $appInstallerUrl = "$baseUrl/${{ env.APPINSTALLER_FILENAME }}"
           
+          Write-Host "Updating AppInstaller Uri to: $appInstallerUrl"
           Write-Host "Updating MainBundle Uri to: $msixUrl"
           
-          if ($appInstallerXml.AppInstaller.MainBundle) { $appInstallerXml.AppInstaller.MainBundle.Uri = $msixUrl }
-          if ($appInstallerXml.AppInstaller.MainPackage) { $appInstallerXml.AppInstaller.MainPackage.Uri = $msixUrl }
+          # AppInstaller自身のUriを更新
+          $appInstallerXml.AppInstaller.Uri = $appInstallerUrl
+          
+          if ($appInstallerXml.AppInstaller.MainBundle) { 
+            $appInstallerXml.AppInstaller.MainBundle.Uri = $msixUrl 
+          }
+          if ($appInstallerXml.AppInstaller.MainPackage) { 
+            $appInstallerXml.AppInstaller.MainPackage.Uri = $msixUrl 
+          }
           
           $appInstallerXml.Save("${{ env.APPINSTALLER_PATH }}")
+          
+          Write-Host "=== Updated .appinstaller content ==="
+          Get-Content "${{ env.APPINSTALLER_PATH }}"
         shell: pwsh
 
-      - name: Upload MSIX to GitHub Release
-        uses: softprops/action-gh-release@v1
+      # ビルド成果物をアーティファクトとしてアップロード（ダウンロード可能）
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: Release ${{ env.RELEASE_TAG }}
-          prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
-          files: |
+          name: msix-test-package
+          path: |
             ${{ env.MSIX_BUNDLE_PATH }}
             ${{ env.APPINSTALLER_PATH }}
 
-      # 7. GitHub Pages (main /docs) に .appinstaller をデプロイ
-      - name: Deploy .appinstaller to GitHub Pages
-        # プレリリース (ハイフン付きタグ) の場合は実行しない
-        if: ${{ !contains(github.ref_name, '-') }}
+      # GitHub Pagesのテストディレクトリにデプロイ
+      - name: Deploy to GitHub Pages (test directory)
+        if: ${{ github.event.inputs.deploy_to_pages == 'true' }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ github.workspace }}\output
-          # あなたの index.html や _config.yml があるブランチ
-          publish_branch: main
-          # デプロイ先を '/docs' フォルダ (Jekyllのソース元) に指定
-          destination_dir: docs
-          # _config.yml や index.html 等を削除しない
+          publish_branch: gh-pages
+          # /docs/test にデプロイ（本番の /docs とは分離）
+          destination_dir: .
           keep_files: true
-          exclude_assets: 'index.html'
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: Deploy ${{ env.APPINSTALLER_FILENAME }} for ${{ env.RELEASE_TAG }}
+          commit_message: 'Test deploy MSIX v${{ env.PACKAGE_VERSION }}'
 
-      # 8. 証明書クリーンアップ
       - name: Cleanup Certificate
         if: always()
         run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force
+        shell: pwsh
+
+      - name: Output Test URLs
+        if: ${{ github.event.inputs.deploy_to_pages == 'true' }}
+        run: |
+          Write-Host "========================================"
+          Write-Host "テストインストール用URL:"
+          Write-Host "${{ env.APPINSTALLER_URL }}/${{ env.APPINSTALLER_FILENAME }}"
+          Write-Host "========================================"
+          Write-Host ""
+          Write-Host "GitHub Pagesの更新には数分かかる場合があります。"
+          Write-Host "インストールテスト方法:"
+          Write-Host "1. 上記URLをブラウザで開く"
+          Write-Host "2. または PowerShell で: Start-Process 'ms-appinstaller:?source=${{ env.APPINSTALLER_URL }}/${{ env.APPINSTALLER_FILENAME }}'"
         shell: pwsh
