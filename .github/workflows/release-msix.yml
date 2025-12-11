@@ -20,8 +20,8 @@ jobs:
       PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
       # 2. .appinstaller のファイル名
       APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
-      # 3. GitHub PagesのURL
-      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility/ClipboardUtilityMSIXInstaller.appinstaller'
+      # 3. GitHub PagesのベースURL (main/docsから公開)
+      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility'
 
     steps:
       - name: Checkout code
@@ -30,7 +30,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: |
+            8.0.x
+            7.0.x
           # MSIXプロジェクトが依存するWPFプロジェクトの復元/ビルドに必要
           workloads: microsoft-net-sdk-windowsdesktop
 
@@ -93,7 +95,6 @@ jobs:
           $searchPath = "${{ github.workspace }}\output"
           Write-Host "Searching for *.msixbundle in $searchPath (recursive)..."
           
-          # サブフォルダも含めて検索 (-Recurse を追加)
           $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
           
           if ($null -eq $msixBundle) {
@@ -103,21 +104,55 @@ jobs:
 
           Write-Host "Found MSIX Bundle: $($msixBundle.FullName)"
           
+          # outputフォルダからの相対パスを取得
+          $relativePath = $msixBundle.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+          Write-Host "Relative path: $relativePath"
+          
           echo "MSIX_BUNDLE_NAME=$($msixBundle.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "MSIX_BUNDLE_PATH=$($msixBundle.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "MSIX_BUNDLE_RELATIVE_PATH=$relativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           
-          # appinstaller は output 直下に生成されるため、パスは変更しない
-          $appInstallerFile = "${{ github.workspace }}\output\${{ env.APPINSTALLER_FILENAME }}"
-          echo "APPINSTALLER_PATH=$appInstallerFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          # appinstallerファイルも探す（サブフォルダにある可能性）
+          $appInstallerFile = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
+          if ($appInstallerFile) {
+            $appInstallerRelativePath = $appInstallerFile.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+            echo "APPINSTALLER_PATH=$($appInstallerFile.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            echo "APPINSTALLER_RELATIVE_PATH=$appInstallerRelativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            Write-Host "AppInstaller relative path: $appInstallerRelativePath"
+          } else {
+            Write-Error "AppInstaller file not found"
+            exit 1
+          }
         shell: pwsh
 
       - name: Update AppInstaller with Release URL
         run: |
           [xml]$appInstallerXml = Get-Content "${{ env.APPINSTALLER_PATH }}"
-          $releaseUrl = "https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/${{ env.MSIX_BUNDLE_NAME }}"
-          if ($appInstallerXml.AppInstaller.MainBundle) { $appInstallerXml.AppInstaller.MainBundle.Uri = $releaseUrl }
-          if ($appInstallerXml.AppInstaller.MainPackage) { $appInstallerXml.AppInstaller.MainPackage.Uri = $releaseUrl }
+          
+          # 相対パスを使用してURLを構築
+          $baseUrl = "${{ env.APPINSTALLER_URL }}"
+          $msixUrl = "$baseUrl/${{ env.MSIX_BUNDLE_RELATIVE_PATH }}"
+          $appInstallerUrl = "$baseUrl/${{ env.APPINSTALLER_RELATIVE_PATH }}"
+          
+          Write-Host "Updating AppInstaller Uri to: $appInstallerUrl"
+          Write-Host "Updating MainBundle Uri to: $msixUrl"
+          
+          # AppInstaller自身のUriを更新
+          $appInstallerXml.AppInstaller.Uri = $appInstallerUrl
+          
+          if ($appInstallerXml.AppInstaller.MainBundle) { $appInstallerXml.AppInstaller.MainBundle.Uri = $msixUrl }
+          if ($appInstallerXml.AppInstaller.MainPackage) { $appInstallerXml.AppInstaller.MainPackage.Uri = $msixUrl }
+          
           $appInstallerXml.Save("${{ env.APPINSTALLER_PATH }}")
+          
+          Write-Host "=== Updated .appinstaller content ==="
+          Get-Content "${{ env.APPINSTALLER_PATH }}"
+        shell: pwsh
+
+      - name: Prepare files for GitHub Pages
+        run: |
+          # Jekyllの処理をスキップするための.nojekyllファイルを作成
+          New-Item -Path "${{ github.workspace }}\output\.nojekyll" -ItemType File -Force
         shell: pwsh
 
       - name: Upload MSIX to GitHub Release
@@ -130,21 +165,17 @@ jobs:
             ${{ env.MSIX_BUNDLE_PATH }}
             ${{ env.APPINSTALLER_PATH }}
 
-      # 7. GitHub Pages (main /docs) に .appinstaller をデプロイ
-      - name: Deploy .appinstaller to GitHub Pages
+      # 7. GitHub Pages (main/docs) にデプロイ
+      - name: Deploy to GitHub Pages
         # プレリリース (ハイフン付きタグ) の場合は実行しない
         if: ${{ !contains(github.ref_name, '-') }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ github.workspace }}\output
-          # あなたの index.html や _config.yml があるブランチ
           publish_branch: main
-          # デプロイ先を '/docs' フォルダ (Jekyllのソース元) に指定
           destination_dir: docs
-          # _config.yml や index.html 等を削除しない
           keep_files: true
-          exclude_assets: '*.msixbundle,index.html' # MSIX本体は除外
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: Deploy ${{ env.APPINSTALLER_FILENAME }} for ${{ env.RELEASE_TAG }}
