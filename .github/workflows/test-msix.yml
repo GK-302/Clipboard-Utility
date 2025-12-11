@@ -170,7 +170,15 @@ jobs:
           path: |
             ${{ env.MSIX_BUNDLE_PATH }}
             ${{ env.APPINSTALLER_PATH }}
-
+      - name: Prepare files for GitHub Pages
+        run: |
+          # Jekyllの処理をスキップするための.nojekyllファイルを作成
+          New-Item -Path "${{ github.workspace }}\output\.nojekyll" -ItemType File -Force
+          
+          # デプロイするファイルを確認
+          Write-Host "=== Files to deploy ==="
+          Get-ChildItem -Path "${{ github.workspace }}\output" -Recurse | ForEach-Object { Write-Host $_.FullName }
+        shell: pwsh
       # GitHub Pagesのテストディレクトリにデプロイ
       # タグトリガー時は常にデプロイ、workflow_dispatch時はinputsで制御
       - name: Deploy to GitHub Pages (test directory)
