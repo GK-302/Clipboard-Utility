@@ -1,0 +1,228 @@
+name: Test MSIX (GitHub Pages)
+
+on:
+  # テスト用タグ: test-v1.2.1 などでトリガー
+  # 本番用の v*.*.* タグとは干渉しない
+  push:
+    tags:
+      - "test-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'テスト用バージョン (例: 1.2.1)'
+        required: true
+        default: '0.0.1'
+      deploy_to_pages:
+        description: 'GitHub Pagesにデプロイする'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  test-msix-build:
+    runs-on: windows-latest
+
+    env:
+      PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
+      APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
+      # テスト用のサブディレクトリを使用
+      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            7.0.x
+          workloads: microsoft-net-sdk-windowsdesktop
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Decode PFX Certificate
+        run: |
+          $pfxPath = Join-Path $env:RUNNER_TEMP "signing_cert.pfx"
+          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}"))
+          echo "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Set Version
+        run: |
+          # タグトリガーの場合: test-v1.2.1 → 1.2.1.0
+          # workflow_dispatchの場合: inputs.version を使用
+          $inputVersion = "${{ github.event.inputs.version }}"
+          $tagName = "${{ github.ref_name }}"
+          
+          if ($inputVersion) {
+            # workflow_dispatch
+            $version = "$inputVersion.0"
+          } elseif ($tagName -match '^test-v(.+)$') {
+            # タグトリガー: test-v1.2.1 → 1.2.1
+            $versionBase = $Matches[1] -replace '-.*', ''
+            $version = "$versionBase.0"
+          } else {
+            Write-Error "Version could not be determined"
+            exit 1
+          }
+          
+          echo "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Version set to: $version"
+        shell: pwsh
+
+      - name: Restore solution
+        run: dotnet restore ClipboardUtility.sln -r win-x86
+
+      - name: Update App Manifest Version
+        run: |
+          $manifestPath = "${{ github.workspace }}\ClipboardUtilityMSIXInstaller\Package.appxmanifest"
+          $version = "${{ env.PACKAGE_VERSION }}"
+          
+          Write-Host "Updating $manifestPath <Identity Version> to $version"
+          
+          $xml = [xml](Get-Content $manifestPath)
+          $xml.Package.Identity.Version = $version
+          $xml.Save($manifestPath)
+          
+          Write-Host "Manifest updated successfully."
+        shell: pwsh
+
+      - name: Build MSIX Package
+        run: |
+          $outputPath = "${{ github.workspace }}\output"
+          msbuild ${{ env.PACKAGE_PROJECT }} /p:Configuration=Release `
+            /p:AppxPackageDir="$outputPath\" `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" `
+            /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}" `
+            /p:GenerateAppInstallerFile=true `
+            /p:AppInstallerUri="${{ env.APPINSTALLER_URL }}" `
+            /p:AppInstallerUpdateFrequency=0 `
+            /p:AppInstallerShowPrompt=true `
+            /p:ApplicationVersion="${{ env.PACKAGE_VERSION }}" `
+            /p:PackageVersion="${{ env.PACKAGE_VERSION }}" `
+            /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxBundle=Always `
+            /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}"
+        shell: pwsh
+
+      - name: Get Artifact Names
+        run: |
+          $searchPath = "${{ github.workspace }}\output"
+          Write-Host "Searching for *.msixbundle in $searchPath (recursive)..."
+          
+          $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
+          
+          if ($null -eq $msixBundle) {
+            Write-Error "MSIX Bundle (*.msixbundle) not found."
+            exit 1
+          }
+
+          Write-Host "Found MSIX Bundle: $($msixBundle.FullName)"
+          
+          # outputフォルダからの相対パスを取得
+          $relativePath = $msixBundle.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+          Write-Host "Relative path: $relativePath"
+          
+          echo "MSIX_BUNDLE_NAME=$($msixBundle.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "MSIX_BUNDLE_PATH=$($msixBundle.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "MSIX_BUNDLE_RELATIVE_PATH=$relativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
+          # appinstallerファイルも探す（サブフォルダにある可能性）
+          $appInstallerFile = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
+          if ($appInstallerFile) {
+            $appInstallerRelativePath = $appInstallerFile.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+            echo "APPINSTALLER_PATH=$($appInstallerFile.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            echo "APPINSTALLER_RELATIVE_PATH=$appInstallerRelativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            Write-Host "AppInstaller relative path: $appInstallerRelativePath"
+          } else {
+            Write-Error "AppInstaller file not found"
+            exit 1
+          }
+        shell: pwsh
+
+      - name: Update AppInstaller with Test URL
+        run: |
+          [xml]$appInstallerXml = Get-Content "${{ env.APPINSTALLER_PATH }}"
+          
+          # テスト用URLを設定（相対パスを使用）
+          $baseUrl = "${{ env.APPINSTALLER_URL }}"
+          $msixUrl = "$baseUrl/${{ env.MSIX_BUNDLE_RELATIVE_PATH }}"
+          $appInstallerUrl = "$baseUrl/${{ env.APPINSTALLER_RELATIVE_PATH }}"
+          
+          Write-Host "Updating AppInstaller Uri to: $appInstallerUrl"
+          Write-Host "Updating MainBundle Uri to: $msixUrl"
+          
+          # AppInstaller自身のUriを更新
+          $appInstallerXml.AppInstaller.Uri = $appInstallerUrl
+          
+          if ($appInstallerXml.AppInstaller.MainBundle) { 
+            $appInstallerXml.AppInstaller.MainBundle.Uri = $msixUrl 
+          }
+          if ($appInstallerXml.AppInstaller.MainPackage) { 
+            $appInstallerXml.AppInstaller.MainPackage.Uri = $msixUrl 
+          }
+          
+          $appInstallerXml.Save("${{ env.APPINSTALLER_PATH }}")
+          
+          Write-Host "=== Updated .appinstaller content ==="
+          Get-Content "${{ env.APPINSTALLER_PATH }}"
+        shell: pwsh
+
+      # ビルド成果物をアーティファクトとしてアップロード（ダウンロード可能）
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix-test-package
+          path: |
+            ${{ env.MSIX_BUNDLE_PATH }}
+            ${{ env.APPINSTALLER_PATH }}
+      - name: Prepare files for GitHub Pages
+        run: |
+          # Jekyllの処理をスキップするための.nojekyllファイルを作成
+          New-Item -Path "${{ github.workspace }}\output\.nojekyll" -ItemType File -Force
+          
+          # デプロイするファイルを確認
+          Write-Host "=== Files to deploy ==="
+          Get-ChildItem -Path "${{ github.workspace }}\output" -Recurse | ForEach-Object { Write-Host $_.FullName }
+        shell: pwsh
+      # GitHub Pagesのテストディレクトリにデプロイ
+      # タグトリガー時は常にデプロイ、workflow_dispatch時はinputsで制御
+      - name: Deploy to GitHub Pages (test directory)
+        if: ${{ github.event_name == 'push' || github.event.inputs.deploy_to_pages == 'true' }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ github.workspace }}\output
+          publish_branch: gh-pages
+          destination_dir: .
+          keep_files: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Test deploy MSIX v${{ env.PACKAGE_VERSION }}'
+
+      - name: Cleanup Certificate
+        if: always()
+        run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force
+        shell: pwsh
+
+      - name: Output Test URLs
+        if: ${{ github.event_name == 'push' || github.event.inputs.deploy_to_pages == 'true' }}
+        run: |
+          Write-Host "========================================"
+          Write-Host "テストインストール用URL:"
+          Write-Host "${{ env.APPINSTALLER_URL }}/${{ env.APPINSTALLER_FILENAME }}"
+          Write-Host "========================================"
+          Write-Host ""
+          Write-Host "GitHub Pagesの更新には数分かかる場合があります。"
+          Write-Host "インストールテスト方法:"
+          Write-Host "1. 上記URLをブラウザで開く"
+          Write-Host "2. または PowerShell で: Start-Process 'ms-appinstaller:?source=${{ env.APPINSTALLER_URL }}/${{ env.APPINSTALLER_FILENAME }}'"
+        shell: pwsh
