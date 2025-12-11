@@ -127,21 +127,35 @@ jobs:
 
           Write-Host "Found MSIX Bundle: $($msixBundle.FullName)"
           
+          # outputフォルダからの相対パスを取得
+          $relativePath = $msixBundle.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+          Write-Host "Relative path: $relativePath"
+          
           echo "MSIX_BUNDLE_NAME=$($msixBundle.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "MSIX_BUNDLE_PATH=$($msixBundle.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "MSIX_BUNDLE_RELATIVE_PATH=$relativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           
-          $appInstallerFile = "${{ github.workspace }}\output\${{ env.APPINSTALLER_FILENAME }}"
-          echo "APPINSTALLER_PATH=$appInstallerFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          # appinstallerファイルも探す（サブフォルダにある可能性）
+          $appInstallerFile = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
+          if ($appInstallerFile) {
+            $appInstallerRelativePath = $appInstallerFile.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+            echo "APPINSTALLER_PATH=$($appInstallerFile.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            echo "APPINSTALLER_RELATIVE_PATH=$appInstallerRelativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            Write-Host "AppInstaller relative path: $appInstallerRelativePath"
+          } else {
+            Write-Error "AppInstaller file not found"
+            exit 1
+          }
         shell: pwsh
 
       - name: Update AppInstaller with Test URL
         run: |
           [xml]$appInstallerXml = Get-Content "${{ env.APPINSTALLER_PATH }}"
           
-          # テスト用URLを設定
+          # テスト用URLを設定（相対パスを使用）
           $baseUrl = "${{ env.APPINSTALLER_URL }}"
-          $msixUrl = "$baseUrl/${{ env.MSIX_BUNDLE_NAME }}"
-          $appInstallerUrl = "$baseUrl/${{ env.APPINSTALLER_FILENAME }}"
+          $msixUrl = "$baseUrl/${{ env.MSIX_BUNDLE_RELATIVE_PATH }}"
+          $appInstallerUrl = "$baseUrl/${{ env.APPINSTALLER_RELATIVE_PATH }}"
           
           Write-Host "Updating AppInstaller Uri to: $appInstallerUrl"
           Write-Host "Updating MainBundle Uri to: $msixUrl"
