@@ -182,7 +182,36 @@ jobs:
           Write-Host "Successfully renamed all index.html files to download.html"
         shell: pwsh
 
-      # 8. GitHub Pages (main/docs) にデプロイ
+      # 8. 既存のdocs内のindex.htmlをリポジトリから削除
+      - name: Remove old index.html from docs
+        if: ${{ !contains(github.ref_name, '-') }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git checkout origin/main -- docs/ 2>$null || Write-Host "No docs folder in main branch yet"
+          
+          # docs配下のindex.htmlを削除（存在する場合）
+          $indexFiles = Get-ChildItem -Path "docs" -Filter "index.html" -Recurse -ErrorAction SilentlyContinue
+          if ($indexFiles) {
+            foreach ($file in $indexFiles) {
+              Write-Host "Removing $($file.FullName)"
+              git rm -f $file.FullName 2>$null || Remove-Item -Path $file.FullName -Force
+            }
+            
+            # 変更があればコミットしてプッシュ
+            $hasChanges = git diff --staged --quiet; $LASTEXITCODE -ne 0
+            if ($hasChanges) {
+              git commit -m "Remove old index.html files before MSIX deploy [skip ci]"
+              git push origin HEAD:main
+              Write-Host "Successfully removed old index.html files"
+            }
+          } else {
+            Write-Host "No index.html files found in docs folder"
+          }
+        shell: pwsh
+
+      # 9. GitHub Pages (main/docs) にデプロイ
       - name: Deploy to GitHub Pages
         # プレリリース (ハイフン付きタグ) の場合は実行しない
         if: ${{ !contains(github.ref_name, '-') }}
@@ -197,7 +226,7 @@ jobs:
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: Deploy ${{ env.APPINSTALLER_FILENAME }} for ${{ env.RELEASE_TAG }}
 
-      # 9. 証明書クリーンアップ
+      # 10. 証明書クリーンアップ
       - name: Cleanup Certificate
         if: always()
         run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force
