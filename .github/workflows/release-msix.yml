@@ -164,12 +164,22 @@ jobs:
         if: ${{ !contains(github.ref_name, '-') }}
         run: |
           $outputPath = "${{ github.workspace }}\output"
-          $indexFiles = Get-ChildItem -Path $outputPath -Filter "index.html" -Recurse
+          Write-Host "Searching for index.html files in $outputPath (recursive)..."
+          
+          $indexFiles = @(Get-ChildItem -Path $outputPath -Filter "index.html" -Recurse)
+          
+          if ($indexFiles.Count -eq 0) {
+            Write-Error "No index.html files found in $outputPath or its subdirectories."
+            exit 1
+          }
+          
+          Write-Host "Found $($indexFiles.Count) index.html file(s)"
           foreach ($indexFile in $indexFiles) {
             $downloadPath = Join-Path $indexFile.DirectoryName "download.html"
             Write-Host "Renaming $($indexFile.FullName) to $downloadPath"
             Move-Item -Path $indexFile.FullName -Destination $downloadPath -Force
           }
+          Write-Host "Successfully renamed all index.html files to download.html"
         shell: pwsh
 
       # 8. GitHub Pages (main/docs) にデプロイ
