@@ -166,7 +166,7 @@ jobs:
           $outputPath = "${{ github.workspace }}\output"
           Write-Host "Searching for index.html files in $outputPath (recursive)..."
           
-          $indexFiles = Get-ChildItem -Path $outputPath -Filter "index.html" -Recurse
+          $indexFiles = @(Get-ChildItem -Path $outputPath -Filter "index.html" -Recurse)
           
           if ($indexFiles.Count -eq 0) {
             Write-Error "No index.html files found in $outputPath or its subdirectories."
