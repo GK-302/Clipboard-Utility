@@ -159,7 +159,20 @@ jobs:
             ${{ env.MSIX_BUNDLE_PATH }}
             ${{ env.APPINSTALLER_PATH }}
 
-      # 7. GitHub Pages (main/docs) にデプロイ
+      # 7. index.html を download.html にリネーム (docs/index.md との競合を回避)
+      - name: Rename index.html to download.html
+        if: ${{ !contains(github.ref_name, '-') }}
+        run: |
+          $outputPath = "${{ github.workspace }}\output"
+          $indexFiles = Get-ChildItem -Path $outputPath -Filter "index.html" -Recurse
+          foreach ($indexFile in $indexFiles) {
+            $downloadPath = Join-Path $indexFile.DirectoryName "download.html"
+            Write-Host "Renaming $($indexFile.FullName) to $downloadPath"
+            Move-Item -Path $indexFile.FullName -Destination $downloadPath -Force
+          }
+        shell: pwsh
+
+      # 8. GitHub Pages (main/docs) にデプロイ
       - name: Deploy to GitHub Pages
         # プレリリース (ハイフン付きタグ) の場合は実行しない
         if: ${{ !contains(github.ref_name, '-') }}
@@ -174,7 +187,7 @@ jobs:
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: Deploy ${{ env.APPINSTALLER_FILENAME }} for ${{ env.RELEASE_TAG }}
 
-      # 8. 証明書クリーンアップ
+      # 9. 証明書クリーンアップ
       - name: Cleanup Certificate
         if: always()
         run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force

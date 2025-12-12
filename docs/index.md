@@ -22,9 +22,9 @@ Clipboard Utilityは、論文の翻訳のためのテキストの整形を支援
 
 ### 入手方法
 
-<a href="ClipboardUtilityMSIXInstaller.appinstaller" class="download-button" style="display: inline-block; padding: 12px 24px; background-color: #0078d4; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0;">📦 アプリをインストール</a>
+<a href="download.html" class="download-button" style="display: inline-block; padding: 12px 24px; background-color: #0078d4; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0;">📦 アプリをインストール</a>
 
-上のボタンをクリックするとApp Installerが起動し、アプリをインストールできます。インストール後は自動更新にも対応しています。
+上のボタンをクリックするとダウンロードページに移動し、App Installerからアプリをインストールできます。インストール後は自動更新にも対応しています。
 
 **※ 初回インストール時の注意**: 自己署名証明書を使用しているため、事前に証明書のインストールが必要な場合があります。
 
