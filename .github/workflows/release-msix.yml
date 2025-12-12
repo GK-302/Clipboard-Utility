@@ -149,12 +149,6 @@ jobs:
           Get-Content "${{ env.APPINSTALLER_PATH }}"
         shell: pwsh
 
-      - name: Prepare files for GitHub Pages
-        run: |
-          # Jekyllの処理をスキップするための.nojekyllファイルを作成
-          New-Item -Path "${{ github.workspace }}\output\.nojekyll" -ItemType File -Force
-        shell: pwsh
-
       - name: Upload MSIX to GitHub Release
         uses: softprops/action-gh-release@v1
         with:

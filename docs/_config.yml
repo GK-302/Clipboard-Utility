@@ -10,3 +10,9 @@ theme: jekyll-theme-minimal
 # プラグインのリスト
 plugins:
   - jekyll-sitemap
+
+# MSIX関連ファイルをJekyllに含める（デフォルトでは無視される）
+include:
+  - "*.appinstaller"
+  - "*.msixbundle"
+  - "*_Test"
