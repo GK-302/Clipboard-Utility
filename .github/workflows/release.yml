@@ -90,12 +90,32 @@ jobs:
       # --- ビルド & ライセンス生成 ---
       - name: Restore & Generate License
         run: |
-          # プロパティとして複数のRIDを指定して復元します
-          dotnet restore ClipboardUtility.sln /p:RuntimeIdentifiers="win-x86;win-x64"
+          # 【修正】コマンドライン引数ではなく、csprojを直接書き換えてRIDsを追加します
+          # これにより "project.assets.json doesn't have a target..." エラーを確実に防ぎます
+          $csprojPath = "ClipboardUtility/ClipboardUtility.csproj"
+          [xml]$xml = Get-Content $csprojPath
           
+          # PropertyGroupを取得 (通常は最初のPropertyGroup)
+          $propGroup = $xml.Project.PropertyGroup | Select-Object -First 1
+          
+          # RuntimeIdentifiersノードがない場合のみ追加
+          if (-not $propGroup.SelectSingleNode("*[local-name()='RuntimeIdentifiers']")) {
+              $node = $xml.CreateElement("RuntimeIdentifiers", $xml.Project.NamespaceURI)
+              $node.InnerText = "win-x86;win-x64"
+              $propGroup.AppendChild($node)
+              $xml.Save($csprojPath)
+              Write-Host "Successfully added RuntimeIdentifiers to csproj."
+          } else {
+              Write-Host "RuntimeIdentifiers already exists."
+          }
+
+          # 変更後のファイルで復元を実行 (引数は不要になります)
+          dotnet restore ClipboardUtility.sln
+
           # ライセンス生成
           New-Item -ItemType Directory -Force -Path "./ClipboardUtility/src/Assets"
           dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile ./ClipboardUtility/src/Assets/licenses.json -j
+        shell: pwsh
 
           # --- 1. Standalone EXE ビルド ---
       - name: Publish WPF App (Standalone)
