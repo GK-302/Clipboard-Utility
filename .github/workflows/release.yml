@@ -25,7 +25,7 @@ jobs:
     runs-on: windows-latest
     # 【追加】次のジョブに変数を渡す設定
     outputs:
-      msix_folder: ${{ steps.msix_setup.outputs.FOLDER_NAME }}
+      msix_folder: ${{ steps.msix_path_resolver.outputs.FOLDER_NAME }}
 
     env:
       # MSIX関連の設定
@@ -140,10 +140,17 @@ jobs:
           $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Select-Object -First 1).FullName
           & $sdkPath "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi" /W 10
       
+      # --- 3. MSIX インストーラービルド ---
+      - name: Build MSIX Installer (wapproj)
+        run: |
+          $msixOut = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
+          msbuild "${{ env.PACKAGE_PROJECT }}" /p:Configuration=Release /p:Platform=x64 /p:AppxPackageDir="$msixOut"
+        shell: pwsh
 
       # --- アーティファクトの保存 (Job間の受け渡し用) ---
       # これが「Jekyllビルド」JobへMSIXフォルダを渡すための鍵です
       - name: Determine MSIX upload path
+        id: msix_path_resolver
         run: |
           $search = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
           Write-Host "Searching for .msixbundle under $search"
@@ -157,6 +164,7 @@ jobs:
           $folder = $bundle.DirectoryName
           Write-Host "Found MSIX folder: $folder"
           echo "UPLOAD_PATH=$folder" >> $env:GITHUB_ENV
+          echo "FOLDER_NAME=$($bundle.Directory.Name)" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
       - name: Upload MSIX Artifact for Site Build
@@ -181,8 +189,8 @@ jobs:
           prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
           files: |
             *.zip
-            ${{ env.MSIX_FULL_PATH }}/*.msixbundle
-            ${{ env.MSIX_FULL_PATH }}/*.appinstaller
+            ${{ env.UPLOAD_PATH }}/*.msixbundle
+            ${{ env.UPLOAD_PATH }}/*.appinstaller
 
       - name: Cleanup Certificate
         if: always()
