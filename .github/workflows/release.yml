@@ -144,7 +144,7 @@ jobs:
       - name: Build MSIX Installer (wapproj)
         run: |
           $msixOut = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
-          msbuild "${{ env.PACKAGE_PROJECT }}" /p:Configuration=Release /p:Platform=x64 /p:AppxPackageDir="$msixOut"
+          msbuild "${{ env.PACKAGE_PROJECT }}" /p:Configuration=Release /p:Platform=x64 /p:AppxPackageDir="$msixOut" /p:AppxPackageSigningEnabled=true /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}"
         shell: pwsh
 
       # --- アーティファクトの保存 (Job間の受け渡し用) ---
