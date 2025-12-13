@@ -90,13 +90,14 @@ jobs:
       # --- ビルド & ライセンス生成 ---
       - name: Restore & Generate License
         run: |
-          # win-x86 と win-x64 の両方を明示的にリストアする
-          dotnet restore ClipboardUtility.sln -r win-x86 -r win-x64
+          # プロパティとして複数のRIDを指定して復元します
+          dotnet restore ClipboardUtility.sln /p:RuntimeIdentifiers="win-x86;win-x64"
           
           # ライセンス生成
           New-Item -ItemType Directory -Force -Path "./ClipboardUtility/src/Assets"
           dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile ./ClipboardUtility/src/Assets/licenses.json -j
-      # --- 1. Standalone EXE ビルド ---
+
+          # --- 1. Standalone EXE ビルド ---
       - name: Publish WPF App (Standalone)
         run: |
           dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
