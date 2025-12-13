@@ -139,49 +139,7 @@ jobs:
           Copy-Item -Path ./ClipboardUtilityInstaller/Release/* -Destination ./ClipboardUtilityInstaller/Release-NoAdmin/ -Recurse
           $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Select-Object -First 1).FullName
           & $sdkPath "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi" /W 10
-
-      # --- 3. MSIX パッケージビルド ---
-      - name: Download MSIX Artifact into Source
-        uses: actions/download-artifact@v4
-        with:
-          name: msix-package
-          # ルートディレクトリに、Windows側で決めたフォルダ名で配置
-          path: ./${{ needs.build-windows-assets.outputs.msix_folder }}
-
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
-
-      # Jekyllはビルド時に、上記で配置されたMSIXフォルダを
-      # 自動的に _site フォルダの中にコピーしてくれます。
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./
-          destination: ./_site
-
-      # 以前失敗していた "Inject MSIX..." ステップは不要になったため削除
-      - name: Upload artifact for Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./_site
-          $bundleName = $msixBundle.Name
-          
-          # URL設定 (公開サイト上でのパス)
-          $newUrl = "$baseUrl/$folderName/$bundleName"
-          $appInstallerUrl = "$baseUrl/$folderName/$($appInstaller.Name)"
-
-          $xml.AppInstaller.Uri = $appInstallerUrl
-          if ($xml.AppInstaller.MainBundle) { $xml.AppInstaller.MainBundle.Uri = $newUrl }
-          if ($xml.AppInstaller.MainPackage) { $xml.AppInstaller.MainPackage.Uri = $newUrl }
-          $xml.Save($appInstaller.FullName)
-
-          # index.html -> download.html リネーム
-          $indexFile = Join-Path $packageFolder "index.html"
-          if (Test-Path $indexFile) {
-             Move-Item -Path $indexFile -Destination (Join-Path $packageFolder "download.html") -Force
-          }
-        shell: pwsh
+      
 
       # --- アーティファクトの保存 (Job間の受け渡し用) ---
       # これが「Jekyllビルド」JobへMSIXフォルダを渡すための鍵です
