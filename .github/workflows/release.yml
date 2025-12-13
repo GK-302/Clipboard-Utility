@@ -237,7 +237,7 @@ jobs:
           
           # 固定名でフォルダを作成
           sudo mkdir -p ./_site/$FIXED_FOLDER_NAME
-          r
+          
           # 中身を移動
           sudo mv ./temp_msix_assets/* ./_site/$FIXED_FOLDER_NAME/
           
