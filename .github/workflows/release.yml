@@ -147,7 +147,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: msix-package # Job 2 でこの名前でダウンロードする
-          path: ${{ env.MSIX_FULL_PATH }}
+          # MSIX_FULL_PATH may be empty in some runs; fall back to the msix_output folder
+          path: ${{ github.workspace }}\msix_output
           retention-days: 1
 
       # --- リリースへのアップロード (zip圧縮含む) ---
