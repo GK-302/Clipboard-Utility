@@ -153,18 +153,18 @@ jobs:
         id: msix_path_resolver
         run: |
           $search = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
-          Write-Host "Searching for .msixbundle under $search"
-          $bundle = Get-ChildItem -Path $search -Filter '*.msixbundle' -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($null -eq $bundle) {
-            Write-Host "No .msixbundle found under $search. Listing directory for debugging:"
+          Write-Host "Searching for .msixbundle or .msix under $search"
+          $packageFile = Get-ChildItem -Path $search -Include '*.msixbundle', '*.msix' -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($null -eq $packageFile) {
+            Write-Host "No .msixbundle or .msix found under $search. Listing directory for debugging:"
             Get-ChildItem -Path $search -Recurse -Force | ForEach-Object { Write-Host $_.FullName }
-            Write-Error "MSIX bundle not found. Aborting upload to avoid creating empty artifact."
+            Write-Error "MSIX package not found. Aborting upload to avoid creating empty artifact."
             exit 1
           }
-          $folder = $bundle.DirectoryName
+          $folder = $packageFile.DirectoryName
           Write-Host "Found MSIX folder: $folder"
           echo "UPLOAD_PATH=$folder" >> $env:GITHUB_ENV
-          echo "FOLDER_NAME=$($bundle.Directory.Name)" >> $env:GITHUB_OUTPUT
+          echo "FOLDER_NAME=$($packageFile.Directory.Name)" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
       - name: Upload MSIX Artifact for Site Build
@@ -189,7 +189,7 @@ jobs:
           prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
           files: |
             *.zip
-            ${{ env.UPLOAD_PATH }}/*.msixbundle
+            ${{ env.UPLOAD_PATH }}/*.msix*
             ${{ env.UPLOAD_PATH }}/*.appinstaller
 
       - name: Cleanup Certificate
