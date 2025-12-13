@@ -143,12 +143,27 @@ jobs:
 
       # --- アーティファクトの保存 (Job間の受け渡し用) ---
       # これが「Jekyllビルド」JobへMSIXフォルダを渡すための鍵です
+      - name: Determine MSIX upload path
+        run: |
+          $search = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
+          Write-Host "Searching for .msixbundle under $search"
+          $bundle = Get-ChildItem -Path $search -Filter '*.msixbundle' -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($null -eq $bundle) {
+            Write-Host "No .msixbundle found under $search. Listing directory for debugging:"
+            Get-ChildItem -Path $search -Recurse -Force | ForEach-Object { Write-Host $_.FullName }
+            Write-Error "MSIX bundle not found. Aborting upload to avoid creating empty artifact."
+            exit 1
+          }
+          $folder = $bundle.DirectoryName
+          Write-Host "Found MSIX folder: $folder"
+          echo "UPLOAD_PATH=$folder" >> $env:GITHUB_ENV
+        shell: pwsh
+
       - name: Upload MSIX Artifact for Site Build
         uses: actions/upload-artifact@v4
         with:
-          name: msix-package # Job 2 でこの名前でダウンロードする
-          # MSIX_FULL_PATH may be empty in some runs; fall back to the msix_output folder
-          path: ${{ github.workspace }}\msix_output
+          name: msix-package
+          path: ${{ env.UPLOAD_PATH }}
           retention-days: 1
 
       # --- リリースへのアップロード (zip圧縮含む) ---
