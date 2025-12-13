@@ -23,6 +23,10 @@ jobs:
   # ==============================================================================
   build-windows-assets:
     runs-on: windows-latest
+    # 【追加】次のジョブに変数を渡す設定
+    outputs:
+      msix_folder: ${{ steps.msix_setup.outputs.FOLDER_NAME }}
+
     env:
       # MSIX関連の設定
       PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
@@ -158,38 +162,38 @@ jobs:
 
       # --- MSIXの後処理 (パス修正とリネーム) ---
       - name: Fix MSIX Paths & Rename HTML
+        id: msix_setup
         run: |
           $searchPath = "${{ github.workspace }}\msix_output"
           $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
           
           # フォルダ構成を特定 (通常は msix_output/ClipboardUtility..._Test/ の中にある)
           $packageFolder = $msixBundle.DirectoryName
-          $folderName = $msixBundle.Directory.Name # 例: ClipboardUtilityMSIXInstaller_1.2.1.0_Test
+          $folderName = $msixBundle.Directory.Name
 
-          # 環境変数へパスを保存 (このフォルダ名がURLの一部になる)
-          echo "MSIX_FOLDER_NAME=$folderName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          # ジョブ内で使う環境変数を設定
           echo "MSIX_FULL_PATH=$packageFolder" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          # 【追加】次のジョブへ渡すための出力 (GITHUB_OUTPUT)
+          echo "FOLDER_NAME=$folderName" >> $env:GITHUB_OUTPUT
 
           # AppInstaller (.appinstaller) のパス修正
           $appInstaller = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
           [xml]$xml = Get-Content $appInstaller.FullName
           
-          # URLの組み立て: https://.../ClipboardUtility..._Test/setup.msixbundle
           $baseUrl = "${{ env.APPINSTALLER_URL }}"
-          # MSIXバンドルのファイル名
           $bundleName = $msixBundle.Name
           
-          # 重要: サイトのルートに「フォルダごと」置くため、URLは /フォルダ名/ファイル名 となる
+          # URL設定 (公開サイト上でのパス)
           $newUrl = "$baseUrl/$folderName/$bundleName"
           $appInstallerUrl = "$baseUrl/$folderName/$($appInstaller.Name)"
 
-          # XML書き換え
           $xml.AppInstaller.Uri = $appInstallerUrl
           if ($xml.AppInstaller.MainBundle) { $xml.AppInstaller.MainBundle.Uri = $newUrl }
           if ($xml.AppInstaller.MainPackage) { $xml.AppInstaller.MainPackage.Uri = $newUrl }
           $xml.Save($appInstaller.FullName)
 
-          # index.html を download.html にリネーム (Jekyllのindexと競合しないように)
+          # index.html -> download.html リネーム
           $indexFile = Join-Path $packageFolder "index.html"
           if (Test-Path $indexFile) {
              Move-Item -Path $indexFile -Destination (Join-Path $packageFolder "download.html") -Force
@@ -261,17 +265,20 @@ jobs:
       # フォルダ名は Artifactの中身から動的に決定するか、固定名にするか調整可能
       # ここではダウンロードした中身を、適切なフォルダ名で配置します
       - name: Inject MSIX into Site
+        env:
+          # Windowsジョブからフォルダ名を受け取る
+          TARGET_FOLDER: ${{ needs.build-windows-assets.outputs.msix_folder }}
         run: |
-          # フォルダ名を特定 (例: ClipboardUtilityMSIXInstaller_1.2.1.0_Test)
-          # temp_msix_assetsの中身を _site/ の中へ移動
+          echo "Destination folder: $TARGET_FOLDER"
           
-          # 注: Windows側でフォルダ名を環境変数で渡すのが難しいので、
-          # ここでは一意な名前(元のフォルダ名)を探して移動します
-          DIR_NAME=$(ls ./temp_msix_assets | head -n 1)
-          echo "Injecting MSIX folder: $DIR_NAME"
+          # 正しい名前のフォルダを _site の中に作る
+          mkdir -p ./_site/$TARGET_FOLDER
           
-          # _siteの中に移動
-          mv ./temp_msix_assets ./_site/$DIR_NAME
+          # ダウンロードした中身(バラバラのファイル)をそこへ移動する
+          mv ./temp_msix_assets/* ./_site/$TARGET_FOLDER/
+          
+          # 空になった一時フォルダを消す
+          rm -rf ./temp_msix_assets
 
       - name: Upload artifact for Pages
         uses: actions/upload-pages-artifact@v3
