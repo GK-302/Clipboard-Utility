@@ -266,18 +266,17 @@ jobs:
       # ここではダウンロードした中身を、適切なフォルダ名で配置します
       - name: Inject MSIX into Site
         env:
-          # Windowsジョブからフォルダ名を受け取る
           TARGET_FOLDER: ${{ needs.build-windows-assets.outputs.msix_folder }}
         run: |
           echo "Destination folder: $TARGET_FOLDER"
           
-          # 正しい名前のフォルダを _site の中に作る
-          mkdir -p ./_site/$TARGET_FOLDER
+          # 【修正】_siteフォルダは権限が厳しいため、sudo を使ってフォルダを作成します
+          sudo mkdir -p ./_site/$TARGET_FOLDER
           
-          # ダウンロードした中身(バラバラのファイル)をそこへ移動する
-          mv ./temp_msix_assets/* ./_site/$TARGET_FOLDER/
+          # 【修正】ファイルの移動も sudo で行います
+          sudo mv ./temp_msix_assets/* ./_site/$TARGET_FOLDER/
           
-          # 空になった一時フォルダを消す
+          # 一時フォルダの削除
           rm -rf ./temp_msix_assets
 
       - name: Upload artifact for Pages
