@@ -32,7 +32,7 @@ jobs:
       PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
       APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
       # Pagesの公開URL (Jekyllの構成に合わせて設定)
-      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility'
+      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility/install'
       
     steps:
       - name: Checkout code
@@ -230,18 +230,18 @@ jobs:
       # フォルダ名は Artifactの中身から動的に決定するか、固定名にするか調整可能
       # ここではダウンロードした中身を、適切なフォルダ名で配置します
       - name: Inject MSIX into Site
-        env:
-          TARGET_FOLDER: ${{ needs.build-windows-assets.outputs.msix_folder }}
         run: |
-          echo "Destination folder: $TARGET_FOLDER"
+          FIXED_FOLDER_NAME="download"
           
-          # 【修正】_siteフォルダは権限が厳しいため、sudo を使ってフォルダを作成します
-          sudo mkdir -p ./_site/$TARGET_FOLDER
+          echo "Destination folder: $FIXED_FOLDER_NAME"
           
-          # 【修正】ファイルの移動も sudo で行います
-          sudo mv ./temp_msix_assets/* ./_site/$TARGET_FOLDER/
+          # 固定名でフォルダを作成
+          sudo mkdir -p ./_site/$FIXED_FOLDER_NAME
           
-          # 一時フォルダの削除
+          # 中身を移動
+          sudo mv ./temp_msix_assets/* ./_site/$FIXED_FOLDER_NAME/
+          
+          # 一時フォルダ削除
           rm -rf ./temp_msix_assets
 
       - name: Upload artifact for Pages

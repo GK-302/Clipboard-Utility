@@ -15,4 +15,3 @@ plugins:
 include:
   - "*.appinstaller"
   - "*.msixbundle"
-  - "*_Test"
