@@ -27,8 +27,12 @@ jobs:
   build-msix:
     runs-on: windows-latest
     env:
+      # プロジェクトパスなどは適宜調整してください
+      SOLUTION_FILE: 'ClipboardUtility.sln'
       PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
+      PACKAGE_MANIFEST: 'ClipboardUtilityMSIXInstaller/Package.appxmanifest'
       APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
+      # 生成されるWebページ等のURL
       APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility'
 
     steps:
@@ -40,16 +44,16 @@ jobs:
         with:
           dotnet-version: |
             8.0.x
-            7.0.x
           workloads: microsoft-net-sdk-windowsdesktop
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # --- 【追加】ライセンス生成ツールのインストール ---
+      # --- ライセンス生成ツールのインストール ---
       - name: Install License Tool
         run: dotnet tool install --global dotnet-project-licenses
 
+      # --- 証明書のデコード ---
       - name: Decode PFX Certificate
         run: |
           $pfxPath = Join-Path $env:RUNNER_TEMP "signing_cert.pfx"
@@ -57,45 +61,61 @@ jobs:
           echo "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
+      # --- バージョン設定 (重要: MSIX用に4桁化する) ---
       - name: Set Version
         run: |
           $inputVersion = "${{ github.event.inputs.version }}"
           $tagName = "${{ github.ref_name }}"
-          if ($inputVersion) { $cleanVersion = $inputVersion }
-          elseif ($tagName -match '^v') { $cleanVersion = $tagName -replace '^v', '' -replace '-.*', '' }
-          else { $cleanVersion = "0.0.1" }
-          $msixVersion = "$cleanVersion.0"
+          
+          # バージョン文字列の決定
+          if ($inputVersion) { $baseVer = $inputVersion }
+          elseif ($tagName -match '^v') { $baseVer = $tagName -replace '^v', '' -replace '-.*', '' }
+          else { $baseVer = "0.0.1" }
+          
+          # 4桁に正規化 (例: 1.0.1 -> 1.0.1.0)
+          $parts = $baseVer.Split('.')
+          while ($parts.Count -lt 4) { $parts += "0" }
+          $msixVersion = [string]::Join('.', $parts[0..3])
+          
+          Write-Host "Base Version: $baseVer"
+          Write-Host "MSIX Version: $msixVersion"
+          
           echo "PACKAGE_VERSION=$msixVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "RELEASE_TAG=$tagName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
+      # --- ソリューションの復元 ---
       - name: Restore solution
-        run: dotnet restore ClipboardUtility.sln -r win-x86
+        run: dotnet restore ${{ env.SOLUTION_FILE }} -r win-x64
 
-      # --- 【追加】ライセンス情報の生成 ---
-      # MSIXビルドが走る前にファイルを生成し、src/Assets/licenses.json に配置します
+      # --- ライセンス情報の生成 ---
+      # フォルダがないとエラーになるため、事前に作成してから実行
       - name: Generate License Information
         run: |
-          New-Item -ItemType Directory -Force -Path "./ClipboardUtility/src/Assets"
-          dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile ./ClipboardUtility/src/Assets/licenses.json -j
+          $licenseDir = "./ClipboardUtility/src/Assets"
+          if (!(Test-Path $licenseDir)) {
+              New-Item -ItemType Directory -Force -Path $licenseDir
+          }
+          dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile "$licenseDir/licenses.json" -j
         shell: pwsh
 
+      # --- マニフェストのバージョン更新 ---
       - name: Update App Manifest Version
         run: |
-          $manifestPath = "${{ github.workspace }}\ClipboardUtilityMSIXInstaller\Package.appxmanifest"
+          $manifestPath = "${{ github.workspace }}\${{ env.PACKAGE_MANIFEST }}"
           [xml]$xml = Get-Content $manifestPath
           $xml.Package.Identity.Version = "${{ env.PACKAGE_VERSION }}"
           $xml.Save($manifestPath)
         shell: pwsh
 
+      # --- MSIXパッケージのビルド ---
       - name: Build MSIX Package
         run: |
           $outputPath = "${{ github.workspace }}\output"
           New-Item -ItemType Directory -Force -Path $outputPath
           
-          # アプリケーションプロジェクトのContentとしてlicenses.jsonが含まれていれば、
-          # このビルドプロセスで自動的にMSIX内にパッケージングされます。
+          # 注意: AppxPackageDirを指定しても、その下にバージョン付きフォルダが作られます
           msbuild ${{ env.PACKAGE_PROJECT }} /p:Configuration=Release `
+            /p:Platform=x64 `
             /p:AppxPackageDir="$outputPath" `
             /p:AppxPackageSigningEnabled=true `
             /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" `
@@ -104,22 +124,13 @@ jobs:
             /p:AppInstallerUri="${{ env.APPINSTALLER_URL }}" `
             /p:AppInstallerUpdateFrequency=0 `
             /p:AppInstallerShowPrompt=true `
-            /p:ApplicationVersion="${{ env.PACKAGE_VERSION }}" `
-            /p:PackageVersion="${{ env.PACKAGE_VERSION }}" `
-            /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxPackageBuildMode=SideloadOnly `
             /p:AppxBundle=Always `
             /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}"
         shell: pwsh
 
-      - name: Get Artifact Names & Verify
-        run: |
-          $searchPath = "${{ github.workspace }}\output"
-          $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
-          if ($null -eq $msixBundle) { throw "MSIX Bundle not found." }
-          $appInstaller = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
-          if ($null -eq $appInstaller) { throw "AppInstaller file not found." }
-        shell: pwsh
-
+      # --- アーティファクトのアップロード ---
+      # outputフォルダごとアップロードします
       - name: Upload MSIX Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -137,12 +148,15 @@ jobs:
   deploy-site:
     needs: build-msix
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
-      - name: Checkout Source (for index.md)
+      - name: Checkout Source (for index.md / _config.yml)
         uses: actions/checkout@v4
 
       - name: Download MSIX Artifacts
@@ -151,14 +165,39 @@ jobs:
           name: msix-assets
           path: ./msix_temp
 
-      - name: Process MSIX Files (Rename & Move)
+      # --- ファイル整理とリネーム (重要) ---
+      # msbuildの出力は階層が深いため、必要なファイルを見つけてルートに移動させます
+      - name: Process MSIX Files (Flatten & Rename)
         run: |
-          if [ -f ./msix_temp/index.html ]; then
-            echo "Renaming generated index.html to download.html..."
-            mv ./msix_temp/index.html ./msix_temp/download.html
-            sed -i 's/index\.html/download\.html/g' ./msix_temp/download.html
+          echo "Listing downloaded files:"
+          ls -R ./msix_temp
+          
+          # .appinstaller ファイルを探し、そのディレクトリを特定する
+          # (例: ./msix_temp/ClipboardUtility_1.0.1.0_Test/ClipboardUtility.appinstaller)
+          APP_INSTALLER=$(find ./msix_temp -name "*.appinstaller" | head -n 1)
+          
+          if [ -z "$APP_INSTALLER" ]; then
+            echo "Error: .appinstaller file not found!"
+            exit 1
           fi
-          cp -r ./msix_temp/* .
+
+          SOURCE_DIR=$(dirname "$APP_INSTALLER")
+          echo "Found artifacts in: $SOURCE_DIR"
+
+          # index.html (App Installer Web Page) を download.html にリネームしてルートへ移動
+          if [ -f "$SOURCE_DIR/index.html" ]; then
+            echo "Renaming generated index.html to download.html..."
+            cp "$SOURCE_DIR/index.html" ./download.html
+            
+            # 生成されたHTML内のリンクも修正 (index.html -> download.html)
+            sed -i 's/index\.html/download\.html/g' ./download.html
+          fi
+
+          # その他のファイル (.appinstaller, .msixbundle, dependenciesなど) をルートにコピー
+          # -n: 既存ファイル(index.mdなど)を上書きしないようにする (index.html以外)
+          cp -rn "$SOURCE_DIR/"* .
+          
+          # 一時フォルダ削除
           rm -rf ./msix_temp
 
       - name: Setup Pages
