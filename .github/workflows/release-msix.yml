@@ -169,6 +169,53 @@ jobs:
             ${{ env.MSIX_BUNDLE_PATH }}
             ${{ env.APPINSTALLER_PATH }}
 
+      - name: Prepare Site Content & Rename Pages
+        run: |
+          $outDir = "${{ github.workspace }}\output"
+          
+          # ---------------------------------------------------------
+          # 1. MSIX生成の index.html を download.html にリネーム & リンク修正
+          # ---------------------------------------------------------
+          $generatedHtml = Join-Path $outDir "index.html"
+          $renamedHtml   = Join-Path $outDir "download.html"
+
+          if (Test-Path $generatedHtml) {
+            Write-Host "Renaming generated index.html to download.html..."
+            Move-Item -Path $generatedHtml -Destination $renamedHtml -Force
+            
+            # HTMLファイル内の "index.html" という文字列を "download.html" に置換
+            # これにより、<a>タグのhrefなどが修正されます
+            $content = Get-Content $renamedHtml -Raw
+            $newContent = $content -replace 'index\.html', 'download.html'
+            Set-Content -Path $renamedHtml -Value $newContent -Encoding UTF8
+            
+            Write-Host "Success: Renamed and updated links in download.html"
+          } else {
+            Write-Warning "Generated index.html was not found in output directory."
+          }
+
+          # ---------------------------------------------------------
+          # 2. サイトのトップページ (index.md) 等を output フォルダに統合
+          # ---------------------------------------------------------
+          # リポジトリルートにある index.md や _config.yml などを output にコピーします。
+          # ※ .git, .github, outputフォルダ自身、ソースコード等は除外します。
+          
+          Write-Host "Merging repository site files (index.md, etc) into output..."
+          
+          $excludeItems = @(".git", ".github", "output", ".vs", "bin", "obj", "*.sln", "*.wapproj", "*.csproj")
+          
+          Get-ChildItem -Path "${{ github.workspace }}" -Exclude $excludeItems | ForEach-Object {
+            # MSIXプロジェクトのフォルダなども除外したい場合はここで名前判定
+            if ($_.Name -notmatch "ClipboardUtility") {
+               Copy-Item -Path $_.FullName -Destination $outDir -Recurse -Force
+            }
+          }
+          
+          Write-Host "=== Final content of output directory ==="
+          Get-ChildItem $outDir | Select-Object Name
+          
+        shell: pwsh
+
       # === GitHub Pages (Source: Actions) へのデプロイ処理 ===
       
       - name: Setup Pages
