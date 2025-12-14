@@ -1,0 +1,183 @@
+name: Release MSIX & Jekyll Site
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '手動指定バージョン (例: 1.2.1)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # ==============================================================================
+  # JOB 1: Windows環境でMSIXをビルドする
+  # ==============================================================================
+  build-msix:
+    runs-on: windows-latest
+    env:
+      PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
+      APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
+      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            7.0.x
+          workloads: microsoft-net-sdk-windowsdesktop
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Decode PFX Certificate
+        run: |
+          $pfxPath = Join-Path $env:RUNNER_TEMP "signing_cert.pfx"
+          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}"))
+          echo "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Set Version
+        run: |
+          $inputVersion = "${{ github.event.inputs.version }}"
+          $tagName = "${{ github.ref_name }}"
+          if ($inputVersion) { $cleanVersion = $inputVersion }
+          elseif ($tagName -match '^v') { $cleanVersion = $tagName -replace '^v', '' -replace '-.*', '' }
+          else { $cleanVersion = "0.0.1" }
+          $msixVersion = "$cleanVersion.0"
+          echo "PACKAGE_VERSION=$msixVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "RELEASE_TAG=$tagName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Restore solution
+        run: dotnet restore ClipboardUtility.sln -r win-x86
+
+      - name: Update App Manifest Version
+        run: |
+          $manifestPath = "${{ github.workspace }}\ClipboardUtilityMSIXInstaller\Package.appxmanifest"
+          [xml]$xml = Get-Content $manifestPath
+          $xml.Package.Identity.Version = "${{ env.PACKAGE_VERSION }}"
+          $xml.Save($manifestPath)
+        shell: pwsh
+
+      - name: Build MSIX Package
+        run: |
+          $outputPath = "${{ github.workspace }}\output"
+          New-Item -ItemType Directory -Force -Path $outputPath
+          
+          msbuild ${{ env.PACKAGE_PROJECT }} /p:Configuration=Release `
+            /p:AppxPackageDir="$outputPath" `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" `
+            /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}" `
+            /p:GenerateAppInstallerFile=true `
+            /p:AppInstallerUri="${{ env.APPINSTALLER_URL }}" `
+            /p:AppInstallerUpdateFrequency=0 `
+            /p:AppInstallerShowPrompt=true `
+            /p:ApplicationVersion="${{ env.PACKAGE_VERSION }}" `
+            /p:PackageVersion="${{ env.PACKAGE_VERSION }}" `
+            /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxBundle=Always `
+            /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}"
+        shell: pwsh
+
+      - name: Get Artifact Names & Verify
+        run: |
+          $searchPath = "${{ github.workspace }}\output"
+          $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
+          if ($null -eq $msixBundle) { throw "MSIX Bundle not found." }
+          $appInstaller = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
+          if ($null -eq $appInstaller) { throw "AppInstaller file not found." }
+          
+          # HTMLファイルもこの時点であるはず
+          if (-not (Test-Path "$searchPath\index.html")) { Write-Warning "Generated index.html not found." }
+        shell: pwsh
+
+      # Windowsで作ったoutputフォルダの中身をそのままアーティファクトとしてアップロード
+      - name: Upload MSIX Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix-assets
+          path: ${{ github.workspace }}\output
+
+      - name: Cleanup Certificate
+        if: always()
+        run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force
+        shell: pwsh
+
+  # ==============================================================================
+  # JOB 2: Ubuntu環境でJekyllビルド & デプロイ
+  # ==============================================================================
+  deploy-site:
+    needs: build-msix  # Job 1の完了を待つ
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout Source (for index.md)
+        uses: actions/checkout@v4
+
+      # Job 1で作ったMSIXファイルたちをダウンロード
+      - name: Download MSIX Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: msix-assets
+          path: ./msix_temp
+
+      - name: Process MSIX Files (Rename & Move)
+        run: |
+          # 1. MSIX生成の index.html を download.html にリネーム
+          if [ -f ./msix_temp/index.html ]; then
+            echo "Renaming generated index.html to download.html..."
+            mv ./msix_temp/index.html ./msix_temp/download.html
+            
+            # 内部リンクの置換 (index.html -> download.html)
+            # Linuxなのでsedが使えて簡単かつ高速です
+            sed -i 's/index\.html/download\.html/g' ./msix_temp/download.html
+          fi
+
+          # 2. msix_temp の中身をルートディレクトリに移動
+          # これで index.md (Checkout済み) と download.html (MSIX由来) が同居します
+          cp -r ./msix_temp/* .
+          rm -rf ./msix_temp
+          
+          echo "=== File structure before Jekyll build ==="
+          ls -R
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # ここで正規のJekyllビルドを実行
+      # index.md は index.html に変換され、download.html はそのまま維持されます
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
