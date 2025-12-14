@@ -29,11 +29,11 @@ jobs:
 
     env:
       # MSIX関連の設定
-      PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
-      APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
+      PACKAGE_PROJECT: "ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj"
+      APPINSTALLER_FILENAME: "ClipboardUtilityMSIXInstaller.appinstaller"
       # Pagesの公開URL (Jekyllの構成に合わせて設定)
-      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility/download'
-      
+      APPINSTALLER_URL: "https://gk-302.github.io/Clipboard-Utility/download"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
           $rawTag = "${{ github.ref_name }}"
           $version = $rawTag -replace '^v', '' -replace '-.*', ''
           $version4digit = "$version.0"
-          
+
           echo "VERSION_NUMBER=$version" >> $env:GITHUB_OUTPUT
           echo "VERSION_4_DIGITS=$version4digit" >> $env:GITHUB_OUTPUT
           echo "RELEASE_TAG=$rawTag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -77,7 +77,7 @@ jobs:
       - name: Update Projects Version
         run: |
           $version = "${{ steps.extract_version.outputs.VERSION_4_DIGITS }}"
-          
+
           # 1. Update csproj
           $csproj = "ClipboardUtility/ClipboardUtility.csproj"
           [xml]$xmlCs = Get-Content $csproj
@@ -98,10 +98,10 @@ jobs:
           # これにより "project.assets.json doesn't have a target..." エラーを確実に防ぎます
           $csprojPath = "ClipboardUtility/ClipboardUtility.csproj"
           [xml]$xml = Get-Content $csprojPath
-          
+
           # PropertyGroupを取得 (通常は最初のPropertyGroup)
           $propGroup = $xml.Project.PropertyGroup | Select-Object -First 1
-          
+
           # RuntimeIdentifiersノードがない場合のみ追加
           if (-not $propGroup.SelectSingleNode("*[local-name()='RuntimeIdentifiers']")) {
               $node = $xml.CreateElement("RuntimeIdentifiers", $xml.Project.NamespaceURI)
@@ -119,7 +119,8 @@ jobs:
           # ライセンス生成
           New-Item -ItemType Directory -Force -Path "./ClipboardUtility/src/Assets"
           dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile ./ClipboardUtility/src/Assets/licenses.json -j
-        shell: pwsh
+        shell:
+          pwsh
 
           # --- 1. Standalone EXE ビルド ---
       - name: Publish WPF App (Standalone)
@@ -139,12 +140,24 @@ jobs:
           Copy-Item -Path ./ClipboardUtilityInstaller/Release/* -Destination ./ClipboardUtilityInstaller/Release-NoAdmin/ -Recurse
           $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Select-Object -First 1).FullName
           & $sdkPath "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi" /W 10
-      
+
       # --- 3. MSIX インストーラービルド ---
       - name: Build MSIX Installer (wapproj)
         run: |
           $msixOut = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
-          msbuild "${{ env.PACKAGE_PROJECT }}" /p:Configuration=Release /p:Platform=x64 /p:AppxPackageDir="$msixOut" /p:AppxPackageSigningEnabled=true /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}"
+
+          # 【修正】AppInstaller生成用パラメータを追加
+          msbuild "${{ env.PACKAGE_PROJECT }}" `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:AppxPackageDir="$msixOut" `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" `
+            /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}" `
+            /p:GenerateAppInstallerFile=true `
+            /p:AppInstallerUri="${{ env.APPINSTALLER_URL }}" `
+            /p:AppInstallerUpdateFrequency=OnApplicationRun `
+            /p:AppInstallerCheckForUpdateFrequency=OnApplicationRun
         shell: pwsh
 
       # --- アーティファクトの保存 (Job間の受け渡し用) ---
@@ -232,15 +245,15 @@ jobs:
       - name: Inject MSIX into Site
         run: |
           FIXED_FOLDER_NAME="download"
-          
+
           echo "Destination folder: $FIXED_FOLDER_NAME"
-          
+
           # 固定名でフォルダを作成
           sudo mkdir -p ./_site/$FIXED_FOLDER_NAME
-          
+
           # 中身を移動
           sudo mv ./temp_msix_assets/* ./_site/$FIXED_FOLDER_NAME/
-          
+
           # 一時フォルダ削除
           rm -rf ./temp_msix_assets
 
