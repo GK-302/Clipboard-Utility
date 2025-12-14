@@ -1,7 +1,6 @@
-name: Release MSIX (GitHub Actions Deploy)
+name: Release MSIX & Jekyll Site
 
 on:
-  # v*.*.* タグ (例: v1.2.1, v1.2.1-beta) でトリガー
   push:
     tags:
       - "v*"
@@ -14,28 +13,22 @@ on:
 
 permissions:
   contents: write
-  pages: write      # GitHub Pagesへのデプロイに必要
-  id-token: write   # GitHub Pagesへのデプロイに必要
+  pages: write
+  id-token: write
 
-# Pagesデプロイの同時実行制御
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    # 以前と同じ構成（Windows環境でビルドしてそのままデプロイ）
+  # ==============================================================================
+  # JOB 1: Windows環境でMSIXをビルドする
+  # ==============================================================================
+  build-msix:
     runs-on: windows-latest
-    
-    # GitHub Pagesの環境設定
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     env:
       PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
       APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
-      # 公開URL (末尾にスラッシュを入れない)
       APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility'
 
     steps:
@@ -60,35 +53,16 @@ jobs:
           echo "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
 
-      # === バージョン処理の修正箇所 ===
       - name: Set Version
         run: |
           $inputVersion = "${{ github.event.inputs.version }}"
           $tagName = "${{ github.ref_name }}"
-          
-          if ($inputVersion) {
-            # 手動実行時
-            $cleanVersion = $inputVersion
-          } elseif ($tagName -match '^v') {
-            # タグ実行時 (v1.2.1-beta -> 1.2.1)
-            # 1. 先頭の 'v' を削除
-            $cleanVersion = $tagName -replace '^v', ''
-            # 2. ハイフン以降(-betaなど)を削除
-            $cleanVersion = $cleanVersion -replace '-.*', ''
-          } else {
-            # フォールバック
-            $cleanVersion = "0.0.1"
-          }
-
-          # MSIX用に .0 を付与 (1.2.1 -> 1.2.1.0)
+          if ($inputVersion) { $cleanVersion = $inputVersion }
+          elseif ($tagName -match '^v') { $cleanVersion = $tagName -replace '^v', '' -replace '-.*', '' }
+          else { $cleanVersion = "0.0.1" }
           $msixVersion = "$cleanVersion.0"
-
           echo "PACKAGE_VERSION=$msixVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "RELEASE_TAG=$tagName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          
-          Write-Host "Tag Name: $tagName"
-          Write-Host "Clean Version: $cleanVersion"
-          Write-Host "MSIX Version: $msixVersion"
         shell: pwsh
 
       - name: Restore solution
@@ -97,25 +71,16 @@ jobs:
       - name: Update App Manifest Version
         run: |
           $manifestPath = "${{ github.workspace }}\ClipboardUtilityMSIXInstaller\Package.appxmanifest"
-          $version = "${{ env.PACKAGE_VERSION }}"
-          
-          Write-Host "Updating $manifestPath <Identity Version> to $version"
-          
-          $xml = [xml](Get-Content $manifestPath)
-          $xml.Package.Identity.Version = $version
+          [xml]$xml = Get-Content $manifestPath
+          $xml.Package.Identity.Version = "${{ env.PACKAGE_VERSION }}"
           $xml.Save($manifestPath)
         shell: pwsh
 
-      # === ビルドコマンドの修正箇所 (.appinstallerが生成されないバグ修正) ===
       - name: Build MSIX Package
         run: |
           $outputPath = "${{ github.workspace }}\output"
-          
-          # outputフォルダを事前に作成
           New-Item -ItemType Directory -Force -Path $outputPath
-
-          # 【重要】$outputPath の末尾にバックスラッシュ(\)を入れないこと！
-          # これが引用符のエスケープを引き起こし、後続の引数を無効化していました。
+          
           msbuild ${{ env.PACKAGE_PROJECT }} /p:Configuration=Release `
             /p:AppxPackageDir="$outputPath" `
             /p:AppxPackageSigningEnabled=true `
@@ -132,108 +97,87 @@ jobs:
             /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}"
         shell: pwsh
 
-      - name: Get Artifact Names
+      - name: Get Artifact Names & Verify
         run: |
           $searchPath = "${{ github.workspace }}\output"
-          
           $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
-          if ($null -eq $msixBundle) {
-            Write-Error "MSIX Bundle (*.msixbundle) not found."
-            exit 1
-          }
-
-          # outputフォルダからの相対パスを計算
-          $relativePath = $msixBundle.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+          if ($null -eq $msixBundle) { throw "MSIX Bundle not found." }
+          $appInstaller = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
+          if ($null -eq $appInstaller) { throw "AppInstaller file not found." }
           
-          echo "MSIX_BUNDLE_NAME=$($msixBundle.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "MSIX_BUNDLE_PATH=$($msixBundle.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "MSIX_BUNDLE_RELATIVE_PATH=$relativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          
-          $appInstallerFile = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
-          if ($appInstallerFile) {
-            $appInstallerRelativePath = $appInstallerFile.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
-            echo "APPINSTALLER_PATH=$($appInstallerFile.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-            echo "APPINSTALLER_RELATIVE_PATH=$appInstallerRelativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          } else {
-            Write-Error "AppInstaller file not found. MSBuild args might be wrong."
-            exit 1
-          }
+          # HTMLファイルもこの時点であるはず
+          if (-not (Test-Path "$searchPath\index.html")) { Write-Warning "Generated index.html not found." }
         shell: pwsh
 
-      # アーティファクト保存 (ダウンロード用)
-      - name: Upload Build Artifacts
+      # Windowsで作ったoutputフォルダの中身をそのままアーティファクトとしてアップロード
+      - name: Upload MSIX Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: msix-package
-          path: |
-            ${{ env.MSIX_BUNDLE_PATH }}
-            ${{ env.APPINSTALLER_PATH }}
+          name: msix-assets
+          path: ${{ github.workspace }}\output
 
-      - name: Prepare Site Content & Rename Pages
-        run: |
-          $outDir = "${{ github.workspace }}\output"
-          
-          # ---------------------------------------------------------
-          # 1. MSIX生成の index.html を download.html にリネーム & リンク修正
-          # ---------------------------------------------------------
-          $generatedHtml = Join-Path $outDir "index.html"
-          $renamedHtml   = Join-Path $outDir "download.html"
-
-          if (Test-Path $generatedHtml) {
-            Write-Host "Renaming generated index.html to download.html..."
-            Move-Item -Path $generatedHtml -Destination $renamedHtml -Force
-            
-            # HTMLファイル内の "index.html" という文字列を "download.html" に置換
-            # これにより、<a>タグのhrefなどが修正されます
-            $content = Get-Content $renamedHtml -Raw
-            $newContent = $content -replace 'index\.html', 'download.html'
-            Set-Content -Path $renamedHtml -Value $newContent -Encoding UTF8
-            
-            Write-Host "Success: Renamed and updated links in download.html"
-          } else {
-            Write-Warning "Generated index.html was not found in output directory."
-          }
-
-          # ---------------------------------------------------------
-          # 2. サイトのトップページ (index.md) 等を output フォルダに統合
-          # ---------------------------------------------------------
-          # リポジトリルートにある index.md や _config.yml などを output にコピーします。
-          # ※ .git, .github, outputフォルダ自身、ソースコード等は除外します。
-          
-          Write-Host "Merging repository site files (index.md, etc) into output..."
-          
-          $excludeItems = @(".git", ".github", "output", ".vs", "bin", "obj", "*.sln", "*.wapproj", "*.csproj")
-          
-          Get-ChildItem -Path "${{ github.workspace }}" -Exclude $excludeItems | ForEach-Object {
-            # MSIXプロジェクトのフォルダなども除外したい場合はここで名前判定
-            if ($_.Name -notmatch "ClipboardUtility") {
-               Copy-Item -Path $_.FullName -Destination $outDir -Recurse -Force
-            }
-          }
-          
-          Write-Host "=== Final content of output directory ==="
-          Get-ChildItem $outDir | Select-Object Name
-          
-        shell: pwsh
-
-      # === GitHub Pages (Source: Actions) へのデプロイ処理 ===
-      
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      # GitHub Actionsのデプロイ用アーティファクトを作成
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # outputフォルダの中身をデプロイ対象とする
-          path: "${{ github.workspace }}/output"
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-      
-      # === 証明書クリーンアップ ===
       - name: Cleanup Certificate
         if: always()
         run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force
         shell: pwsh
+
+  # ==============================================================================
+  # JOB 2: Ubuntu環境でJekyllビルド & デプロイ
+  # ==============================================================================
+  deploy-site:
+    needs: build-msix  # Job 1の完了を待つ
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout Source (for index.md)
+        uses: actions/checkout@v4
+
+      # Job 1で作ったMSIXファイルたちをダウンロード
+      - name: Download MSIX Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: msix-assets
+          path: ./msix_temp
+
+      - name: Process MSIX Files (Rename & Move)
+        run: |
+          # 1. MSIX生成の index.html を download.html にリネーム
+          if [ -f ./msix_temp/index.html ]; then
+            echo "Renaming generated index.html to download.html..."
+            mv ./msix_temp/index.html ./msix_temp/download.html
+            
+            # 内部リンクの置換 (index.html -> download.html)
+            # Linuxなのでsedが使えて簡単かつ高速です
+            sed -i 's/index\.html/download\.html/g' ./msix_temp/download.html
+          fi
+
+          # 2. msix_temp の中身をルートディレクトリに移動
+          # これで index.md (Checkout済み) と download.html (MSIX由来) が同居します
+          cp -r ./msix_temp/* .
+          rm -rf ./msix_temp
+          
+          echo "=== File structure before Jekyll build ==="
+          ls -R
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # ここで正規のJekyllビルドを実行
+      # index.md は index.html に変換され、download.html はそのまま維持されます
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
