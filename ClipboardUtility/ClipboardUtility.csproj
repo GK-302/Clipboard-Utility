@@ -31,7 +31,6 @@
     <None Remove="src\Assets\Fonts\Roboto\Roboto-VariableFont_wdth,wght.ttf" />
     <None Remove="src\Assets\Fonts\Roboto\static\Roboto_Condensed-Black.ttf" />
     <None Remove="src\Assets\Icons\small_icon.ico" />
-    <None Remove="src\Assets\licenses.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,9 +52,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="src\Assets\Icons\big_icon.ico" />
-    <Content Include="src\Assets\licenses.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Black.ttf" />
     <Resource Include="src\Assets\Fonts\NotoSansJP\static\NotoSansJP-Regular.ttf" />
     <Content Include="src\Assets\Fonts\Roboto\OFL.txt">
@@ -89,6 +85,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="config\presets.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Assets\licenses.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
