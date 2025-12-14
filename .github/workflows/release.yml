@@ -1,258 +1,153 @@
-name: Release App & Deploy Site
+name: .NET WPF Release with Licenses
 
+# ==================================================
+# ワークフローが実行されるタイミング
+# ==================================================
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "v*.*.*" # 例: v0.1.2, v0.1.2-beta
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  # ==============================================================================
-  # JOB 1: アプリのビルド、署名、リリース作成 (Windows環境)
-  # ==============================================================================
-  build-windows-assets:
+  build-and-release:
+    name: Build, Generate License, and Release
     runs-on: windows-latest
-    outputs:
-      msix_folder: ${{ steps.msix_path_resolver.outputs.FOLDER_NAME }}
-
-    env:
-      PACKAGE_PROJECT: "ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj"
-      APPINSTALLER_FILENAME: "ClipboardUtilityMSIXInstaller.appinstaller"
-      # Pagesの公開URL (末尾に download を含む)
-      APPINSTALLER_URL: "https://gk-302.github.io/Clipboard-Utility/download"
+    permissions:
+      contents: write
 
     steps:
+      # 1. チェックアウト
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- セットアップ関連 ---
+      # 2. .NET SDKをセットアップする
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
+          # プロジェクト本体用の8.0と、ツール用の7.0を両方インストール
           dotnet-version: |
             8.0.x
             7.0.x
           workloads: microsoft-net-sdk-windowsdesktop
 
+      # 3. MSBuild セットアップ
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      # --- [追加] ライセンス生成ツールのインストール ---
       - name: Install License Tool
         run: dotnet tool install --global dotnet-project-licenses
 
-      # --- 証明書の準備 ---
-      - name: Decode PFX Certificate
-        run: |
-          $pfxPath = Join-Path $env:RUNNER_TEMP "signing_cert.pfx"
-          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}"))
-          echo "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        shell: pwsh
+      # 4. NuGet パッケージの復元
+      - name: Restore NuGet packages
+        run: dotnet restore ClipboardUtility.sln
 
-      # --- バージョン情報の抽出と設定 ---
-      - name: Extract Version
+      # --- [修正] ライセンス情報の生成 ---
+      # インストーラープロジェクトが参照しているパス(src/Assets/licenses.json)へ生成して上書きします。
+      # これにより、後続のMSIビルド時に自動的にファイルが取り込まれます。
+      - name: Generate License Information
+        run: |
+          # 念のためディレクトリが存在するか確認し、なければ作成
+          New-Item -ItemType Directory -Force -Path "./ClipboardUtility/src/Assets"
+          
+          # ライセンス生成実行 (入力プロジェクトと出力先を明示的に指定)
+          dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile ./ClipboardUtility/src/Assets/licenses.json -j
+      # 4a. バージョン番号の抽出
+      - name: Extract version number from tag
         id: extract_version
         run: |
-          $rawTag = "${{ github.ref_name }}"
-          $version = $rawTag -replace '^v', '' -replace '-.*', ''
-          $version4digit = "$version.0"
-
-          echo "VERSION_NUMBER=$version" >> $env:GITHUB_OUTPUT
-          echo "VERSION_4_DIGITS=$version4digit" >> $env:GITHUB_OUTPUT
-          echo "RELEASE_TAG=$rawTag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        shell: pwsh
-
-      - name: Update Projects Version
+          $VERSION_NUMBER = "${{ github.ref_name }}" -replace '^v', '' -replace '-.*', ''
+          Write-Host "Extracted version: $VERSION_NUMBER"
+          echo "VERSION_NUMBER=$VERSION_NUMBER" >> $env:GITHUB_OUTPUT
+      # 4b. インストーラーバージョンの検証
+      - name: Compare Tag Version with Installer Version
         run: |
-          $version = "${{ steps.extract_version.outputs.VERSION_4_DIGITS }}"
-
-          # 1. Update csproj
-          $csproj = "ClipboardUtility/ClipboardUtility.csproj"
-          [xml]$xmlCs = Get-Content $csproj
-          $node = $xmlCs.SelectSingleNode("//PropertyGroup/Version")
-          if ($node) { $node.InnerText = $version; $xmlCs.Save($csproj) }
-
-          # 2. Update appxmanifest (MSIX)
-          $manifest = "ClipboardUtilityMSIXInstaller/Package.appxmanifest"
-          [xml]$xmlMx = Get-Content $manifest
-          $xmlMx.Package.Identity.Version = $version
-          $xmlMx.Save($manifest)
-        shell: pwsh
-
-      # --- ビルド & ライセンス生成 ---
-      - name: Restore & Generate License
-        run: |
-          $csprojPath = "ClipboardUtility/ClipboardUtility.csproj"
-          [xml]$xml = Get-Content $csprojPath
-
-          $propGroup = $xml.Project.PropertyGroup | Select-Object -First 1
-          if (-not $propGroup.SelectSingleNode("*[local-name()='RuntimeIdentifiers']")) {
-              $node = $xml.CreateElement("RuntimeIdentifiers", $xml.Project.NamespaceURI)
-              $node.InnerText = "win-x86;win-x64"
-              $propGroup.AppendChild($node)
-              $xml.Save($csprojPath)
+          $TAG_VERSION = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
+          $VDPROJ_PATH = "ClipboardUtilityInstaller/ClipboardUtilityInstaller.vdproj"
+          $FILE_CONTENT = Get-Content $VDPROJ_PATH
+          $FILE_VERSION_LINE = $FILE_CONTENT | Select-String -Pattern '("ProductVersion" = "8:)([\d\.]+)"'
+          if (-not $FILE_VERSION_LINE) {
+            Write-Error "Could not find 'ProductVersion' in $VDPROJ_PATH"
+            exit 1
           }
-
-          dotnet restore ClipboardUtility.sln
-
-          New-Item -ItemType Directory -Force -Path "./ClipboardUtility/src/Assets"
-          dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile ./ClipboardUtility/src/Assets/licenses.json -j
-        shell: pwsh
-
-      # --- 1. Standalone EXE ビルド ---
-      - name: Publish WPF App (Standalone)
+          $FILE_VERSION = $FILE_VERSION_LINE.Matches.Groups[2].Value
+          
+          if ($TAG_VERSION -ne $FILE_VERSION) {
+            Write-Error "Tag version ($TAG_VERSION) does not match installer version ($FILE_VERSION)."
+            exit 1
+          }
+          Write-Host "Versions match. Proceeding."
+      # 4c. csprojのバージョン更新
+      - name: Update .csproj Version Tag
         run: |
-          dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
-          Copy-Item -Path ./ClipboardUtility/src/Assets/licenses.json -Destination ./publish/
-          Copy-Item -Path ./README* -Destination ./publish/
+          $CSPROJ_PATH = "ClipboardUtility/ClipboardUtility.csproj"
+          $TAG_VERSION = "${{ steps.extract_version.outputs.VERSION_NUMBER }}"
+          $VERSION_4_DIGITS = "$TAG_VERSION.0"
+          
+          [xml]$csproj = Get-Content -Path $CSPROJ_PATH
+          $versionNode = $csproj.SelectSingleNode("//PropertyGroup/Version")
+          
+          if ($versionNode -eq $null) {
+            Write-Error "<Version> tag not found in $CSPROJ_PATH"
+            exit 1
+          }
+          
+          $versionNode.InnerText = $VERSION_4_DIGITS
+          $csproj.Save($CSPROJ_PATH)
+      # 5. WPFアプリケーションの発行 (単一exe)
+      - name: Publish WPF Application
+        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
 
-      # --- 2. MSI インストーラービルド ---
+      # --- [修正] ライセンスファイルを単一exe用フォルダへコピー ---
+      # 生成場所が変わったので、新しいパスからコピーします
+      - name: Copy License to publish folder
+        run: Copy-Item -Path ./ClipboardUtility/src/Assets/licenses.json -Destination ./publish/
+
+      # 6. MSIインストーラーのビルド
+      # ここで .vdproj は "./ClipboardUtility/src/Assets/licenses.json" を参照し、
+      # インストーラー内部にパッケージングします。
       - name: Build MSI Installer
         run: |
           & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "ClipboardUtility.sln" /Build "Release|Any CPU" /Project "ClipboardUtilityInstaller"
-
-      - name: Create NoAdmin MSI
+          
+          if (Test-Path "ide_activity.log") {
+            Get-Content "ide_activity.log" -Encoding UTF8 -ErrorAction SilentlyContinue
+          }
+      # 7. NoAdmin版インストーラーの作成とUAC解除
+      # MSIの中にライセンスファイルが含まれているため、MSIをコピー・改造するだけでOK
+      - name: Create and Modify NoAdmin Installer Version
         run: |
           New-Item -ItemType Directory -Force -Path "./ClipboardUtilityInstaller/Release-NoAdmin"
           Copy-Item -Path ./ClipboardUtilityInstaller/Release/* -Destination ./ClipboardUtilityInstaller/Release-NoAdmin/ -Recurse
-          $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Select-Object -First 1).FullName
-          & $sdkPath "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi" /W 10
-
-      # --- 3. MSIX インストーラービルド (修正箇所) ---
-      - name: Build MSIX Installer (wapproj)
-        run: |
-          $msixOut = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
+          $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Sort-Object FullName -Descending | Select-Object -First 1).FullName
+          $msiPath = "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi"
           
-          # フォルダ作成（MSBuildが作らない場合への保険）
-          New-Item -ItemType Directory -Force -Path $msixOut
+          & $sdkPath $msiPath /W 10
+      # 8. READMEのコピー
+      - name: Copy README to publish folder
+        run: Copy-Item -Path ./README* -Destination ./publish/
 
-          msbuild "${{ env.PACKAGE_PROJECT }}" `
-            /p:Configuration=Release `
-            /p:Platform=x64 `
-            /p:AppxPackageDir="$msixOut" `
-            /p:AppxPackageSigningEnabled=true `
-            /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" `
-            /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}" `
-            /p:UapAppxPackageBuildMode=SideloadOnly `
-            /p:AppxBundle=Always `
-            /p:GenerateAppInstallerFile=true `
-            /p:AppInstallerUri="${{ env.APPINSTALLER_URL }}" `
-            /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}" `
-            /p:AppInstallerUpdateFrequency=OnApplicationRun `
-            /p:AppInstallerCheckForUpdateFrequency=OnApplicationRun `
-            /p:AppInstallerShowPrompt=true
-        shell: pwsh
+      # 9. 単一exe版のZIP圧縮
+      - name: Zip the standalone artifact
+        run: Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-Standalone-${{ github.ref_name }}.zip
 
-      # --- アーティファクトの保存 ---
-      - name: Determine MSIX upload path
-        id: msix_path_resolver
-        run: |
-          $search = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
-          Write-Host "Searching for .msixbundle or .msix under $search"
-          $packageFile = Get-ChildItem -Path $search -Include '*.msixbundle', '*.msix' -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($null -eq $packageFile) {
-            Write-Error "MSIX package not found."
-            exit 1
-          }
-          $folder = $packageFile.DirectoryName
-          Write-Host "Found MSIX folder: $folder"
-          echo "UPLOAD_PATH=$folder" >> $env:GITHUB_ENV
-          echo "FOLDER_NAME=$($packageFile.Directory.Name)" >> $env:GITHUB_OUTPUT
-        shell: pwsh
+      # 10. 通常版インストーラーのZIP圧縮
+      - name: Zip the normal installer artifact
+        run: Compress-Archive -Path ./ClipboardUtilityInstaller/Release/* -DestinationPath ClipboardUtility-Installer-${{ github.ref_name }}.zip
 
-      - name: Upload MSIX Artifact for Site Build
-        uses: actions/upload-artifact@v4
+      # 11. NoAdmin版インストーラーのZIP圧縮
+      - name: Zip the no-admin installer artifact
+        run: Compress-Archive -Path ./ClipboardUtilityInstaller/Release-NoAdmin/* -DestinationPath ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip
+
+      # 12. GitHubリリース作成
+      - name: Create or Update Release with MSI/EXE assets
+        uses: softprops/action-gh-release@v1
         with:
-          name: msix-package
-          path: ${{ env.UPLOAD_PATH }}
-          retention-days: 1
-
-      # --- リリースへのアップロード ---
-      - name: Zip Artifacts
-        run: |
-          Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-Standalone-${{ env.RELEASE_TAG }}.zip
-          Compress-Archive -Path ./ClipboardUtilityInstaller/Release/* -DestinationPath ClipboardUtility-Installer-${{ env.RELEASE_TAG }}.zip
-          Compress-Archive -Path ./ClipboardUtilityInstaller/Release-NoAdmin/* -DestinationPath ClipboardUtility-Installer-NoAdmin-${{ env.RELEASE_TAG }}.zip
-
-      - name: Release to GitHub
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: Release ${{ env.RELEASE_TAG }}
-          prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
           files: |
-            *.zip
-            ${{ env.UPLOAD_PATH }}/*.msix*
-            ${{ env.UPLOAD_PATH }}/*.appinstaller
-
-      - name: Cleanup Certificate
-        if: always()
-        run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force
-        shell: pwsh
-
-  # ==============================================================================
-  # JOB 2: Jekyllサイトのビルド (Ubuntu環境)
-  # ==============================================================================
-  build-site:
-    needs: build-windows-assets
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Source
-        uses: actions/checkout@v4
-
-      - name: Download MSIX Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: msix-package
-          path: ./temp_msix_assets
-
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
-
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./
-          destination: ./_site
-
-      - name: Inject MSIX into Site
-        run: |
-          FIXED_FOLDER_NAME="download"
-          echo "Destination folder: $FIXED_FOLDER_NAME"
-          
-          # _site/download フォルダを作成
-          sudo mkdir -p ./_site/$FIXED_FOLDER_NAME
-          
-          # Artifactの中身（msixbundle, appinstaller等）を移動
-          sudo mv ./temp_msix_assets/* ./_site/$FIXED_FOLDER_NAME/
-          
-          # 一時フォルダ削除
-          rm -rf ./temp_msix_assets
-
-      - name: Upload artifact for Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./_site
-
-  # ==============================================================================
-  # JOB 3: デプロイ (GitHub Pages)
-  # ==============================================================================
-  deploy-pages:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build-site
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+            ./ClipboardUtility-Standalone-${{ github.ref_name }}.zip
+            ./ClipboardUtility-Installer-${{ github.ref_name }}.zip
+            ./ClipboardUtility-Installer-NoAdmin-${{ github.ref_name }}.zip

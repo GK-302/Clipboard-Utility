@@ -1,0 +1,192 @@
+name: Release MSIX (GitHub Actions Deploy)
+
+on:
+  # v*.*.* タグ (例: v1.2.1, v1.2.1-beta) でトリガー
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '手動指定バージョン (例: 1.2.1)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pages: write      # GitHub Pagesへのデプロイに必要
+  id-token: write   # GitHub Pagesへのデプロイに必要
+
+# Pagesデプロイの同時実行制御
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    # 以前と同じ構成（Windows環境でビルドしてそのままデプロイ）
+    runs-on: windows-latest
+    
+    # GitHub Pagesの環境設定
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    env:
+      PACKAGE_PROJECT: 'ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj'
+      APPINSTALLER_FILENAME: 'ClipboardUtilityMSIXInstaller.appinstaller'
+      # 公開URL (末尾にスラッシュを入れない)
+      APPINSTALLER_URL: 'https://gk-302.github.io/Clipboard-Utility'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            7.0.x
+          workloads: microsoft-net-sdk-windowsdesktop
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Decode PFX Certificate
+        run: |
+          $pfxPath = Join-Path $env:RUNNER_TEMP "signing_cert.pfx"
+          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}"))
+          echo "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      # === バージョン処理の修正箇所 ===
+      - name: Set Version
+        run: |
+          $inputVersion = "${{ github.event.inputs.version }}"
+          $tagName = "${{ github.ref_name }}"
+          
+          if ($inputVersion) {
+            # 手動実行時
+            $cleanVersion = $inputVersion
+          } elseif ($tagName -match '^v') {
+            # タグ実行時 (v1.2.1-beta -> 1.2.1)
+            # 1. 先頭の 'v' を削除
+            $cleanVersion = $tagName -replace '^v', ''
+            # 2. ハイフン以降(-betaなど)を削除
+            $cleanVersion = $cleanVersion -replace '-.*', ''
+          } else {
+            # フォールバック
+            $cleanVersion = "0.0.1"
+          }
+
+          # MSIX用に .0 を付与 (1.2.1 -> 1.2.1.0)
+          $msixVersion = "$cleanVersion.0"
+
+          echo "PACKAGE_VERSION=$msixVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "RELEASE_TAG=$tagName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
+          Write-Host "Tag Name: $tagName"
+          Write-Host "Clean Version: $cleanVersion"
+          Write-Host "MSIX Version: $msixVersion"
+        shell: pwsh
+
+      - name: Restore solution
+        run: dotnet restore ClipboardUtility.sln -r win-x86
+
+      - name: Update App Manifest Version
+        run: |
+          $manifestPath = "${{ github.workspace }}\ClipboardUtilityMSIXInstaller\Package.appxmanifest"
+          $version = "${{ env.PACKAGE_VERSION }}"
+          
+          Write-Host "Updating $manifestPath <Identity Version> to $version"
+          
+          $xml = [xml](Get-Content $manifestPath)
+          $xml.Package.Identity.Version = $version
+          $xml.Save($manifestPath)
+        shell: pwsh
+
+      # === ビルドコマンドの修正箇所 (.appinstallerが生成されないバグ修正) ===
+      - name: Build MSIX Package
+        run: |
+          $outputPath = "${{ github.workspace }}\output"
+          
+          # outputフォルダを事前に作成
+          New-Item -ItemType Directory -Force -Path $outputPath
+
+          # 【重要】$outputPath の末尾にバックスラッシュ(\)を入れないこと！
+          # これが引用符のエスケープを引き起こし、後続の引数を無効化していました。
+          msbuild ${{ env.PACKAGE_PROJECT }} /p:Configuration=Release `
+            /p:AppxPackageDir="$outputPath" `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" `
+            /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}" `
+            /p:GenerateAppInstallerFile=true `
+            /p:AppInstallerUri="${{ env.APPINSTALLER_URL }}" `
+            /p:AppInstallerUpdateFrequency=0 `
+            /p:AppInstallerShowPrompt=true `
+            /p:ApplicationVersion="${{ env.PACKAGE_VERSION }}" `
+            /p:PackageVersion="${{ env.PACKAGE_VERSION }}" `
+            /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxBundle=Always `
+            /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}"
+        shell: pwsh
+
+      - name: Get Artifact Names
+        run: |
+          $searchPath = "${{ github.workspace }}\output"
+          
+          $msixBundle = Get-ChildItem -Path $searchPath -Filter "*.msixbundle" -Recurse | Select-Object -First 1
+          if ($null -eq $msixBundle) {
+            Write-Error "MSIX Bundle (*.msixbundle) not found."
+            exit 1
+          }
+
+          # outputフォルダからの相対パスを計算
+          $relativePath = $msixBundle.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+          
+          echo "MSIX_BUNDLE_NAME=$($msixBundle.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "MSIX_BUNDLE_PATH=$($msixBundle.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "MSIX_BUNDLE_RELATIVE_PATH=$relativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
+          $appInstallerFile = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
+          if ($appInstallerFile) {
+            $appInstallerRelativePath = $appInstallerFile.FullName.Substring($searchPath.Length + 1).Replace('\', '/')
+            echo "APPINSTALLER_PATH=$($appInstallerFile.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            echo "APPINSTALLER_RELATIVE_PATH=$appInstallerRelativePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          } else {
+            Write-Error "AppInstaller file not found. MSBuild args might be wrong."
+            exit 1
+          }
+        shell: pwsh
+
+      # アーティファクト保存 (ダウンロード用)
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix-package
+          path: |
+            ${{ env.MSIX_BUNDLE_PATH }}
+            ${{ env.APPINSTALLER_PATH }}
+
+      # === GitHub Pages (Source: Actions) へのデプロイ処理 ===
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # GitHub Actionsのデプロイ用アーティファクトを作成
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # outputフォルダの中身をデプロイ対象とする
+          path: "${{ github.workspace }}/output"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      
+      # === 証明書クリーンアップ ===
+      - name: Cleanup Certificate
+        if: always()
+        run: Remove-Item -Path "${{ env.PFX_PATH }}" -Force
+        shell: pwsh
