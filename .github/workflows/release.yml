@@ -232,33 +232,31 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
           destination: ./_site
 
-      # --- デバッグと配置の修正 ---
+      # 【重要】Jekyllのビルド結果(_site)の中に、MSIXフォルダを移動させる
+      # これにより、サイトの一部としてMSIXファイルが配信されます
+      # フォルダ名は Artifactの中身から動的に決定するか、固定名にするか調整可能
+      # ここではダウンロードした中身を、適切なフォルダ名で配置します
       - name: Inject MSIX into Site
         run: |
-          echo "=== [Debug] Content of temp_msix_assets ==="
-          ls -R ./temp_msix_assets
-          
           FIXED_FOLDER_NAME="download"
-          DEST_DIR="./_site/$FIXED_FOLDER_NAME"
-          
-          echo "Creating directory: $DEST_DIR"
-          mkdir -p "$DEST_DIR"
-          
-          # 中身を移動 (sudoは使わない！)
-          # フォルダ階層のズレを吸収するため、再帰的に index.html を探して配置する方法も検討できますが
-          # まずは単純な移動で、ログを見て判断します。
-          cp -r ./temp_msix_assets/* "$DEST_DIR/"
-          
-          echo "=== [Debug] Content of _site directory ==="
-          ls -R ./_site
-        
+
+          echo "Destination folder: $FIXED_FOLDER_NAME"
+
+          # 固定名でフォルダを作成
+          sudo mkdir -p ./_site/$FIXED_FOLDER_NAME
+
+          # 中身を移動
+          sudo mv ./temp_msix_assets/* ./_site/$FIXED_FOLDER_NAME/
+
+          # 一時フォルダ削除
+          rm -rf ./temp_msix_assets
+
       - name: Upload artifact for Pages
         uses: actions/upload-pages-artifact@v3
         with:
