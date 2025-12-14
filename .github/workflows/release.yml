@@ -6,13 +6,11 @@ on:
       - "v*.*.*"
   workflow_dispatch:
 
-# 権限設定: ReleasesへのアップロードとPagesへのデプロイに必要
 permissions:
   contents: write
   pages: write
   id-token: write
 
-# 同時実行の制御 (Pagesデプロイ用)
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -23,15 +21,13 @@ jobs:
   # ==============================================================================
   build-windows-assets:
     runs-on: windows-latest
-    # 【追加】次のジョブに変数を渡す設定
     outputs:
       msix_folder: ${{ steps.msix_path_resolver.outputs.FOLDER_NAME }}
 
     env:
-      # MSIX関連の設定
       PACKAGE_PROJECT: "ClipboardUtilityMSIXInstaller/ClipboardUtilityMSIXInstaller.wapproj"
       APPINSTALLER_FILENAME: "ClipboardUtilityMSIXInstaller.appinstaller"
-      # Pagesの公開URL (Jekyllの構成に合わせて設定)
+      # Pagesの公開URL (末尾に download を含む)
       APPINSTALLER_URL: "https://gk-302.github.io/Clipboard-Utility/download"
 
     steps:
@@ -94,35 +90,24 @@ jobs:
       # --- ビルド & ライセンス生成 ---
       - name: Restore & Generate License
         run: |
-          # 【修正】コマンドライン引数ではなく、csprojを直接書き換えてRIDsを追加します
-          # これにより "project.assets.json doesn't have a target..." エラーを確実に防ぎます
           $csprojPath = "ClipboardUtility/ClipboardUtility.csproj"
           [xml]$xml = Get-Content $csprojPath
 
-          # PropertyGroupを取得 (通常は最初のPropertyGroup)
           $propGroup = $xml.Project.PropertyGroup | Select-Object -First 1
-
-          # RuntimeIdentifiersノードがない場合のみ追加
           if (-not $propGroup.SelectSingleNode("*[local-name()='RuntimeIdentifiers']")) {
               $node = $xml.CreateElement("RuntimeIdentifiers", $xml.Project.NamespaceURI)
               $node.InnerText = "win-x86;win-x64"
               $propGroup.AppendChild($node)
               $xml.Save($csprojPath)
-              Write-Host "Successfully added RuntimeIdentifiers to csproj."
-          } else {
-              Write-Host "RuntimeIdentifiers already exists."
           }
 
-          # 変更後のファイルで復元を実行 (引数は不要になります)
           dotnet restore ClipboardUtility.sln
 
-          # ライセンス生成
           New-Item -ItemType Directory -Force -Path "./ClipboardUtility/src/Assets"
           dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile ./ClipboardUtility/src/Assets/licenses.json -j
-        shell:
-          pwsh
+        shell: pwsh
 
-          # --- 1. Standalone EXE ビルド ---
+      # --- 1. Standalone EXE ビルド ---
       - name: Publish WPF App (Standalone)
         run: |
           dotnet publish --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish ClipboardUtility/ClipboardUtility.csproj
@@ -141,10 +126,13 @@ jobs:
           $sdkPath = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "msiinfo.exe" -Recurse | Select-Object -First 1).FullName
           & $sdkPath "./ClipboardUtilityInstaller/Release-NoAdmin/ClipboardUtilityInstaller.msi" /W 10
 
-      # --- 3. MSIX インストーラービルド ---
+      # --- 3. MSIX インストーラービルド (修正箇所) ---
       - name: Build MSIX Installer (wapproj)
         run: |
           $msixOut = Join-Path $env:GITHUB_WORKSPACE 'msix_output'
+          
+          # フォルダ作成（MSBuildが作らない場合への保険）
+          New-Item -ItemType Directory -Force -Path $msixOut
 
           msbuild "${{ env.PACKAGE_PROJECT }}" `
             /p:Configuration=Release `
@@ -154,14 +142,16 @@ jobs:
             /p:PackageCertificateKeyFile="${{ env.PFX_PATH }}" `
             /p:PackageCertificatePassword="${{ secrets.PFX_PASSWORD }}" `
             /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxBundle=Always `
             /p:GenerateAppInstallerFile=true `
             /p:AppInstallerUri="${{ env.APPINSTALLER_URL }}" `
+            /p:AppInstallerMainBundlePath="${{ env.APPINSTALLER_FILENAME }}" `
             /p:AppInstallerUpdateFrequency=OnApplicationRun `
-            /p:AppInstallerCheckForUpdateFrequency=OnApplicationRun
+            /p:AppInstallerCheckForUpdateFrequency=OnApplicationRun `
+            /p:AppInstallerShowPrompt=true
         shell: pwsh
 
-      # --- アーティファクトの保存 (Job間の受け渡し用) ---
-      # これが「Jekyllビルド」JobへMSIXフォルダを渡すための鍵です
+      # --- アーティファクトの保存 ---
       - name: Determine MSIX upload path
         id: msix_path_resolver
         run: |
@@ -169,9 +159,7 @@ jobs:
           Write-Host "Searching for .msixbundle or .msix under $search"
           $packageFile = Get-ChildItem -Path $search -Include '*.msixbundle', '*.msix' -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($null -eq $packageFile) {
-            Write-Host "No .msixbundle or .msix found under $search. Listing directory for debugging:"
-            Get-ChildItem -Path $search -Recurse -Force | ForEach-Object { Write-Host $_.FullName }
-            Write-Error "MSIX package not found. Aborting upload to avoid creating empty artifact."
+            Write-Error "MSIX package not found."
             exit 1
           }
           $folder = $packageFile.DirectoryName
@@ -187,7 +175,7 @@ jobs:
           path: ${{ env.UPLOAD_PATH }}
           retention-days: 1
 
-      # --- リリースへのアップロード (zip圧縮含む) ---
+      # --- リリースへのアップロード ---
       - name: Zip Artifacts
         run: |
           Compress-Archive -Path ./publish/* -DestinationPath ClipboardUtility-Standalone-${{ env.RELEASE_TAG }}.zip
@@ -195,7 +183,7 @@ jobs:
           Compress-Archive -Path ./ClipboardUtilityInstaller/Release-NoAdmin/* -DestinationPath ClipboardUtility-Installer-NoAdmin-${{ env.RELEASE_TAG }}.zip
 
       - name: Release to GitHub
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           name: Release ${{ env.RELEASE_TAG }}
@@ -214,18 +202,16 @@ jobs:
   # JOB 2: Jekyllサイトのビルド (Ubuntu環境)
   # ==============================================================================
   build-site:
-    needs: build-windows-assets # Windowsでのビルドが終わってから実行
+    needs: build-windows-assets
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      # Windows Jobで作ったMSIXフォルダをダウンロード
       - name: Download MSIX Artifact
         uses: actions/download-artifact@v4
         with:
           name: msix-package
-          # 一時フォルダに保存
           path: ./temp_msix_assets
 
       - name: Setup Pages
@@ -238,22 +224,17 @@ jobs:
           source: ./
           destination: ./_site
 
-      # 【重要】Jekyllのビルド結果(_site)の中に、MSIXフォルダを移動させる
-      # これにより、サイトの一部としてMSIXファイルが配信されます
-      # フォルダ名は Artifactの中身から動的に決定するか、固定名にするか調整可能
-      # ここではダウンロードした中身を、適切なフォルダ名で配置します
       - name: Inject MSIX into Site
         run: |
           FIXED_FOLDER_NAME="download"
-
           echo "Destination folder: $FIXED_FOLDER_NAME"
-
-          # 固定名でフォルダを作成
+          
+          # _site/download フォルダを作成
           sudo mkdir -p ./_site/$FIXED_FOLDER_NAME
-
-          # 中身を移動
+          
+          # Artifactの中身（msixbundle, appinstaller等）を移動
           sudo mv ./temp_msix_assets/* ./_site/$FIXED_FOLDER_NAME/
-
+          
           # 一時フォルダ削除
           rm -rf ./temp_msix_assets
 
