@@ -78,19 +78,32 @@
                                            Text="{Binding CurrentVersion}" 
                                            Style="{StaticResource FormInput}" 
                                            VerticalAlignment="Center" />
-                                
+
                                 <!-- Check for Updates Button -->
                                 <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                        Content="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CheckForUpdatesText}"
-                                        Command="{Binding CheckForUpdatesCommand}"
-                                        IsEnabled="{Binding CanCheckForUpdates}"
-                                        Width="200"
-                                        Margin="0,8,0,0"
-                                        Style="{StaticResource PrimaryButton}"
-                                        HorizontalAlignment="Left" />
+        Command="{Binding CheckForUpdatesCommand}"
+        Width="200"
+        Margin="0,8,0,0"
+        HorizontalAlignment="Left">
+
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                            <Setter Property="Content" Value="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=CheckForUpdatesText}" />
+                                            <Setter Property="IsEnabled" Value="{Binding CanCheckForUpdates}" />
+
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMsix}" Value="True">
+                                                    <Setter Property="Content" Value="Auto Update On (MSIX)" />
+                                                    <Setter Property="IsEnabled" Value="False" />
+                                                    <Setter Property="ToolTip" Value="Updates are managed automatically by Windows." />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </Grid>
                         </GroupBox>
-                        
+
                         <GroupBox Grid.Row="1" Grid.ColumnSpan="2" Header="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=TaskTrayClickOperationText}" Margin="0,0,0,8">
                             <Grid Margin="8">
                                 <Grid.RowDefinitions>
@@ -207,7 +220,7 @@
                             <TextBox Width="80" Text="{Binding NotificationMaxHeight, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Width="40" VerticalAlignment="Center">dp</TextBlock>
                         </StackPanel>
-                        
+
                         <StackPanel Orientation="Horizontal" >
                             <TextBlock Style="{StaticResource FormLabel}" Text="{Binding Source={x:Static loc:LocalizedStrings.Instance}, Path=NotificationDurationTitle}" />
                             <TextBox Width="80" Text="{Binding NotificationDelay, UpdateSourceTrigger=PropertyChanged}" />

@@ -23,6 +23,26 @@ public class UpdateCheckService
     private const string GITHUB_REPO_NAME = "Clipboard-Utility";
     private const string GITHUB_API_RELEASES_URL = $"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/releases/latest";
 
+    /// <summary>
+    /// 現在のアプリがMSIXパッケージとして実行されているかどうかを判定します。
+    /// </summary>
+    public static bool IsMsix
+    {
+        get
+        {
+            try
+            {
+                // パッケージIDにアクセスできればMSIX環境
+                var _ = Windows.ApplicationModel.Package.Current.Id;
+                return true;
+            }
+            catch
+            {
+                // パッケージ外実行（デバッグなど）
+                return false;
+            }
+        }
+    }
     private static readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(10)
