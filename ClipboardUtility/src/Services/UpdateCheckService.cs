@@ -5,8 +5,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Windows.ApplicationModel; // 追加: MSIXパッケージ情報へのアクセス用
 using ClipboardUtility.src.Helpers;
+using System.IO.Packaging;
 
 namespace ClipboardUtility.src.Services;
 
@@ -37,33 +37,53 @@ public class UpdateCheckService
     /// </summary>
     public static Version GetCurrentVersion()
     {
+        // 1) MSIXパッケージとして実行されているかをランタイムで試みる（リフレクションで参照）
+        //    直接 Windows.ApplicationModel を参照しないことで、WPF（デスクトップ）環境での
+        //    コンパイルエラーを避けます。
         try
         {
-            // 1. MSIXパッケージとして実行されているか試みる
-            var package = Package.Current;
-            var v = package.Id.Version;
-            // MSIXのバージョン(PackageVersion構造体)をSystem.Versionに変換
-            return new Version(v.Major, v.Minor, v.Build, v.Revision);
-        }
-        catch (InvalidOperationException)
-        {
-            // 2. パッケージ化されていない場合（Visual Studioでのデバッグ実行など）
-            // アセンブリ情報からバージョンを取得するフォールバック処理
-            try
+            var packageType = Type.GetType("Windows.ApplicationModel.Package, Windows, ContentType=WindowsRuntime");
+            if (packageType != null)
             {
-                var assembly = Assembly.GetExecutingAssembly();
-                var version = assembly.GetName().Version;
-                return version ?? new Version(0, 0, 0, 0);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Fallback failed: {ex}");
-                return new Version(0, 0, 0, 0);
+                var currentProp = packageType.GetProperty("Current");
+                var packageInstance = currentProp?.GetValue(null);
+                if (packageInstance != null)
+                {
+                    var idProp = packageType.GetProperty("Id");
+                    var idInstance = idProp?.GetValue(packageInstance);
+                    if (idInstance != null)
+                    {
+                        var versionProp = idInstance.GetType().GetProperty("Version");
+                        var versionValue = versionProp?.GetValue(idInstance);
+                        if (versionValue != null)
+                        {
+                            // PackageVersion のプロパティは ushort 型なので安全に変換する
+                            var major = Convert.ToInt32(versionValue.GetType().GetProperty("Major")!.GetValue(versionValue));
+                            var minor = Convert.ToInt32(versionValue.GetType().GetProperty("Minor")!.GetValue(versionValue));
+                            var build = Convert.ToInt32(versionValue.GetType().GetProperty("Build")!.GetValue(versionValue));
+                            var revision = Convert.ToInt32(versionValue.GetType().GetProperty("Revision")!.GetValue(versionValue));
+                            return new Version(major, minor, build, revision);
+                        }
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Unexpected error: {ex}");
+            // リフレクションによる取得に失敗してもフォールバックで続行
+            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: MSIX reflection failed: {ex}");
+        }
+
+        // 2) パッケージ化されていない場合やリフレクション失敗時はアセンブリ情報からバージョンを取得する
+        try
+        {
+            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+            var version = assembly.GetName().Version;
+            return version ?? new Version(0, 0, 0, 0);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Fallback failed: {ex}");
             FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion");
             return new Version(0, 0, 0, 0);
         }
