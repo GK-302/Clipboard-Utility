@@ -1,11 +1,15 @@
+using ClipboardUtility.src.Helpers;
 using System;
 using System.Diagnostics;
+using System.IO.Packaging;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using ClipboardUtility.src.Helpers;
+// Windows.ApplicationModel を使用するために csproj で net8.0-windows10.0.xxxxx を指定してください
+using Windows.ApplicationModel;
+using Package = Windows.ApplicationModel.Package;
 
 namespace ClipboardUtility.src.Services;
 
@@ -19,6 +23,26 @@ public class UpdateCheckService
     private const string GITHUB_REPO_NAME = "Clipboard-Utility";
     private const string GITHUB_API_RELEASES_URL = $"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/releases/latest";
 
+    /// <summary>
+    /// 現在のアプリがMSIXパッケージとして実行されているかどうかを判定します。
+    /// </summary>
+    public static bool IsMsix
+    {
+        get
+        {
+            try
+            {
+                // パッケージIDにアクセスできればMSIX環境
+                var _ = Windows.ApplicationModel.Package.Current.Id;
+                return true;
+            }
+            catch
+            {
+                // パッケージ外実行（デバッグなど）
+                return false;
+            }
+        }
+    }
     private static readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(10)
@@ -31,20 +55,50 @@ public class UpdateCheckService
     }
 
     /// <summary>
-    /// 現在のアプリケーションバージョンを取得します
+    /// 現在のアプリケーションバージョンを取得します。
+    /// MSIX環境の場合はPackage情報を、非パッケージ環境の場合はアセンブリ情報を返します。
     /// </summary>
     public static Version GetCurrentVersion()
     {
+        // 1) MSIXパッケージとして実行されているかを確認し、バージョンを取得する
+        //    リフレクションではなく、標準の WinRT API を使用します。
         try
         {
-            var assembly = Assembly.GetExecutingAssembly();
+            // パッケージ化されていない環境で Package.Current にアクセスすると InvalidOperationException が発生します
+            var package = Package.Current;
+            var packageVersion = package.Id.Version;
+
+            // PackageVersion (WinRT) を System.Version に変換
+            return new Version(
+                packageVersion.Major,
+                packageVersion.Minor,
+                packageVersion.Build,
+                packageVersion.Revision);
+        }
+        catch (InvalidOperationException)
+        {
+            // パッケージ化されていない(デバッグ実行などの)場合はここに来ます
+            Debug.WriteLine("UpdateCheckService.GetCurrentVersion: App is not running as MSIX package.");
+        }
+        catch (Exception ex)
+        {
+            // その他の予期せぬエラー
+            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: MSIX check failed: {ex}");
+            FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion: MSIX Check");
+        }
+
+        // 2) フォールバック：アセンブリ情報からバージョンを取得する
+        try
+        {
+            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+            // AssemblyVersion属性がない場合は 0.0.0.0 を防ぐため null チェック
             var version = assembly.GetName().Version;
             return version ?? new Version(0, 0, 0, 0);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Failed to get version: {ex}");
-            FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion");
+            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Fallback failed: {ex}");
+            FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion: Fallback");
             return new Version(0, 0, 0, 0);
         }
     }
@@ -88,12 +142,20 @@ public class UpdateCheckService
                 return null;
             }
 
-            // バージョンをパース
-            if (!Version.TryParse(versionString, out var latestVersion))
+            // GitHubのバージョンをパース
+            if (!Version.TryParse(versionString, out var parsedLatestVersion))
             {
                 Debug.WriteLine($"UpdateCheckService: Failed to parse version from tag: {release.TagName}");
                 return null;
             }
+
+            // 【重要】比較用に4桁に正規化する
+            var latestVersion = new Version(
+                parsedLatestVersion.Major,
+                parsedLatestVersion.Minor,
+                parsedLatestVersion.Build >= 0 ? parsedLatestVersion.Build : 0,
+                parsedLatestVersion.Revision >= 0 ? parsedLatestVersion.Revision : 0
+            );
 
             var currentVersion = GetCurrentVersion();
             var isUpdateAvailable = latestVersion > currentVersion;
