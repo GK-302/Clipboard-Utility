@@ -1,12 +1,15 @@
+using ClipboardUtility.src.Helpers;
 using System;
 using System.Diagnostics;
+using System.IO.Packaging;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using ClipboardUtility.src.Helpers;
-using System.IO.Packaging;
+// Windows.ApplicationModel を使用するために csproj で net8.0-windows10.0.xxxxx を指定してください
+using Windows.ApplicationModel;
+using Package = Windows.ApplicationModel.Package;
 
 namespace ClipboardUtility.src.Services;
 
@@ -33,58 +36,49 @@ public class UpdateCheckService
 
     /// <summary>
     /// 現在のアプリケーションバージョンを取得します。
-    /// MSIX環境と非パッケージ環境（デバッグ）の両方に対応しています。
+    /// MSIX環境の場合はPackage情報を、非パッケージ環境の場合はアセンブリ情報を返します。
     /// </summary>
     public static Version GetCurrentVersion()
     {
-        // 1) MSIXパッケージとして実行されているかをランタイムで試みる（リフレクションで参照）
-        //    直接 Windows.ApplicationModel を参照しないことで、WPF（デスクトップ）環境での
-        //    コンパイルエラーを避けます。
+        // 1) MSIXパッケージとして実行されているかを確認し、バージョンを取得する
+        //    リフレクションではなく、標準の WinRT API を使用します。
         try
         {
-            var packageType = Type.GetType("Windows.ApplicationModel.Package, Windows, ContentType=WindowsRuntime");
-            if (packageType != null)
-            {
-                var currentProp = packageType.GetProperty("Current");
-                var packageInstance = currentProp?.GetValue(null);
-                if (packageInstance != null)
-                {
-                    var idProp = packageType.GetProperty("Id");
-                    var idInstance = idProp?.GetValue(packageInstance);
-                    if (idInstance != null)
-                    {
-                        var versionProp = idInstance.GetType().GetProperty("Version");
-                        var versionValue = versionProp?.GetValue(idInstance);
-                        if (versionValue != null)
-                        {
-                            // PackageVersion のプロパティは ushort 型なので安全に変換する
-                            var major = Convert.ToInt32(versionValue.GetType().GetProperty("Major")!.GetValue(versionValue));
-                            var minor = Convert.ToInt32(versionValue.GetType().GetProperty("Minor")!.GetValue(versionValue));
-                            var build = Convert.ToInt32(versionValue.GetType().GetProperty("Build")!.GetValue(versionValue));
-                            var revision = Convert.ToInt32(versionValue.GetType().GetProperty("Revision")!.GetValue(versionValue));
-                            return new Version(major, minor, build, revision);
-                        }
-                    }
-                }
-            }
+            // パッケージ化されていない環境で Package.Current にアクセスすると InvalidOperationException が発生します
+            var package = Package.Current;
+            var packageVersion = package.Id.Version;
+
+            // PackageVersion (WinRT) を System.Version に変換
+            return new Version(
+                packageVersion.Major,
+                packageVersion.Minor,
+                packageVersion.Build,
+                packageVersion.Revision);
+        }
+        catch (InvalidOperationException)
+        {
+            // パッケージ化されていない(デバッグ実行などの)場合はここに来ます
+            Debug.WriteLine("UpdateCheckService.GetCurrentVersion: App is not running as MSIX package.");
         }
         catch (Exception ex)
         {
-            // リフレクションによる取得に失敗してもフォールバックで続行
-            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: MSIX reflection failed: {ex}");
+            // その他の予期せぬエラー
+            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: MSIX check failed: {ex}");
+            FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion: MSIX Check");
         }
 
-        // 2) パッケージ化されていない場合やリフレクション失敗時はアセンブリ情報からバージョンを取得する
+        // 2) フォールバック：アセンブリ情報からバージョンを取得する
         try
         {
             var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+            // AssemblyVersion属性がない場合は 0.0.0.0 を防ぐため null チェック
             var version = assembly.GetName().Version;
             return version ?? new Version(0, 0, 0, 0);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Fallback failed: {ex}");
-            FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion");
+            FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion: Fallback");
             return new Version(0, 0, 0, 0);
         }
     }
@@ -136,8 +130,6 @@ public class UpdateCheckService
             }
 
             // 【重要】比較用に4桁に正規化する
-            // GitHubタグが "1.2.3" (Revision = -1) で、現在地が "1.2.3.0" (Revision = 0) の場合、
-            // そのままだと Current > Latest と判定されたり、正しく比較できない場合があるため揃えます。
             var latestVersion = new Version(
                 parsedLatestVersion.Major,
                 parsedLatestVersion.Minor,
