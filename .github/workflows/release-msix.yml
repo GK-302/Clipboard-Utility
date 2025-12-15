@@ -46,6 +46,10 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      # --- 【追加】ライセンス生成ツールのインストール ---
+      - name: Install License Tool
+        run: dotnet tool install --global dotnet-project-licenses
+
       - name: Decode PFX Certificate
         run: |
           $pfxPath = Join-Path $env:RUNNER_TEMP "signing_cert.pfx"
@@ -68,6 +72,14 @@ jobs:
       - name: Restore solution
         run: dotnet restore ClipboardUtility.sln -r win-x86
 
+      # --- 【追加】ライセンス情報の生成 ---
+      # MSIXビルドが走る前にファイルを生成し、src/Assets/licenses.json に配置します
+      - name: Generate License Information
+        run: |
+          New-Item -ItemType Directory -Force -Path "./ClipboardUtility/src/Assets"
+          dotnet-project-licenses -i ./ClipboardUtility/ClipboardUtility.csproj --outfile ./ClipboardUtility/src/Assets/licenses.json -j
+        shell: pwsh
+
       - name: Update App Manifest Version
         run: |
           $manifestPath = "${{ github.workspace }}\ClipboardUtilityMSIXInstaller\Package.appxmanifest"
@@ -81,6 +93,8 @@ jobs:
           $outputPath = "${{ github.workspace }}\output"
           New-Item -ItemType Directory -Force -Path $outputPath
           
+          # アプリケーションプロジェクトのContentとしてlicenses.jsonが含まれていれば、
+          # このビルドプロセスで自動的にMSIX内にパッケージングされます。
           msbuild ${{ env.PACKAGE_PROJECT }} /p:Configuration=Release `
             /p:AppxPackageDir="$outputPath" `
             /p:AppxPackageSigningEnabled=true `
@@ -104,12 +118,8 @@ jobs:
           if ($null -eq $msixBundle) { throw "MSIX Bundle not found." }
           $appInstaller = Get-ChildItem -Path $searchPath -Filter "${{ env.APPINSTALLER_FILENAME }}" -Recurse | Select-Object -First 1
           if ($null -eq $appInstaller) { throw "AppInstaller file not found." }
-          
-          # HTMLファイルもこの時点であるはず
-          if (-not (Test-Path "$searchPath\index.html")) { Write-Warning "Generated index.html not found." }
         shell: pwsh
 
-      # Windowsで作ったoutputフォルダの中身をそのままアーティファクトとしてアップロード
       - name: Upload MSIX Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -125,7 +135,7 @@ jobs:
   # JOB 2: Ubuntu環境でJekyllビルド & デプロイ
   # ==============================================================================
   deploy-site:
-    needs: build-msix  # Job 1の完了を待つ
+    needs: build-msix
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -135,7 +145,6 @@ jobs:
       - name: Checkout Source (for index.md)
         uses: actions/checkout@v4
 
-      # Job 1で作ったMSIXファイルたちをダウンロード
       - name: Download MSIX Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -144,29 +153,17 @@ jobs:
 
       - name: Process MSIX Files (Rename & Move)
         run: |
-          # 1. MSIX生成の index.html を download.html にリネーム
           if [ -f ./msix_temp/index.html ]; then
             echo "Renaming generated index.html to download.html..."
             mv ./msix_temp/index.html ./msix_temp/download.html
-            
-            # 内部リンクの置換 (index.html -> download.html)
-            # Linuxなのでsedが使えて簡単かつ高速です
             sed -i 's/index\.html/download\.html/g' ./msix_temp/download.html
           fi
-
-          # 2. msix_temp の中身をルートディレクトリに移動
-          # これで index.md (Checkout済み) と download.html (MSIX由来) が同居します
           cp -r ./msix_temp/* .
           rm -rf ./msix_temp
-          
-          echo "=== File structure before Jekyll build ==="
-          ls -R
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # ここで正規のJekyllビルドを実行
-      # index.md は index.html に変換され、download.html はそのまま維持されます
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
