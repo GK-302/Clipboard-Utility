@@ -7,15 +7,15 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-// Windows.ApplicationModel ‚ğg—p‚·‚é‚½‚ß‚É csproj ‚Å net8.0-windows10.0.xxxxx ‚ğw’è‚µ‚Ä‚­‚¾‚³‚¢
+// Windows.ApplicationModel ã‚’ä½¿ç”¨ã™ã‚‹ãŸã‚ã« csproj ã§ net8.0-windows10.0.xxxxx ã‚’æŒ‡å®šã—ã¦ãã ã•ã„
 using Windows.ApplicationModel;
 using Package = Windows.ApplicationModel.Package;
 
 namespace ClipboardUtility.src.Services;
 
 /// <summary>
-/// ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ÌXV‚ğƒ`ƒFƒbƒN‚·‚éƒT[ƒrƒX
-/// GitHub Releases API ‚ğg—p‚µ‚ÄÅVƒo[ƒWƒ‡ƒ“‚ğŠm”F‚µ‚Ü‚·
+/// ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã®æ›´æ–°ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹ã‚µãƒ¼ãƒ“ã‚¹
+/// GitHub Releases API ã‚’ä½¿ç”¨ã—ã¦æœ€æ–°ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚’ç¢ºèªã—ã¾ã™
 /// </summary>
 public class UpdateCheckService
 {
@@ -24,7 +24,7 @@ public class UpdateCheckService
     private const string GITHUB_API_RELEASES_URL = $"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/releases/latest";
 
     /// <summary>
-    /// Œ»İ‚ÌƒAƒvƒŠ‚ªMSIXƒpƒbƒP[ƒW‚Æ‚µ‚ÄÀs‚³‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğ”»’è‚µ‚Ü‚·B
+    /// ç¾åœ¨ã®ã‚¢ãƒ—ãƒªãŒMSIXãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã¨ã—ã¦å®Ÿè¡Œã•ã‚Œã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’åˆ¤å®šã—ã¾ã™ã€‚
     /// </summary>
     public static bool IsMsix
     {
@@ -32,13 +32,13 @@ public class UpdateCheckService
         {
             try
             {
-                // ƒpƒbƒP[ƒWID‚ÉƒAƒNƒZƒX‚Å‚«‚ê‚ÎMSIXŠÂ‹«
+                // ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸IDã«ã‚¢ã‚¯ã‚»ã‚¹ã§ãã‚Œã°MSIXç’°å¢ƒ
                 var _ = Windows.ApplicationModel.Package.Current.Id;
                 return true;
             }
             catch
             {
-                // ƒpƒbƒP[ƒWŠOÀsiƒfƒoƒbƒO‚È‚Çj
+                // ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸å¤–å®Ÿè¡Œï¼ˆãƒ‡ãƒãƒƒã‚°ãªã©ï¼‰
                 return false;
             }
         }
@@ -55,20 +55,20 @@ public class UpdateCheckService
     }
 
     /// <summary>
-    /// Œ»İ‚ÌƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒo[ƒWƒ‡ƒ“‚ğæ“¾‚µ‚Ü‚·B
-    /// MSIXŠÂ‹«‚Ìê‡‚ÍPackageî•ñ‚ğA”ñƒpƒbƒP[ƒWŠÂ‹«‚Ìê‡‚ÍƒAƒZƒ“ƒuƒŠî•ñ‚ğ•Ô‚µ‚Ü‚·B
+    /// ç¾åœ¨ã®ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚’å–å¾—ã—ã¾ã™ã€‚
+    /// MSIXç’°å¢ƒã®å ´åˆã¯Packageæƒ…å ±ã‚’ã€éãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ç’°å¢ƒã®å ´åˆã¯ã‚¢ã‚»ãƒ³ãƒ–ãƒªæƒ…å ±ã‚’è¿”ã—ã¾ã™ã€‚
     /// </summary>
     public static Version GetCurrentVersion()
     {
-        // 1) MSIXƒpƒbƒP[ƒW‚Æ‚µ‚ÄÀs‚³‚ê‚Ä‚¢‚é‚©‚ğŠm”F‚µAƒo[ƒWƒ‡ƒ“‚ğæ“¾‚·‚é
-        //    ƒŠƒtƒŒƒNƒVƒ‡ƒ“‚Å‚Í‚È‚­A•W€‚Ì WinRT API ‚ğg—p‚µ‚Ü‚·B
+        // 1) MSIXãƒ‘ãƒƒã‚±ãƒ¼ã‚¸ã¨ã—ã¦å®Ÿè¡Œã•ã‚Œã¦ã„ã‚‹ã‹ã‚’ç¢ºèªã—ã€ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚’å–å¾—ã™ã‚‹
+        //    ãƒªãƒ•ãƒ¬ã‚¯ã‚·ãƒ§ãƒ³ã§ã¯ãªãã€æ¨™æº–ã® WinRT API ã‚’ä½¿ç”¨ã—ã¾ã™ã€‚
         try
         {
-            // ƒpƒbƒP[ƒW‰»‚³‚ê‚Ä‚¢‚È‚¢ŠÂ‹«‚Å Package.Current ‚ÉƒAƒNƒZƒX‚·‚é‚Æ InvalidOperationException ‚ª”­¶‚µ‚Ü‚·
+            // ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸åŒ–ã•ã‚Œã¦ã„ãªã„ç’°å¢ƒã§ Package.Current ã«ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹ã¨ InvalidOperationException ãŒç™ºç”Ÿã—ã¾ã™
             var package = Package.Current;
             var packageVersion = package.Id.Version;
 
-            // PackageVersion (WinRT) ‚ğ System.Version ‚É•ÏŠ·
+            // PackageVersion (WinRT) ã‚’ System.Version ã«å¤‰æ›
             return new Version(
                 packageVersion.Major,
                 packageVersion.Minor,
@@ -77,21 +77,21 @@ public class UpdateCheckService
         }
         catch (InvalidOperationException)
         {
-            // ƒpƒbƒP[ƒW‰»‚³‚ê‚Ä‚¢‚È‚¢(ƒfƒoƒbƒOÀs‚È‚Ç‚Ì)ê‡‚Í‚±‚±‚É—ˆ‚Ü‚·
+            // ãƒ‘ãƒƒã‚±ãƒ¼ã‚¸åŒ–ã•ã‚Œã¦ã„ãªã„(ãƒ‡ãƒãƒƒã‚°å®Ÿè¡Œãªã©ã®)å ´åˆã¯ã“ã“ã«æ¥ã¾ã™
             Debug.WriteLine("UpdateCheckService.GetCurrentVersion: App is not running as MSIX package.");
         }
         catch (Exception ex)
         {
-            // ‚»‚Ì‘¼‚Ì—\Šú‚¹‚ÊƒGƒ‰[
+            // ãã®ä»–ã®äºˆæœŸã›ã¬ã‚¨ãƒ©ãƒ¼
             Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: MSIX check failed: {ex}");
             FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion: MSIX Check");
         }
 
-        // 2) ƒtƒH[ƒ‹ƒoƒbƒNFƒAƒZƒ“ƒuƒŠî•ñ‚©‚çƒo[ƒWƒ‡ƒ“‚ğæ“¾‚·‚é
+        // 2) ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ï¼šã‚¢ã‚»ãƒ³ãƒ–ãƒªæƒ…å ±ã‹ã‚‰ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚’å–å¾—ã™ã‚‹
         try
         {
             var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
-            // AssemblyVersion‘®«‚ª‚È‚¢ê‡‚Í 0.0.0.0 ‚ğ–h‚®‚½‚ß null ƒ`ƒFƒbƒN
+            // AssemblyVersionå±æ€§ãŒãªã„å ´åˆã¯ 0.0.0.0 ã‚’é˜²ããŸã‚ null ãƒã‚§ãƒƒã‚¯
             var version = assembly.GetName().Version;
             return version ?? new Version(0, 0, 0, 0);
         }
@@ -104,7 +104,7 @@ public class UpdateCheckService
     }
 
     /// <summary>
-    /// GitHub ‚©‚çÅV‚ÌƒŠƒŠ[ƒXî•ñ‚ğæ“¾‚µ‚Ü‚·
+    /// GitHub ã‹ã‚‰æœ€æ–°ã®ãƒªãƒªãƒ¼ã‚¹æƒ…å ±ã‚’å–å¾—ã—ã¾ã™
     /// </summary>
     public async Task<UpdateInfo?> CheckForUpdatesAsync()
     {
@@ -132,24 +132,24 @@ public class UpdateCheckService
                 return null;
             }
 
-            // ƒ^ƒO–¼‚©‚ç "v" ƒvƒŒƒtƒBƒbƒNƒX‚ğíœ
+            // ã‚¿ã‚°åã‹ã‚‰ "v" ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹ã‚’å‰Šé™¤
             var versionString = release.TagName.TrimStart('v', 'V');
 
-            // ƒvƒŒƒŠƒŠ[ƒX”Åi"-"‚ğŠÜ‚Şj‚ÍœŠO‚·‚é
+            // ãƒ—ãƒ¬ãƒªãƒªãƒ¼ã‚¹ç‰ˆï¼ˆ"-"ã‚’å«ã‚€ï¼‰ã¯é™¤å¤–ã™ã‚‹
             if (versionString.Contains('-'))
             {
                 Debug.WriteLine($"UpdateCheckService: Skipping pre-release version: {release.TagName}");
                 return null;
             }
 
-            // GitHub‚Ìƒo[ƒWƒ‡ƒ“‚ğƒp[ƒX
-            if (!Version.TryParse(versionString, out var parsedLatestVersion))
+            // ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚’ãƒ‘ãƒ¼ã‚¹
+            if (!Version.TryParse(versionString, out var latestVersion))
             {
                 Debug.WriteLine($"UpdateCheckService: Failed to parse version from tag: {release.TagName}");
                 return null;
             }
 
-            // yd—vz”äŠr—p‚É4Œ…‚É³‹K‰»‚·‚é
+            // ã€é‡è¦ã€‘æ¯”è¼ƒç”¨ã«4æ¡ã«æ­£è¦åŒ–ã™ã‚‹
             var latestVersion = new Version(
                 parsedLatestVersion.Major,
                 parsedLatestVersion.Minor,
@@ -193,7 +193,7 @@ public class UpdateCheckService
     }
 
     /// <summary>
-    /// ƒuƒ‰ƒEƒU‚ÅXVƒy[ƒW‚ğŠJ‚«‚Ü‚·
+    /// ãƒ–ãƒ©ã‚¦ã‚¶ã§æ›´æ–°ãƒšãƒ¼ã‚¸ã‚’é–‹ãã¾ã™
     /// </summary>
     public void OpenReleasePage(string url)
     {
@@ -244,7 +244,7 @@ public class UpdateCheckService
 }
 
 /// <summary>
-/// XVî•ñ‚ğŠi”[‚·‚éƒNƒ‰ƒX
+/// æ›´æ–°æƒ…å ±ã‚’æ ¼ç´ã™ã‚‹ã‚¯ãƒ©ã‚¹
 /// </summary>
 public class UpdateInfo
 {
