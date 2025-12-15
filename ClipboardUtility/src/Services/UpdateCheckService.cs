@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Windows.ApplicationModel; // 追加: MSIXパッケージ情報へのアクセス用
 using ClipboardUtility.src.Helpers;
 
 namespace ClipboardUtility.src.Services;
@@ -31,19 +32,38 @@ public class UpdateCheckService
     }
 
     /// <summary>
-    /// 現在のアプリケーションバージョンを取得します
+    /// 現在のアプリケーションバージョンを取得します。
+    /// MSIX環境と非パッケージ環境（デバッグ）の両方に対応しています。
     /// </summary>
     public static Version GetCurrentVersion()
     {
         try
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var version = assembly.GetName().Version;
-            return version ?? new Version(0, 0, 0, 0);
+            // 1. MSIXパッケージとして実行されているか試みる
+            var package = Package.Current;
+            var v = package.Id.Version;
+            // MSIXのバージョン(PackageVersion構造体)をSystem.Versionに変換
+            return new Version(v.Major, v.Minor, v.Build, v.Revision);
+        }
+        catch (InvalidOperationException)
+        {
+            // 2. パッケージ化されていない場合（Visual Studioでのデバッグ実行など）
+            // アセンブリ情報からバージョンを取得するフォールバック処理
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var version = assembly.GetName().Version;
+                return version ?? new Version(0, 0, 0, 0);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Fallback failed: {ex}");
+                return new Version(0, 0, 0, 0);
+            }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Failed to get version: {ex}");
+            Debug.WriteLine($"UpdateCheckService.GetCurrentVersion: Unexpected error: {ex}");
             FileLogger.LogException(ex, "UpdateCheckService.GetCurrentVersion");
             return new Version(0, 0, 0, 0);
         }
@@ -88,12 +108,22 @@ public class UpdateCheckService
                 return null;
             }
 
-            // バージョンをパース
-            if (!Version.TryParse(versionString, out var latestVersion))
+            // GitHubのバージョンをパース
+            if (!Version.TryParse(versionString, out var parsedLatestVersion))
             {
                 Debug.WriteLine($"UpdateCheckService: Failed to parse version from tag: {release.TagName}");
                 return null;
             }
+
+            // 【重要】比較用に4桁に正規化する
+            // GitHubタグが "1.2.3" (Revision = -1) で、現在地が "1.2.3.0" (Revision = 0) の場合、
+            // そのままだと Current > Latest と判定されたり、正しく比較できない場合があるため揃えます。
+            var latestVersion = new Version(
+                parsedLatestVersion.Major,
+                parsedLatestVersion.Minor,
+                parsedLatestVersion.Build >= 0 ? parsedLatestVersion.Build : 0,
+                parsedLatestVersion.Revision >= 0 ? parsedLatestVersion.Revision : 0
+            );
 
             var currentVersion = GetCurrentVersion();
             var isUpdateAvailable = latestVersion > currentVersion;
